@@ -21,10 +21,6 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
-#include "stdarg.h"
 #include "control.h"
 #include "angle.h"
 #ifdef __GNUC__
@@ -505,6 +501,8 @@ uint8_t uart6_rx_buff[UART6_RXBUFFERSIZE];//串口6接收缓冲区
 uint8_t uart4_rx_buff[UART4_RXBUFFERSIZE];//串口4接收缓冲区
 uint8_t uart1_rx_buff[UART1_RXBUFFERSIZE];//串口1接收缓冲区
 
+int rx_data_correct_cnt = 0;
+int rx_data_cnt = 0;
 uint8_t remote_data_flash[2];
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -513,50 +511,55 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	 {
 		 for(;i<(REMOTE_DATA_NUM+1);i++)
 		 {
-			 if(uart3_rx_buff[i]==0x5A&&uart3_rx_buff[i+6]==0xA5)
-				 break;
-		 }
-			switch(uart3_rx_buff[i+1])
-			{
-				case 0x01:
-					my_remote.YG_LEFT_UD = uart3_rx_buff[i+2];
-					my_remote.YG_LEFT_LR = uart3_rx_buff[i+3];
-					my_remote.YG_RIGHT_UD = uart3_rx_buff[i+4];
-					my_remote.YG_RIGHT_LR = uart3_rx_buff[i+5];
-					remote_data_flash[0] = 1;
-					remote_data_flash[1] = 1;
-					break;
-				case 0x02:
-					aircraft_state=uart3_rx_buff[i+2];
-					break;
-				case 0x03:
-					switch(uart3_rx_buff[i+2])
+			 if(uart3_rx_buff[i]==0x5A&&uart3_rx_buff[i+6]==0xA5)//帧头帧尾正确
+			 {
+					switch(uart3_rx_buff[i+1])
 					{
 						case 0x01:
-							pitch_compensate +=0.05f;
-							if(pitch_compensate>5.0f)
-									pitch_compensate =5.0f;
+							my_remote.YG_LEFT_UD = uart3_rx_buff[i+2];
+							my_remote.YG_LEFT_LR = uart3_rx_buff[i+3];
+							my_remote.YG_RIGHT_UD = uart3_rx_buff[i+4];
+							my_remote.YG_RIGHT_LR = uart3_rx_buff[i+5];
+							remote_data_flash[0] = 1;
+							remote_data_flash[1] = 1;
 							break;
 						case 0x02:
-							pitch_compensate -=0.05f;
-							if(pitch_compensate<-5.0f)
-									pitch_compensate =-5.0f;
+							aircraft_state=uart3_rx_buff[i+2];
 							break;
 						case 0x03:
-							roll_compensate -=0.05f;
-							if(roll_compensate<-5.0f)
-									roll_compensate =-5.0f;
+							switch(uart3_rx_buff[i+2])
+							{
+								case 0x01:
+									pitch_compensate +=0.05f;
+									if(pitch_compensate>5.0f)
+											pitch_compensate =5.0f;
+									break;
+								case 0x02:
+									pitch_compensate -=0.05f;
+									if(pitch_compensate<-5.0f)
+											pitch_compensate =-5.0f;
+									break;
+								case 0x03:
+									roll_compensate -=0.05f;
+									if(roll_compensate<-5.0f)
+											roll_compensate =-5.0f;
+									break;
+								case 0x04:
+									roll_compensate +=0.05f;
+									if(roll_compensate>5.0f)
+											roll_compensate =5.0f;
+									break;							
+							}
 							break;
-						case 0x04:
-							roll_compensate +=0.05f;
-							if(roll_compensate>5.0f)
-									roll_compensate =5.0f;
-							break;							
 					}
+					rx_data_correct_cnt++;
 					break;
-			}
+			 }
 
-       memset(uart3_rx_buff, 0, UART3_RXBUFFERSIZE);		
+
+		 }
+		 rx_data_cnt++;
+     memset(uart3_rx_buff, 0, UART3_RXBUFFERSIZE);		
    }
 }
 uint16_t TOF_distance_mm=0;

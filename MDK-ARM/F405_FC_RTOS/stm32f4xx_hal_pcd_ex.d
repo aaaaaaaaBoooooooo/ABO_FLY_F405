@@ -32,7 +32,6 @@ f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4
 f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c_ex.h
 f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h
 f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
-f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rng.h
 f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 f405_fc_rtos\stm32f4xx_hal_pcd_ex.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h

@@ -38,6 +38,9 @@ f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
+f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
+f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\control.o: ..\user\Control\pid.h
 f405_fc_rtos\control.o: ../Core/Inc/adc.h
 f405_fc_rtos\control.o: ../Core/Inc/tim.h
@@ -46,3 +49,6 @@ f405_fc_rtos\control.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\control.o: ../Core/Inc/usart.h
+f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
+f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
+f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h

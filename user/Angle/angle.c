@@ -152,7 +152,7 @@ void IMU_Calibration(void)
 			printf("acc_offset.y:%d\r\n",IMU_Data.acc_offset.y);
 			printf("acc_offset.z:%d\r\n",IMU_Data.acc_offset.z);
 			imu_init_success=1;//零漂校准成功
-			delay_ms(3000);//延时等待姿态解算稳定
+			delay_ms(1000);//延时等待姿态解算稳定
 			return;
 		}
 

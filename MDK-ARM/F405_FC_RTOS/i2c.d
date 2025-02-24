@@ -38,6 +38,9 @@ f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
+f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
+f405_fc_rtos\i2c.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\i2c.o: ../Drivers/BSP_HardWare/bmp390_task.h
 f405_fc_rtos\i2c.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h
 f405_fc_rtos\i2c.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h

@@ -31,9 +31,9 @@
 #define VAR_GyX				300.0f		            //1/方差   0.001f
 #define VAR_GyY				100.0f		            //1/方差   0.001f
 #define VAR_GyZ				50.0f		            //1/方差   0.001f
-#define VAR_AcX				500.0f		            //1/方差   0.001f
-#define VAR_AcY				500.0f		            //1/方差   0.001f
-#define VAR_AcZ				10000.0f		            //1/方差   0.001f
+#define VAR_AcX				100.0f		            //1/方差   0.001f
+#define VAR_AcY				100.0f		            //1/方差   0.001f
+#define VAR_AcZ				5000.0f		            //1/方差   0.001f
 #define ALPHA			0.0f					//一阶互补滤波系数
 
 

@@ -20,20 +20,22 @@
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
+#include "fatfs.h"
 #include "i2c.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
+#include "usb_device.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "delay.h"
-#include "BMP280.h"
 #include "bmp390_task.h"
 #include "icm42688.h"
 #include "angle.h"
 #include "control.h"
+#include "W25QXX.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,12 +116,30 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM5_Init();
+  MX_FATFS_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+	
+ 	while(f_mount(&USERFatFS,"0:",1)!=FR_OK)	//尝试挂载文件系统
+	{
+		printf("Mount_Failed!");
+		delay_ms(500);
+	}
+ 	while(icm42688_init())	//陀螺仪初始化
+	{
+		printf("ICM42688 Init Failed!");
+		delay_ms(500);
 
-	BMP390_Init();
-	printf("icm42688:%d\n",icm42688_init ());
+	}
+	while(BMP390_Init()) 		//气压计初始化
+	{
+		printf("BMP390 Init Failed!");
+		delay_ms(500);		
+	}
 	delay_ms(100);
+	
 	IMU_Calibration();//陀螺仪零漂校准
+	
 	pid_control_init();
 	delay_ms(100);
 	HAL_UART_Receive_DMA(&huart3,uart3_rx_buff,2*REMOTE_DATA_NUM);
@@ -127,6 +147,7 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim1);
 	HAL_TIM_Base_Start_IT(&htim5);
 	delay_ms(100);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

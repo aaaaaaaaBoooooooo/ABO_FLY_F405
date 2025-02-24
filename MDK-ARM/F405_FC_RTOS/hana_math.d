@@ -38,4 +38,7 @@ f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.
 f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
+f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
+f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\hana_math.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h

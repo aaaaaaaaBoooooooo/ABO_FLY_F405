@@ -113,7 +113,7 @@ BMP3_INTF_RET_TYPE bmp3_interface_init(struct bmp3_dev *bmp3, uint8_t intf) {
 	return rslt;
 }
 
-void BMP390_Init(void) {
+uint8_t BMP390_Init(void) {
 
 	int8_t rslt = 0;
 
@@ -167,11 +167,12 @@ void BMP390_Init(void) {
 	if(rslt==BMP3_OK)
 	{
 		bmp390_init_success = 1;
+		return 0;
 	}
 	else
 	{
 		bmp390_init_success=0;
-		printf("bmp390_ERR!\n");
+		return 1;
 	}
 }
 

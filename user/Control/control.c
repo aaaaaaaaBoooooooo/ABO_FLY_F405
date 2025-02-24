@@ -133,15 +133,22 @@ void pid_control_init()
 	pid_init(&pid_AttitudeControl.internal.pid_x);
 	pid_init(&pid_AttitudeControl.internal.pid_y);
 	pid_init(&pid_AttitudeControl.internal.pid_z);
-	pid_AttitudeControl.internal.pid_x.f_param_init(&pid_AttitudeControl.internal.pid_x,PID_Position,MOTOR_MAX_DUTY*0.3,MOTOR_MAX_DUTY*0.1,0,0,0,0,30.0f,0.0f,18.0f);
-	pid_AttitudeControl.internal.pid_y.f_param_init(&pid_AttitudeControl.internal.pid_y,PID_Position,MOTOR_MAX_DUTY*0.3,MOTOR_MAX_DUTY*0.1,0,0,0,0,30.0f,0.0f,18.0f);
-	pid_AttitudeControl.internal.pid_z.f_param_init(&pid_AttitudeControl.internal.pid_z,PID_Position,MOTOR_MAX_DUTY*0.6,MOTOR_MAX_DUTY*0.1,0,0,0,0,60.0f,0.0f,15.0f);
+	pid_AttitudeControl.internal.pid_x.f_param_init(&pid_AttitudeControl.internal.pid_x,PID_Position,MOTOR_MAX_DUTY,MOTOR_MAX_DUTY*0.1,0,0,0,30.0f,0.0f,18.0f);
+	pid_enable(&pid_AttitudeControl.internal.pid_x,1);
+	pid_AttitudeControl.internal.pid_y.f_param_init(&pid_AttitudeControl.internal.pid_y,PID_Position,MOTOR_MAX_DUTY,MOTOR_MAX_DUTY*0.1,0,0,0,30.0f,0.0f,18.0f);
+	pid_enable(&pid_AttitudeControl.internal.pid_y,1);
+	pid_AttitudeControl.internal.pid_z.f_param_init(&pid_AttitudeControl.internal.pid_z,PID_Position,MOTOR_MAX_DUTY,MOTOR_MAX_DUTY*0.1,0,0,0,60.0f,0.0f,15.0f);
+	pid_enable(&pid_AttitudeControl.internal.pid_z,1);
+	
 	pid_init(&pid_AttitudeControl.external.pid_x);
 	pid_init(&pid_AttitudeControl.external.pid_y);
 	pid_init(&pid_AttitudeControl.external.pid_z);
-	pid_AttitudeControl.external.pid_x.f_param_init(&pid_AttitudeControl.external.pid_x,PID_Position,9999,50,0,0,0,0,2.5f,0.05f,10.0f);
-	pid_AttitudeControl.external.pid_y.f_param_init(&pid_AttitudeControl.external.pid_y,PID_Position,9999,50,0,0,0,0,2.5f,0.05f,10.0f);
-	pid_AttitudeControl.external.pid_z.f_param_init(&pid_AttitudeControl.external.pid_z,PID_Position,1000,5,0,0,0,0,3.0f,0.0f,0.0f);	
+	pid_AttitudeControl.external.pid_x.f_param_init(&pid_AttitudeControl.external.pid_x,PID_Position,9999,100,0,0,0,2.5f,0.05f,10.0f);
+	pid_enable(&pid_AttitudeControl.external.pid_x,1);
+	pid_AttitudeControl.external.pid_y.f_param_init(&pid_AttitudeControl.external.pid_y,PID_Position,9999,100,0,0,0,2.5f,0.05f,10.0f);
+	pid_enable(&pid_AttitudeControl.external.pid_y,1);
+	pid_AttitudeControl.external.pid_z.f_param_init(&pid_AttitudeControl.external.pid_z,PID_Position,1000,5,0,0,0,6.0f,0.0f,0.0f);	
+	pid_enable(&pid_AttitudeControl.external.pid_z,1);
 
 	motor_init();
 }

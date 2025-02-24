@@ -33,7 +33,6 @@ f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c
 f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c_ex.h
 f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h
 f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
-f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rng.h
 f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 f405_fc_rtos\usb_device.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
@@ -52,5 +51,7 @@ f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/u
 f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h
 f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
 f405_fc_rtos\usb_device.o: ../USB_DEVICE/App/usbd_desc.h
-f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h
-f405_fc_rtos\usb_device.o: ../USB_DEVICE/App/usbd_cdc_if.h
+f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc.h
+f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_bot.h
+f405_fc_rtos\usb_device.o: ../Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_scsi.h
+f405_fc_rtos\usb_device.o: ../USB_DEVICE/App/usbd_storage_if.h

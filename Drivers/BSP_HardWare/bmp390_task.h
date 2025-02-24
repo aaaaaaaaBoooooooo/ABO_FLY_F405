@@ -21,7 +21,7 @@ extern struct bmp3_data aircraft_BMP390_data;
 extern uint8_t bmp390_init_success;
 
 
-void BMP390_Init(void);
+uint8_t BMP390_Init(void);
 struct bmp3_data bmp390_getdata(void);
 void bmp390_getregs_DMA(void);
 struct bmp3_data bmp390_getdata_DMA(uint8_t *buf);
