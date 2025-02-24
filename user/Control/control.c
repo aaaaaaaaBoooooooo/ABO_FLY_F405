@@ -143,9 +143,9 @@ void pid_control_init()
 	pid_init(&pid_AttitudeControl.external.pid_x);
 	pid_init(&pid_AttitudeControl.external.pid_y);
 	pid_init(&pid_AttitudeControl.external.pid_z);
-	pid_AttitudeControl.external.pid_x.f_param_init(&pid_AttitudeControl.external.pid_x,PID_Position,9999,100,0,0,0,2.5f,0.05f,10.0f);
+	pid_AttitudeControl.external.pid_x.f_param_init(&pid_AttitudeControl.external.pid_x,PID_Position,9999,100,0,0,0,2.5f,0.025f,20.0f);
 	pid_enable(&pid_AttitudeControl.external.pid_x,1);
-	pid_AttitudeControl.external.pid_y.f_param_init(&pid_AttitudeControl.external.pid_y,PID_Position,9999,100,0,0,0,2.5f,0.05f,10.0f);
+	pid_AttitudeControl.external.pid_y.f_param_init(&pid_AttitudeControl.external.pid_y,PID_Position,9999,100,0,0,0,2.5f,0.025f,20.0f);
 	pid_enable(&pid_AttitudeControl.external.pid_y,1);
 	pid_AttitudeControl.external.pid_z.f_param_init(&pid_AttitudeControl.external.pid_z,PID_Position,1000,5,0,0,0,6.0f,0.0f,0.0f);	
 	pid_enable(&pid_AttitudeControl.external.pid_z,1);

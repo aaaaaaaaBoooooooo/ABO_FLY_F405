@@ -42,12 +42,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			motor_speed_set(motor1_duty,motor2_duty,motor3_duty,motor4_duty);//电机执行
 		else if(aircraft_state==0x02)
 			motor_speed_set(0,0,0,0);//电机执行
-		if(cnt_10ms >= 10)
+		
+		if(cnt_5ms >= 5)
 		{
 			aircraft_flight_direction_control();//飞行方向控制
 			pid_external_control();//pid姿态控制外环  输出期望角速度
-			cnt_10ms =0;
+			cnt_5ms =0;
 		}
+//		if(cnt_10ms >= 10)
+//		{
+//			aircraft_flight_direction_control();//飞行方向控制
+//			pid_external_control();//pid姿态控制外环  输出期望角速度
+//			cnt_10ms =0;
+//		}
+		cnt_5ms++;
 		cnt_10ms++;
 	}
 	else if(htim->Instance == TIM5)//定时器5中断 10ms
