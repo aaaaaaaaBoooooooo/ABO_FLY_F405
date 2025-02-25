@@ -5,6 +5,7 @@
 "f405_fc_rtos\hana_math.o"
 "f405_fc_rtos\control.o"
 "f405_fc_rtos\pid.o"
+"f405_fc_rtos\cjson_usr.o"
 "f405_fc_rtos\main.o"
 "f405_fc_rtos\gpio.o"
 "f405_fc_rtos\adc.o"
@@ -63,6 +64,7 @@
 "f405_fc_rtos\usbd_msc_bot.o"
 "f405_fc_rtos\usbd_msc_data.o"
 "f405_fc_rtos\usbd_msc_scsi.o"
+"f405_fc_rtos\cjson.o"
 --library_type=microlib --strict --scatter "F405_FC_RTOS\F405_FC_RTOS.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

@@ -119,12 +119,7 @@ int main(void)
   MX_FATFS_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-	
- 	while(f_mount(&USERFatFS,"0:",1)!=FR_OK)	//尝试挂载文件系统
-	{
-		printf("Mount_Failed!");
-		delay_ms(500);
-	}
+			
  	while(icm42688_init())	//陀螺仪初始化
 	{
 		printf("ICM42688 Init Failed!");
@@ -155,7 +150,8 @@ int main(void)
   while (1)
   {
 		aircraft_data_send();
-		delay_ms(10);
+		delay_ms(5);
+	
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

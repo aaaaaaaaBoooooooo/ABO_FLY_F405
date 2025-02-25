@@ -41,6 +41,7 @@ f405_fc_rtos\icm42688.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.
 f405_fc_rtos\icm42688.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\icm42688.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\icm42688.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
+f405_fc_rtos\icm42688.o: ..\CJSON\cJSON.h
 f405_fc_rtos\icm42688.o: ../Drivers/SYSTEM/delay/delay.h
 f405_fc_rtos\icm42688.o: ../Drivers/CMSIS/Include/core_cm4.h
 f405_fc_rtos\icm42688.o: ../Core/Inc/spi.h

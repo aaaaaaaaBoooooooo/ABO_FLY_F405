@@ -28,7 +28,7 @@
 #include "user_diskio.h" /* defines USER_Driver as external */
 
 /* USER CODE BEGIN Includes */
-
+#include "usart.h"
 /* USER CODE END Includes */
 
 extern uint8_t retUSER; /* Return value for USER */
@@ -39,7 +39,9 @@ extern FIL USERFile; /* File object for USER */
 void MX_FATFS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+extern uint8_t my_fatfs_init_success;
+uint8_t fatfs_read_file(TCHAR *path,char * read_buf,uint32_t data_size);
+uint8_t fatfs_write_file(TCHAR *path,char * write_buf,uint32_t data_size);
 /* USER CODE END Prototypes */
 #ifdef __cplusplus
 }

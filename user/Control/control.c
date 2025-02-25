@@ -7,6 +7,8 @@
 #include "math.h"
 #include "stdlib.h"
 #include "usart.h"
+#include "cJSON_usr.h"
+#include "fatfs.h"
 PID_FC_TypeDef pid_AttitudeControl;//姿态控制pid
 PID_TypeDef pid_HeightControl;//高度控制pid
 uint8_t aircraft_state =0x00;//飞行器状态
@@ -150,6 +152,7 @@ void pid_control_init()
 	pid_AttitudeControl.external.pid_z.f_param_init(&pid_AttitudeControl.external.pid_z,PID_Position,1000,5,0,0,0,6.0f,0.0f,0.0f);	
 	pid_enable(&pid_AttitudeControl.external.pid_z,1);
 
+	fatfs_params_read();
 	motor_init();
 }
 
@@ -264,5 +267,146 @@ uint8_t aircraft_protection()
 	
 }
 /*飞行器保护措施end*/
+
+#define PARAMS_NAME "Param_s.txt"
+#define PARAMS_MAX_READ_SIZE  4096
+uint8_t fatfs_params_read()
+{
+	cJSON *json,*json_get;
+	char read_buf[PARAMS_MAX_READ_SIZE];
+	if(fatfs_read_file(PARAMS_NAME,read_buf,PARAMS_MAX_READ_SIZE))
+	{
+		return 1;
+	}
+	
+
+	json = cJSON_Parse((const char *)read_buf); //将得到的字符串解析成json形式
+    // 检查解析是否成功
+	if (json == NULL) 
+		{
+			const char *error_ptr = cJSON_GetErrorPtr();
+			if (error_ptr != NULL) {
+					printf("JSON Parse error，pos: %s\n", error_ptr);
+			}
+			return 1; // 直接返回，避免操作空指针
+		}
+	/****************************/
+	/*	  测试将JSON打印出来	*/
+	/***************************/
+//	char *out_data = cJSON_Print(json);   //将json形式打印成正常字符串形式
+//	printf("%s",out_data);
+	
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_x.kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_x.kp = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_x.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_x.ki = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_x.kd" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_x.kd = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_y.kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_y.kp = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_y.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_y.ki = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_y.kd" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_y.kd = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_z.kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_z.kp = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_z.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_z.ki = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_z.kd" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.internal.pid_z.kd = json_get->valuedouble;
+ 	
+	}	
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_x.kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_x.kp = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_x.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_x.ki = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_x.kd" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_x.kd = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_y.kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_y.kp = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_y.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_y.ki = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_y.kd" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_y.kd = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_z.kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_z.kp = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_z.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_z.ki = json_get->valuedouble;
+ 	
+	}
+	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_z.kd" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		pid_AttitudeControl.external.pid_z.kd = json_get->valuedouble;
+ 	
+	}		
+	cJSON_Delete(json);  //释放内存 
+	cJSON_Delete(json_get);  //释放内存 		
+	return 0;
+}
 
 

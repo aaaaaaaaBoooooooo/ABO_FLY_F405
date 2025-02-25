@@ -60,6 +60,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	else if(htim->Instance == TIM5)//¶¨Ê±Æ÷5ÖÐ¶Ï 10ms
 	{
+		LED_TOGGLE;
 		if(cnt_20ms >= 2)
 		{
 			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());
@@ -97,7 +98,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		if(cnt_1000ms >= 100)
 		{
-			LED_TOGGLE;			
+						
 			cnt_1000ms =0;
 		}
 		cnt_20ms++;

@@ -30,7 +30,7 @@ typedef struct
 	
 	
 }PID_FC_TypeDef;
-
+extern PID_FC_TypeDef pid_AttitudeControl;
 extern int motor1_duty;
 extern int motor2_duty;
 extern int motor3_duty;
@@ -50,6 +50,7 @@ void motor_deinit(void);
 void motor_speed_set(int m1_duty,int m2_duty,int m3_duty,int m4_duty);
 void motor_throttle_control(uint8_t type);
 void aircraft_flight_direction_control(void);
+uint8_t fatfs_params_read(void);
 uint8_t aircraft_protection(void);
 
 #endif

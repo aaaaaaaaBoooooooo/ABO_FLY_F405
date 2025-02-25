@@ -48,5 +48,6 @@ f405_fc_rtos\bmp390_task.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pc
 f405_fc_rtos\bmp390_task.o: ../Drivers/CMSIS/Include/core_cm4.h
 f405_fc_rtos\bmp390_task.o: ../Core/Inc/i2c.h
 f405_fc_rtos\bmp390_task.o: ../Core/Inc/main.h
+f405_fc_rtos\bmp390_task.o: ..\CJSON\cJSON.h
 f405_fc_rtos\bmp390_task.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\bmp390_task.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h

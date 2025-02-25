@@ -40,6 +40,7 @@ f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
+f405_fc_rtos\main.o: ..\CJSON\cJSON.h
 f405_fc_rtos\main.o: ../Core/Inc/adc.h
 f405_fc_rtos\main.o: ../Core/Inc/dma.h
 f405_fc_rtos\main.o: ../FATFS/App/fatfs.h
@@ -50,13 +51,13 @@ f405_fc_rtos\main.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\main.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 f405_fc_rtos\main.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
 f405_fc_rtos\main.o: ../FATFS/Target/user_diskio.h
-f405_fc_rtos\main.o: ../Core/Inc/i2c.h
-f405_fc_rtos\main.o: ../Core/Inc/spi.h
-f405_fc_rtos\main.o: ../Core/Inc/tim.h
 f405_fc_rtos\main.o: ../Core/Inc/usart.h
 f405_fc_rtos\main.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\main.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\main.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
+f405_fc_rtos\main.o: ../Core/Inc/i2c.h
+f405_fc_rtos\main.o: ../Core/Inc/spi.h
+f405_fc_rtos\main.o: ../Core/Inc/tim.h
 f405_fc_rtos\main.o: ../USB_DEVICE/App/usb_device.h
 f405_fc_rtos\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h
 f405_fc_rtos\main.o: ../USB_DEVICE/Target/usbd_conf.h
