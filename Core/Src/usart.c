@@ -548,24 +548,24 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							switch(uart3_rx_buff[i+2])
 							{
 								case 0x01:
-									AttitudeControl.pitch_compensate +=0.05f;
-									if(AttitudeControl.pitch_compensate>5.0f)
-											AttitudeControl.pitch_compensate =5.0f;
-									break;
-								case 0x02:
 									AttitudeControl.pitch_compensate -=0.05f;
 									if(AttitudeControl.pitch_compensate<-5.0f)
 											AttitudeControl.pitch_compensate =-5.0f;
 									break;
-								case 0x03:
-									AttitudeControl.roll_compensate -=0.05f;
-									if(AttitudeControl.roll_compensate<-5.0f)
-											AttitudeControl.roll_compensate =-5.0f;
+								case 0x02:
+									AttitudeControl.pitch_compensate +=0.05f;
+									if(AttitudeControl.pitch_compensate>5.0f)
+											AttitudeControl.pitch_compensate =5.0f;
 									break;
-								case 0x04:
+								case 0x03:
 									AttitudeControl.roll_compensate +=0.05f;
 									if(AttitudeControl.roll_compensate>5.0f)
 											AttitudeControl.roll_compensate =5.0f;
+									break;
+								case 0x04:
+									AttitudeControl.roll_compensate -=0.05f;
+									if(AttitudeControl.roll_compensate<-5.0f)
+											AttitudeControl.roll_compensate =-5.0f;
 									break;							
 							}
 							break;
@@ -612,7 +612,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
      memset(uart3_rx_buff, 0, UART3_RXBUFFERSIZE);		
    }
 }
-TOF_TypeDef TOF;
+TOF_TypeDef TOF = {0,0,0,0,25,30,0,0};
 void TOF_get_distance(uint8_t *uart_data,uint16_t size)
 {
 	char str1[9],str2[6],str3[11];
@@ -648,8 +648,7 @@ void TOF_get_distance(uint8_t *uart_data,uint16_t size)
 		if(uart_data[24]>=0x30&&uart_data[24]<=0x39)
 		{
 			TOF.noise += (uart_data[24]-0x30) ;
-		}	
-		
+		}			
 		if(size==43)
 			TOF.confidence =100;
 		else if(size==42)
@@ -669,13 +668,11 @@ void TOF_get_distance(uint8_t *uart_data,uint16_t size)
 			{
 				TOF.noise += (uart_data[38]-0x30) ;
 			}					
-		}		
+		}
+		TOF.distance_mm = (TOF.distance_mm*cosf(Angle_Data.pitch*DegtoRad)*cosf(Angle_Data.roll*DegtoRad)+TOF.d_center_y_err_mm*sinf(Angle_Data.roll*DegtoRad))+TOF.distance_mm_offset;//TOF¸ß¶È½ÃÕý
 		TOF.distance_cm = (float)TOF.distance_mm/10.0f;
 		TOF.distance_m = (float)TOF.distance_mm/1000.0f;
-		
 	}
-	
-
 }
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {

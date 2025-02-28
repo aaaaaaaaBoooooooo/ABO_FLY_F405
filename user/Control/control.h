@@ -4,9 +4,9 @@
 #include "pid.h"
 #define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,x)
 #define LED_TOGGLE   		HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-#define MOTOR_MAX_THROTTLE 5000				//电机最大油门
+#define MOTOR_MAX_THROTTLE 7000				//电机最大油门
 #define MOTOR_MIN_THROTTLE 0 					//电机最小油门
-#define MOTOR_MAX_DUTY  7000          //电机最大占空比
+#define MOTOR_MAX_DUTY  9999          //电机最大占空比
 #define MOTOR_MIN_DUTY  0							//电机最小占空比
 
 #define ROLL_TARGET_MAX_ANGLE  15

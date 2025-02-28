@@ -33,6 +33,7 @@ extern "C" {
 #include "string.h"
 #include "stdio.h"
 #include "stdarg.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart4;
@@ -50,8 +51,12 @@ typedef struct
 	uint16_t distance_mm;
 	float distance_cm;
 	float distance_m;
+	float d_center_x_err_mm;//与无人机中心x轴的偏差距离
+	float d_center_y_err_mm;//与无人机中心y轴的偏差距离
+	float distance_mm_offset;
 	uint16_t noise;
 	uint16_t confidence;
+	
 }TOF_TypeDef;
 
 void uart_printf(UART_HandleTypeDef *huart,const char *format, ...);

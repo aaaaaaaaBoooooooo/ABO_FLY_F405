@@ -50,3 +50,4 @@ f405_fc_rtos\stm32f4xx_it.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\stm32f4xx_it.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\stm32f4xx_it.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\stm32f4xx_it.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
+f405_fc_rtos\stm32f4xx_it.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h

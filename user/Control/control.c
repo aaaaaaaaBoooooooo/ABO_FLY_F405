@@ -192,25 +192,28 @@ void aircraft_flight_Height_control()
 {
 	if(HeightControl.auto_height_control_isEnable)//开启自动定高
 	{
-	//	if(TOF.distance_m <2.0f||TOF.confidence <50)//TOF测距小于2m 或者可信度低于50
+		if(TOF.distance_m <1.0f&&TOF.confidence >80)//TOF测距小于3.5m 并且可信度高于80
 		{
-			HeightControl.mode = TOF_MODE;
+			HeightControl.mode = TOF_MODE;//TOF定高
 			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.tof_params.Kp,HeightControl.tof_params.Ki,HeightControl.tof_params.Kd);
 		}
-	//	else
+		else
 		{
-	//		HeightControl.mode = BARO_MODE;
-	//		HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.baro_params.Kp,HeightControl.baro_params.Ki,HeightControl.baro_params.Kd);
-			
+			HeightControl.mode = BARO_MODE;//气压计定高
+			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.baro_params.Kp,HeightControl.baro_params.Ki,HeightControl.baro_params.Kd);		
 		}
 		if(HeightControl.mode == BARO_MODE)//气压计定高
 		{
 			HeightControl.pid.target = HeightControl.target_altitude;
+			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
+			HeightControl.pid.IntegralLimit = HeightControl.pid.MaxOutput*0.1f;
 			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.barometer_height);			
 		}
 		else if(HeightControl.mode == TOF_MODE)//TOF定高
 		{
-			 HeightControl.pid.target =  HeightControl.target_height;
+			HeightControl.pid.target =  HeightControl.target_height;
+			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
+			HeightControl.pid.IntegralLimit = HeightControl.pid.MaxOutput*0.1f;		
 			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.tof_height);
 		}
 		else
@@ -231,9 +234,9 @@ void pid_control_init()
 	AttitudeControl.sensor.gyro_y = &IMU_Data.gyro.y;
 	pid_init(&AttitudeControl.internal_pid.z);
 	AttitudeControl.sensor.gyro_z = &IMU_Data.gyro.z;
-	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,30.0f,0.0f,18.0f);
+	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
 	pid_enable(&AttitudeControl.internal_pid.x,0);//未开启飞机就不使能pid
-	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,30.0f,0.0f,18.0f);
+	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
 	pid_enable(&AttitudeControl.internal_pid.y,0);//未开启飞机就不使能pid
 	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,60.0f,0.0f,15.0f);
 	pid_enable(&AttitudeControl.internal_pid.z,0);//未开启飞机就不使能pid
@@ -256,7 +259,7 @@ void pid_control_init()
 	pid_init(&HeightControl.pid);
 	HeightControl.sensor.tof_height = &TOF.distance_m;
 	HeightControl.sensor.barometer_height = &my_aircraft.Altitude;
-	HeightControl.pid.f_param_init(&HeightControl.pid,PID_Position,MOTOR_MAX_THROTTLE,0,0,0,0,0.0f,0.0f,0.0f);
+	HeightControl.pid.f_param_init(&HeightControl.pid,PID_Position,MOTOR_MAX_THROTTLE,0,0,0,0,300.0f,1.5f,2000.0f);
 	pid_enable(&HeightControl.pid,0);//未开启定高就不使能pid
 	HeightControl.mode = ALT_HOLD_DISABLED;//初始为手动控制
 
@@ -508,16 +511,16 @@ uint8_t fatfs_PID_params_read()
 	{
 		HeightControl.tof_params.Kd = json_get->valuedouble;
 	}		
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_output");
-	if(json_get->type == cJSON_Number)  //从json获取键值内容
-	{
-		HeightControl.tof_params.max_output = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_integral");
-	if(json_get->type == cJSON_Number)  //从json获取键值内容
-	{
-		HeightControl.tof_params.max_integral = json_get->valuedouble;
-	}		
+//	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_output");
+//	if(json_get->type == cJSON_Number)  //从json获取键值内容
+//	{
+//		HeightControl.tof_params.max_output = json_get->valuedouble;
+//	}	
+//	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_integral");
+//	if(json_get->type == cJSON_Number)  //从json获取键值内容
+//	{
+//		HeightControl.tof_params.max_integral = json_get->valuedouble;
+//	}		
 	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
@@ -536,15 +539,15 @@ uint8_t fatfs_PID_params_read()
 		HeightControl.baro_params.Kd = json_get->valuedouble;
 	}		
 	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_output");
-	if(json_get->type == cJSON_Number)  //从json获取键值内容
-	{
-		HeightControl.baro_params.max_output = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_integral");
-	if(json_get->type == cJSON_Number)  //从json获取键值内容
-	{
-		HeightControl.baro_params.max_integral = json_get->valuedouble;
-	}		
+//	if(json_get->type == cJSON_Number)  //从json获取键值内容
+//	{
+//		HeightControl.baro_params.max_output = json_get->valuedouble;
+//	}	
+//	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_integral");
+//	if(json_get->type == cJSON_Number)  //从json获取键值内容
+//	{
+//		HeightControl.baro_params.max_integral = json_get->valuedouble;
+//	}		
 //	json_get = cJSON_GetObjectItem( json ,"HeightControl.base_throttle");
 //	if(json_get->type == cJSON_Number)  //从json获取键值内容
 //	{

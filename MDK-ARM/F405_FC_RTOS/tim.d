@@ -50,9 +50,9 @@ f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
+f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\tim.o: ../user/Angle/angle.h
 f405_fc_rtos\tim.o: ../user/Math_DSP/HANA_math.h
-f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\tim.o: ../Core/Inc/adc.h
 f405_fc_rtos\tim.o: ../Drivers/BSP_HardWare/bmp390_task.h
 f405_fc_rtos\tim.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h

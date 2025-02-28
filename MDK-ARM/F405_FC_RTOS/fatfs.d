@@ -56,3 +56,4 @@ f405_fc_rtos\fatfs.o: ../Core/Inc/usart.h
 f405_fc_rtos\fatfs.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\fatfs.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\fatfs.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
+f405_fc_rtos\fatfs.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
