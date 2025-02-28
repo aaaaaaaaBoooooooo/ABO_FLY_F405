@@ -41,6 +41,9 @@ f405_fc_rtos\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_p
 f405_fc_rtos\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\stm32f4xx_it.o: ..\CJSON\cJSON.h
+f405_fc_rtos\stm32f4xx_it.o: ../user/Control/control.h
+f405_fc_rtos\stm32f4xx_it.o: ../Core/Inc/main.h
+f405_fc_rtos\stm32f4xx_it.o: ../user/Control/pid.h
 f405_fc_rtos\stm32f4xx_it.o: ../Core/Inc/stm32f4xx_it.h
 f405_fc_rtos\stm32f4xx_it.o: ../Core/Inc/usart.h
 f405_fc_rtos\stm32f4xx_it.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h

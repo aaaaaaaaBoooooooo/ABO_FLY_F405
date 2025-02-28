@@ -41,6 +41,9 @@ f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\main.o: ..\CJSON\cJSON.h
+f405_fc_rtos\main.o: ../user/Control/control.h
+f405_fc_rtos\main.o: ../Core/Inc/main.h
+f405_fc_rtos\main.o: ../user/Control/pid.h
 f405_fc_rtos\main.o: ../Core/Inc/adc.h
 f405_fc_rtos\main.o: ../Core/Inc/dma.h
 f405_fc_rtos\main.o: ../FATFS/App/fatfs.h
@@ -70,8 +73,6 @@ f405_fc_rtos\main.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/icm42688.h
 f405_fc_rtos\main.o: ../user/Angle/angle.h
 f405_fc_rtos\main.o: ../user/Math_DSP/HANA_math.h
-f405_fc_rtos\main.o: ../user/Control/control.h
-f405_fc_rtos\main.o: ../user/Control/pid.h
 f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/W25QXX.h
 f405_fc_rtos\main.o: ../Drivers/SYSTEM/sys/sys.h
 f405_fc_rtos\main.o: ../Drivers/CMSIS/Include/core_cm4.h

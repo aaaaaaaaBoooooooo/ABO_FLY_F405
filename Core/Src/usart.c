@@ -524,31 +524,81 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							remote_data_flash[1] = 1;
 							break;
 						case 0x02:
-							aircraft_state=uart3_rx_buff[i+2];
+							my_aircraft.status=uart3_rx_buff[i+2];
+							if(my_aircraft.status == 0x01)
+							{
+								pid_enable(&AttitudeControl.internal_pid.x,1);//开启飞机使能pid
+								pid_enable(&AttitudeControl.internal_pid.y,1);//开启飞机使能pid
+								pid_enable(&AttitudeControl.internal_pid.z,1);//开启飞机使能pid
+								pid_enable(&AttitudeControl.external_pid.x,1);//开启飞机使能pid
+								pid_enable(&AttitudeControl.external_pid.y,1);//开启飞机使能pid
+								pid_enable(&AttitudeControl.external_pid.z,1);//开启飞机使能pid
+							}
+							else if(my_aircraft.status == 0x00)
+							{
+								pid_enable(&AttitudeControl.internal_pid.x,0);//关闭飞机不使能pid
+								pid_enable(&AttitudeControl.internal_pid.y,0);//关闭飞机不使能pid
+								pid_enable(&AttitudeControl.internal_pid.z,0);//关闭飞机不使能pid
+								pid_enable(&AttitudeControl.external_pid.x,0);//关闭飞机不使能pid
+								pid_enable(&AttitudeControl.external_pid.y,0);//关闭飞机不使能pid
+								pid_enable(&AttitudeControl.external_pid.z,0);//关闭飞机不使能pid								
+							}
 							break;
 						case 0x03:
 							switch(uart3_rx_buff[i+2])
 							{
 								case 0x01:
-									pitch_compensate +=0.05f;
-									if(pitch_compensate>5.0f)
-											pitch_compensate =5.0f;
+									AttitudeControl.pitch_compensate +=0.05f;
+									if(AttitudeControl.pitch_compensate>5.0f)
+											AttitudeControl.pitch_compensate =5.0f;
 									break;
 								case 0x02:
-									pitch_compensate -=0.05f;
-									if(pitch_compensate<-5.0f)
-											pitch_compensate =-5.0f;
+									AttitudeControl.pitch_compensate -=0.05f;
+									if(AttitudeControl.pitch_compensate<-5.0f)
+											AttitudeControl.pitch_compensate =-5.0f;
 									break;
 								case 0x03:
-									roll_compensate -=0.05f;
-									if(roll_compensate<-5.0f)
-											roll_compensate =-5.0f;
+									AttitudeControl.roll_compensate -=0.05f;
+									if(AttitudeControl.roll_compensate<-5.0f)
+											AttitudeControl.roll_compensate =-5.0f;
 									break;
 								case 0x04:
-									roll_compensate +=0.05f;
-									if(roll_compensate>5.0f)
-											roll_compensate =5.0f;
+									AttitudeControl.roll_compensate +=0.05f;
+									if(AttitudeControl.roll_compensate>5.0f)
+											AttitudeControl.roll_compensate =5.0f;
 									break;							
+							}
+							break;
+						case 0x04:
+							switch(uart3_rx_buff[i+2])
+							{
+								case 0x01:
+									if(HeightControl.auto_height_control_isEnable==0)
+									{										
+										HeightControl.auto_height_control_isEnable = 1; //开启自动定高
+										my_aircraft.status |= 0x02;
+										HeightControl.base_throttle = aircraft_motor.throttle;
+										HeightControl.target_height = TOF.distance_m;//设定定高高度为当前高度
+										HeightControl.target_altitude = my_aircraft.Altitude;//设定定高海拔为当前海拔
+										//HeightControl.pid.iout = (float)aircraft_throttle;//使i项输出为当前输出，更加平滑
+										//HeightControl.pid.err = HeightControl.pid.last_err;//使偏差变化率为0，降低d项影响
+										pid_enable(&HeightControl.pid,1);//开启定高使能pid
+									}
+									break;					
+								case 0x00:
+									if(HeightControl.auto_height_control_isEnable==1)
+									{
+										HeightControl.auto_height_control_isEnable = 0; //关闭自动定高
+										my_aircraft.status &= 0xFD;
+										HeightControl.mode = ALT_HOLD_DISABLED;//高度控制模式为手动
+										HeightControl.target_height = 0;
+										HeightControl.target_altitude =0;
+										HeightControl.base_throttle =0;
+										HeightControl.pid.iout = 0;
+										HeightControl.pid.err = 0;
+										pid_enable(&HeightControl.pid,0);//关闭定高使能pid
+									}
+									break;										
 							}
 							break;
 					}
@@ -562,9 +612,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
      memset(uart3_rx_buff, 0, UART3_RXBUFFERSIZE);		
    }
 }
-uint16_t TOF_distance_mm=0;
-uint16_t TOF_noise=0;
-uint16_t TOF_confidence=0;
+TOF_TypeDef TOF;
 void TOF_get_distance(uint8_t *uart_data,uint16_t size)
 {
 	char str1[9],str2[6],str3[11];
@@ -573,55 +621,58 @@ void TOF_get_distance(uint8_t *uart_data,uint16_t size)
 	memcpy(str3,&uart_data[27],11);
 	if(strncmp(str1,"Distance:",9)==0 && strncmp(str2,"Noise:",6)==0 && strncmp(str3,"Confidence:",11)==0 &&uart_data[size-2]==0x0D&&uart_data[size-1]==0x0A)
 	{
-		TOF_distance_mm=0;
-		TOF_noise=0;
-		TOF_confidence=0;
+		TOF.distance_mm=0;
+		TOF.noise=0;
+		TOF.confidence=0;
 		if(uart_data[9]>=0x30&&uart_data[9]<=0x39)
 		{
-			TOF_distance_mm += (uart_data[9]-0x30) *1000;
+			TOF.distance_mm += (uart_data[9]-0x30) *1000;
 		}
 		if(uart_data[10]>=0x30&&uart_data[10]<=0x39)
 		{
-			TOF_distance_mm += (uart_data[10]-0x30) *100;
+			TOF.distance_mm += (uart_data[10]-0x30) *100;
 		}
 		if(uart_data[11]>=0x30&&uart_data[11]<=0x39)
 		{
-			TOF_distance_mm += (uart_data[11]-0x30) *10;
+			TOF.distance_mm += (uart_data[11]-0x30) *10;
 		}		
 		if(uart_data[12]>=0x30&&uart_data[12]<=0x39)
 		{
-			TOF_distance_mm += (uart_data[12]-0x30) ;
+			TOF.distance_mm += (uart_data[12]-0x30) ;
 		}
 		
 		if(uart_data[23]>=0x30&&uart_data[23]<=0x39)
 		{
-			TOF_noise += (uart_data[23]-0x30)*10 ;
+			TOF.noise += (uart_data[23]-0x30)*10 ;
 		}		
 		if(uart_data[24]>=0x30&&uart_data[24]<=0x39)
 		{
-			TOF_noise += (uart_data[24]-0x30) ;
+			TOF.noise += (uart_data[24]-0x30) ;
 		}	
 		
 		if(size==43)
-			TOF_confidence =100;
+			TOF.confidence =100;
 		else if(size==42)
 		{
 			if(uart_data[38]>=0x30&&uart_data[38]<=0x39)
 			{
-				TOF_noise += (uart_data[38]-0x30)*10 ;
+				TOF.noise += (uart_data[38]-0x30)*10 ;
 			}		
 			if(uart_data[39]>=0x30&&uart_data[39]<=0x39)
 			{
-				TOF_noise += (uart_data[39]-0x30) ;
+				TOF.noise += (uart_data[39]-0x30) ;
 			}			
 		}
 		else if(size==41)
 		{
 			if(uart_data[38]>=0x30&&uart_data[38]<=0x39)
 			{
-				TOF_noise += (uart_data[38]-0x30) ;
+				TOF.noise += (uart_data[38]-0x30) ;
 			}					
-		}			
+		}		
+		TOF.distance_cm = (float)TOF.distance_mm/10.0f;
+		TOF.distance_m = (float)TOF.distance_mm/1000.0f;
+		
 	}
 	
 
@@ -644,15 +695,14 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 uint8_t remote_data_buf[AIRCFAFT_DARA_NUM];
 void aircraft_data_update()
 {
-	my_aircraft.Throttle = (aircraft_throttle*100)/MOTOR_MAX_THROTTLE;
+	my_aircraft.Throttle = (aircraft_motor.throttle*100)/MOTOR_MAX_THROTTLE;
 	
-	my_aircraft.Motor_PWM_duty[0] = (motor1_duty*100)/MOTOR_MAX_DUTY;
-	my_aircraft.Motor_PWM_duty[1] = (motor2_duty*100)/MOTOR_MAX_DUTY;
-	my_aircraft.Motor_PWM_duty[2] = (motor3_duty*100)/MOTOR_MAX_DUTY;
-	my_aircraft.Motor_PWM_duty[3] = (motor4_duty*100)/MOTOR_MAX_DUTY;
+	my_aircraft.Motor_PWM_duty[0] = (aircraft_motor.duty1*100)/MOTOR_MAX_DUTY;
+	my_aircraft.Motor_PWM_duty[1] = (aircraft_motor.duty2*100)/MOTOR_MAX_DUTY;
+	my_aircraft.Motor_PWM_duty[2] = (aircraft_motor.duty3*100)/MOTOR_MAX_DUTY;
+	my_aircraft.Motor_PWM_duty[3] = (aircraft_motor.duty4*100)/MOTOR_MAX_DUTY;
 
-	my_aircraft.Height =(float)TOF_distance_mm/10.0f;
-	
+	my_aircraft.Height =(uint16_t)TOF.distance_cm;
 	my_aircraft.ROLL = (int8_t)Angle_Data.roll;
 	my_aircraft.PITCH = (int8_t)Angle_Data.pitch;
 	my_aircraft.YAW = (int8_t)Angle_Data.yaw;
@@ -677,6 +727,7 @@ void aircraft_data_send()
 	remote_data_buf[13] = (uint16_t)my_aircraft.Altitude>>8;
 	remote_data_buf[14] = (uint8_t)my_aircraft.Altitude;
 	remote_data_buf[15] = (int8_t)my_aircraft.Temperature;
+	remote_data_buf[16] = my_aircraft.status;
 	remote_data_buf[AIRCFAFT_DARA_NUM-1] = 0xA5;//帧尾
 	HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DARA_NUM);//上传飞行器实时数据至遥控器
 }

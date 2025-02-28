@@ -6,12 +6,12 @@
 void json_pack_number(const char *item,double number)
 {
   cJSON * usr;
-	char *str_data;
+//	char *str_data;
   usr=cJSON_CreateObject();   //创建根数据对象
 	
 	cJSON_AddItemToObject(usr,item, cJSON_CreateNumber(number));  //根节点下添加数字
 	
-	str_data = cJSON_Print(usr);   //将json形式打印成正常字符串形式(带有\r\n)
+//	str_data = cJSON_Print(usr);   //将json形式打印成正常字符串形式(带有\r\n)
 //	 str_data = cJSON_PrintUnformatted(usr);   //将json形式打印成正常字符串形式(没有\r\n)
 //	printf("%s",str_data);			//通过串口打印出来
 	cJSON_Delete(usr);
@@ -21,12 +21,12 @@ void json_pack_number(const char *item,double number)
 void json_pack_string(const char *item,char * string)
 {
   cJSON * usr;
-	char *str_data;
+//	char *str_data;
   usr=cJSON_CreateObject();   //创建根数据对象
 	
 	cJSON_AddItemToObject(usr,item, cJSON_CreateString(string));  //根节点下添加数字
 	
-	str_data = cJSON_Print(usr);   //将json形式打印成正常字符串形式(带有\r\n)
+//	str_data = cJSON_Print(usr);   //将json形式打印成正常字符串形式(带有\r\n)
 //	 data = cJSON_PrintUnformatted(usr);   //将json形式打印成正常字符串形式(没有\r\n)
 //	printf("%s",data);			//通过串口打印出来
 	cJSON_Delete(usr);

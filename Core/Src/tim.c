@@ -26,42 +26,46 @@
 #include "control.h"
 #include "adc.h"
 #include "bmp390_task.h"
-uint32_t cnt_2ms=0;
-uint32_t cnt_5ms=0;
-uint32_t cnt_10ms=0;
-uint32_t cnt_20ms=0;
-uint32_t cnt_100ms=0;
-uint32_t cnt_1000ms=0;
+uint32_t tim1_cnt_2ms=0;
+uint32_t tim1_cnt_5ms=0;
+uint32_t tim1_cnt_10ms=0;
+uint32_t tim1_cnt_22ms=0;
+uint32_t tim5_cnt_20ms=0;
+uint32_t tim5_cnt_100ms=0;
+uint32_t tim5_cnt_1000ms=0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if(htim->Instance == TIM1)//定时器1中断 1ms
 	{
 		pid_internal_control();//pid姿态控制内环   输出电机PWM占空比
-		motor_throttle_control(0);//油门控制
-		if(aircraft_state==0x01)
-			motor_speed_set(motor1_duty,motor2_duty,motor3_duty,motor4_duty);//电机执行
-		else if(aircraft_state==0x02)
-			motor_speed_set(0,0,0,0);//电机执行
+		motor_throttle_control();//油门控制
+		motor_control();
+		//motor_speed_set();//电机执行
 		
-		if(cnt_5ms >= 5)
+		if(tim1_cnt_5ms >= 5)
 		{
 			aircraft_flight_direction_control();//飞行方向控制
 			pid_external_control();//pid姿态控制外环  输出期望角速度
-			cnt_5ms =0;
+			
+			tim1_cnt_5ms =0;
 		}
-//		if(cnt_10ms >= 10)
+//		if(tim1_cnt_10ms >= 10)
 //		{
-//			aircraft_flight_direction_control();//飞行方向控制
-//			pid_external_control();//pid姿态控制外环  输出期望角速度
-//			cnt_10ms =0;
+//		
+//			tim1_cnt_10ms =0;
 //		}
-		cnt_5ms++;
-		cnt_10ms++;
+		if(tim1_cnt_22ms >= 22)
+		{
+			aircraft_flight_Height_control();//高度pid控制
+			tim1_cnt_22ms =0;
+		}		
+		tim1_cnt_5ms++;
+//		tim1_cnt_10ms++;
+		tim1_cnt_22ms++;
 	}
 	else if(htim->Instance == TIM5)//定时器5中断 10ms
 	{
-		LED_TOGGLE;
-		if(cnt_20ms >= 2)
+		if(tim5_cnt_20ms >= 2)
 		{
 			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());
 			
@@ -74,10 +78,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			{
 				my_aircraft.Temperature = aircraft_BMP390_data.temperature;//温度测量，单位摄氏度
 			}
-			//uart_printf(&huart1,"%.3f,%.3f,%.3f,%.2f,%.2f\n",Angle_Data.roll,Angle_Data.pitch,Angle_Data.yaw,my_aircraft.Pressure,my_aircraft.Temperature);
-			cnt_20ms = 0; 
+			uart_printf(&huart1,"%.3f,%.3f,%.3f,%.2f,%.2f\n",Angle_Data.roll,Angle_Data.pitch,Angle_Data.yaw,my_aircraft.Height,my_aircraft.Altitude);
+			tim5_cnt_20ms = 0; 
 		}	
-		if(cnt_100ms >= 10)
+		if(tim5_cnt_100ms >= 10)
 		{
 			switch(aircraft_protection())//飞行器保护
 			{
@@ -94,16 +98,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				break;				
 			}
 			
-			cnt_100ms = 0;
+			tim5_cnt_100ms = 0;
 		}
-		if(cnt_1000ms >= 100)
+		if(tim5_cnt_1000ms >= 100)
 		{
-						
-			cnt_1000ms =0;
+			LED_TOGGLE;			
+			tim5_cnt_1000ms =0;
 		}
-		cnt_20ms++;
-		cnt_100ms++;
-		cnt_1000ms++;		
+		tim5_cnt_20ms++;
+		tim5_cnt_100ms++;
+		tim5_cnt_1000ms++;		
 	}
 }
 /* USER CODE END 0 */

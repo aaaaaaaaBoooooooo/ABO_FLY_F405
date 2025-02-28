@@ -42,6 +42,9 @@ f405_fc_rtos\tim.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\tim.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\tim.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\tim.o: ..\CJSON\cJSON.h
+f405_fc_rtos\tim.o: ../user/Control/control.h
+f405_fc_rtos\tim.o: ../Core/Inc/main.h
+f405_fc_rtos\tim.o: ../user/Control/pid.h
 f405_fc_rtos\tim.o: ../Core/Inc/usart.h
 f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
@@ -50,8 +53,6 @@ f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
 f405_fc_rtos\tim.o: ../user/Angle/angle.h
 f405_fc_rtos\tim.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
-f405_fc_rtos\tim.o: ../user/Control/control.h
-f405_fc_rtos\tim.o: ../user/Control/pid.h
 f405_fc_rtos\tim.o: ../Core/Inc/adc.h
 f405_fc_rtos\tim.o: ../Drivers/BSP_HardWare/bmp390_task.h
 f405_fc_rtos\tim.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h

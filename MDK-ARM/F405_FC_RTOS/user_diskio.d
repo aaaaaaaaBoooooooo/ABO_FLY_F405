@@ -47,6 +47,9 @@ f405_fc_rtos\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pc
 f405_fc_rtos\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\user_diskio.o: ..\CJSON\cJSON.h
+f405_fc_rtos\user_diskio.o: ../user/Control/control.h
+f405_fc_rtos\user_diskio.o: ../Core/Inc/main.h
+f405_fc_rtos\user_diskio.o: ../user/Control/pid.h
 f405_fc_rtos\user_diskio.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\user_diskio.o: ../Drivers/BSP_HardWare/W25QXX.h
 f405_fc_rtos\user_diskio.o: ../Drivers/SYSTEM/sys/sys.h

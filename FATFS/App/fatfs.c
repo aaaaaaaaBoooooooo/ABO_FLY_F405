@@ -78,18 +78,21 @@ uint8_t fatfs_read_file(TCHAR *path,char * read_buf,uint32_t data_size)
 				res = f_read(&file, read_buf,data_size, &bytes_read);
 			if (res == FR_OK)
 			{
+					// 关闭文件
+					f_close(&file);
 					printf("Data read successfully. Bytes read: %u\n", bytes_read);
 					//printf("File content: %s\n", read_buf);
 				return 0;
 			}
 			else
 			{
+					// 关闭文件
+					f_close(&file);
 					printf("Read error: %d\n", res);
 					return 1;
 			}
 
-			// 关闭文件
-			f_close(&file);
+
 			
 	}
 	else
@@ -114,17 +117,20 @@ uint8_t fatfs_write_file(TCHAR *path,char * write_buf,uint32_t data_size)
 			res = f_write(&file, write_buf, data_size, &bytes_written);
 			if (res == FR_OK)
 			{
+					// 关闭文件
+					f_close(&file);
 					printf("Data written successfully. Bytes written: %u\n", bytes_written);
 					return 0;
 			}
 			else
 			{
+					// 关闭文件
+					f_close(&file);
 					printf("Write error: %d\n", res);
 					return 1;
 			}
 
-			// 关闭文件
-			f_close(&file);
+
 	}
 	else
 	{

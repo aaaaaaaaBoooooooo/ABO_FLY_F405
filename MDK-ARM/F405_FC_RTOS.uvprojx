@@ -420,11 +420,6 @@
               <FileType>1</FileType>
               <FilePath>..\user\Control\pid.c</FilePath>
             </File>
-            <File>
-              <FileName>cJSON_usr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\cJSON_usr.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -683,6 +678,11 @@
               <FileName>stm32f4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f4xx_hal_msp.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON_usr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\cJSON\cJSON_usr.c</FilePath>
             </File>
           </Files>
         </Group>

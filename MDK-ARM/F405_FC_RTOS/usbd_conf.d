@@ -46,6 +46,9 @@ f405_fc_rtos\usbd_conf.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\usbd_conf.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\usbd_conf.o: ../Core/Inc/main.h
 f405_fc_rtos\usbd_conf.o: ..\CJSON\cJSON.h
+f405_fc_rtos\usbd_conf.o: ../user/Control/control.h
+f405_fc_rtos\usbd_conf.o: ../Core/Inc/main.h
+f405_fc_rtos\usbd_conf.o: ../user/Control/pid.h
 f405_fc_rtos\usbd_conf.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h
 f405_fc_rtos\usbd_conf.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h
 f405_fc_rtos\usbd_conf.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h

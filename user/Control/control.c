@@ -9,31 +9,96 @@
 #include "usart.h"
 #include "cJSON_usr.h"
 #include "fatfs.h"
-PID_FC_TypeDef pid_AttitudeControl;//姿态控制pid
-PID_TypeDef pid_HeightControl;//高度控制pid
-uint8_t aircraft_state =0x00;//飞行器状态
+AttiudeController AttitudeControl;//姿态控制
+HeightController HeightControl;//高度控制
+
+Motor_TypeDef aircraft_motor;//电机结构体
+
 
 /*空心杯电机控制begin*/
 //电机转速设置
-void motor_speed_set(int m1_duty,int m2_duty,int m3_duty,int m4_duty)
+void motor_speed_set()
 {
 	/***限幅处理begin***/
-	if(m1_duty>MOTOR_MAX_DUTY)		m1_duty = MOTOR_MAX_DUTY;
-	else if(m1_duty<MOTOR_MIN_DUTY)		m1_duty = MOTOR_MIN_DUTY;
-	if(m2_duty>MOTOR_MAX_DUTY)		m2_duty = MOTOR_MAX_DUTY;
-	else if(m2_duty<MOTOR_MIN_DUTY)		m2_duty = MOTOR_MIN_DUTY;
-	if(m3_duty>MOTOR_MAX_DUTY)		m3_duty = MOTOR_MAX_DUTY;
-	else if(m3_duty<MOTOR_MIN_DUTY)		m3_duty = MOTOR_MIN_DUTY;
-	if(m4_duty>MOTOR_MAX_DUTY)		m4_duty = MOTOR_MAX_DUTY;
-	else if(m4_duty<MOTOR_MIN_DUTY)		m4_duty = MOTOR_MIN_DUTY;	
+	if(aircraft_motor.duty1>MOTOR_MAX_DUTY)		aircraft_motor.duty1 = MOTOR_MAX_DUTY;
+	else if(aircraft_motor.duty1<MOTOR_MIN_DUTY)		aircraft_motor.duty1 = MOTOR_MIN_DUTY;
+	if(aircraft_motor.duty2>MOTOR_MAX_DUTY)		aircraft_motor.duty2 = MOTOR_MAX_DUTY;
+	else if(aircraft_motor.duty2<MOTOR_MIN_DUTY)		aircraft_motor.duty2 = MOTOR_MIN_DUTY;
+	if(aircraft_motor.duty3>MOTOR_MAX_DUTY)		aircraft_motor.duty3 = MOTOR_MAX_DUTY;
+	else if(aircraft_motor.duty3<MOTOR_MIN_DUTY)		aircraft_motor.duty3 = MOTOR_MIN_DUTY;
+	if(aircraft_motor.duty4>MOTOR_MAX_DUTY)		aircraft_motor.duty4 = MOTOR_MAX_DUTY;
+	else if(aircraft_motor.duty4<MOTOR_MIN_DUTY)		aircraft_motor.duty4 = MOTOR_MIN_DUTY;	
 	/***限幅处理end***/	
 	
 
 	/***HAL库占空比设置***/
-	__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,m1_duty);
-	__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,m2_duty);
-	__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_3,m3_duty);
-	__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,m4_duty);
+	if(my_aircraft.status&0x01)
+	{
+		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,aircraft_motor.duty1);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,aircraft_motor.duty2);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_3,aircraft_motor.duty3);
+		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,aircraft_motor.duty4);
+	}
+	else if(my_aircraft.status==0x00)
+	{
+		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,0);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,0);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_3,0);
+		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,0);
+	}
+	else
+	{
+		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,0);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,0);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_3,0);
+		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,0);		
+	}
+}
+//电机控制
+void motor_control()
+{
+	/***占空比复位***/
+	aircraft_motor.duty1=0;
+	aircraft_motor.duty2=0;
+	aircraft_motor.duty3=0;
+	aircraft_motor.duty4=0;	
+
+	/***姿态控制begin***/	
+	aircraft_motor.duty1 +=(int)AttitudeControl.internal_pid.x.output;
+	aircraft_motor.duty2 -=(int)AttitudeControl.internal_pid.x.output;
+	aircraft_motor.duty3 +=(int)AttitudeControl.internal_pid.x.output;
+	aircraft_motor.duty4 -=(int)AttitudeControl.internal_pid.x.output;	
+	
+	aircraft_motor.duty1 -=(int)AttitudeControl.internal_pid.y.output;
+	aircraft_motor.duty2 -=(int)AttitudeControl.internal_pid.y.output;
+	aircraft_motor.duty3 +=(int)AttitudeControl.internal_pid.y.output;
+	aircraft_motor.duty4 +=(int)AttitudeControl.internal_pid.y.output;
+	
+	aircraft_motor.duty1 -=(int)AttitudeControl.internal_pid.z.output;
+	aircraft_motor.duty2 +=(int)AttitudeControl.internal_pid.z.output;
+	aircraft_motor.duty3 +=(int)AttitudeControl.internal_pid.z.output;
+	aircraft_motor.duty4 -=(int)AttitudeControl.internal_pid.z.output;	
+	
+	/***姿态环输出限幅***/
+	if(aircraft_motor.duty1<MOTOR_MIN_DUTY) aircraft_motor.duty1 =MOTOR_MIN_DUTY;
+	if(aircraft_motor.duty2<MOTOR_MIN_DUTY) aircraft_motor.duty2 =MOTOR_MIN_DUTY;
+	if(aircraft_motor.duty3<MOTOR_MIN_DUTY) aircraft_motor.duty3 =MOTOR_MIN_DUTY;
+	if(aircraft_motor.duty4<MOTOR_MIN_DUTY) aircraft_motor.duty4 =MOTOR_MIN_DUTY;
+	
+	if(aircraft_motor.duty1>MOTOR_MAX_DUTY) aircraft_motor.duty1 =MOTOR_MAX_DUTY;
+	if(aircraft_motor.duty2>MOTOR_MAX_DUTY) aircraft_motor.duty2 =MOTOR_MAX_DUTY;
+  if(aircraft_motor.duty3>MOTOR_MAX_DUTY) aircraft_motor.duty3 =MOTOR_MAX_DUTY;
+	if(aircraft_motor.duty4>MOTOR_MAX_DUTY) aircraft_motor.duty4 =MOTOR_MAX_DUTY;	
+	/***姿态控制end***/	
+
+	/***油门控制begin***/
+	aircraft_motor.duty1 +=(int)aircraft_motor.throttle;
+	aircraft_motor.duty2 +=(int)aircraft_motor.throttle;
+	aircraft_motor.duty3 +=(int)aircraft_motor.throttle;
+	aircraft_motor.duty4 +=(int)aircraft_motor.throttle;		
+	/***油门控制end***/
+	
+	motor_speed_set();//电机驱动
 }
 //电机初始化
 void motor_init()
@@ -54,167 +119,189 @@ void motor_deinit()
 /*空心杯电机控制end*/
 
 /*电机油门控制begin*/
-int aircraft_throttle=0;//油门
-void motor_throttle_control(uint8_t type)
+void motor_throttle_control()
 {
-	if(type == 0)//默认手动油门控制
+	if(HeightControl.auto_height_control_isEnable)//自动定高油门控制
+	{
+		aircraft_motor.throttle = HeightControl.base_throttle + HeightControl.pid.output;
+	}
+	else//默认手动油门控制
 	{
 		if(remote_data_flash[0]==1)
 		{
 			if(abs((int)my_remote.YG_LEFT_UD-128)>50)
-				aircraft_throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.3;
+				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.3;
 			else 
-				aircraft_throttle+=0;
-			if(aircraft_throttle>MOTOR_MAX_THROTTLE)
-				aircraft_throttle = MOTOR_MAX_THROTTLE;
-			else if(aircraft_throttle<MOTOR_MIN_THROTTLE)
-				aircraft_throttle = MOTOR_MIN_THROTTLE;
+				aircraft_motor.throttle+=0;
+
 			remote_data_flash[0] = 0;
 		}
 	}
-	else//自动定高油门控制
-	{
-		
-	}
-		/***油门***/
-	motor1_duty +=(int)aircraft_throttle;
-	motor2_duty +=(int)aircraft_throttle;
-	motor3_duty +=(int)aircraft_throttle;
-	motor4_duty +=(int)aircraft_throttle;	
+	/***油门限幅***/
+	if(aircraft_motor.throttle>MOTOR_MAX_THROTTLE)
+		aircraft_motor.throttle = MOTOR_MAX_THROTTLE;
+	else if(aircraft_motor.throttle<MOTOR_MIN_THROTTLE)
+		aircraft_motor.throttle = MOTOR_MIN_THROTTLE;
 }
 /*电机油门控制end*/
 
 /*飞行器飞行方向控制begin*/
-float roll_target_angle=0;
-float pitch_target_angle=0;
-float yaw_target_angle=0;
-float roll_compensate=0;//补偿
-float pitch_compensate=0;//补偿
 void aircraft_flight_direction_control()
 {
 	if(remote_data_flash[1]==1)
 	{
 		if(abs((int)my_remote.YG_RIGHT_LR-128)>25)
-			roll_target_angle = (float)(my_remote.YG_RIGHT_LR-128)*((float)ROLL_TARGET_MAX_ANGLE/128.0f);
+			AttitudeControl.roll_target_angle = -(float)(my_remote.YG_RIGHT_LR-128)*((float)ROLL_TARGET_MAX_ANGLE/128.0f);
 		else
-			roll_target_angle = 0;
+			AttitudeControl.roll_target_angle = 0;
 		if(abs((int)my_remote.YG_RIGHT_UD-128)>25)	
-			pitch_target_angle = -(float)(my_remote.YG_RIGHT_UD-128)*((float)PITCH_TARGET_MAX_ANGLE/128.0f);
+			AttitudeControl.pitch_target_angle = +(float)(my_remote.YG_RIGHT_UD-128)*((float)PITCH_TARGET_MAX_ANGLE/128.0f);
 		else
-			pitch_target_angle = 0;
+			AttitudeControl.pitch_target_angle = 0;
 		if(abs((int)my_remote.YG_LEFT_LR-128)>100)
-			yaw_target_angle += (float)(my_remote.YG_LEFT_LR-128)*0.01f;
+			AttitudeControl.yaw_target_angle += (float)(my_remote.YG_LEFT_LR-128)*0.01f;
 		else
-			yaw_target_angle +=0;
+			AttitudeControl.yaw_target_angle -=0;
 		/****外环输入begin****/
-		if(roll_target_angle>ROLL_TARGET_MAX_ANGLE)
-			roll_target_angle = ROLL_TARGET_MAX_ANGLE;
-		else if(roll_target_angle<ROLL_TARGET_MIN_ANGLE)
-			roll_target_angle = ROLL_TARGET_MIN_ANGLE;
-		pid_AttitudeControl.external.pid_x.target = roll_target_angle+roll_compensate;
+		if(AttitudeControl.roll_target_angle>ROLL_TARGET_MAX_ANGLE)
+			AttitudeControl.roll_target_angle = ROLL_TARGET_MAX_ANGLE;
+		else if(AttitudeControl.roll_target_angle<ROLL_TARGET_MIN_ANGLE)
+			AttitudeControl.roll_target_angle = ROLL_TARGET_MIN_ANGLE;
+		AttitudeControl.external_pid.x.target = AttitudeControl.roll_target_angle+AttitudeControl.roll_compensate;
 		
-		if(pitch_target_angle>PITCH_TARGET_MAX_ANGLE)
-			pitch_target_angle = PITCH_TARGET_MAX_ANGLE;
-		else if(pitch_target_angle<PITCH_TARGET_MIN_ANGLE)
-			pitch_target_angle = PITCH_TARGET_MIN_ANGLE;	
-		pid_AttitudeControl.external.pid_y.target = pitch_target_angle+pitch_compensate;
+		if(AttitudeControl.pitch_target_angle>PITCH_TARGET_MAX_ANGLE)
+			AttitudeControl.pitch_target_angle = PITCH_TARGET_MAX_ANGLE;
+		else if(AttitudeControl.pitch_target_angle<PITCH_TARGET_MIN_ANGLE)
+			AttitudeControl.pitch_target_angle = PITCH_TARGET_MIN_ANGLE;	
+		AttitudeControl.external_pid.y.target = AttitudeControl.pitch_target_angle+AttitudeControl.pitch_compensate;
 		
-		if(yaw_target_angle>YAW_TARGET_MAX_ANGLE)
-			yaw_target_angle = YAW_TARGET_MAX_ANGLE;
-		else if(yaw_target_angle<YAW_TARGET_MIN_ANGLE)
-			yaw_target_angle = YAW_TARGET_MIN_ANGLE;	
-		pid_AttitudeControl.external.pid_z.target = yaw_target_angle;
+		if(AttitudeControl.yaw_target_angle>YAW_TARGET_MAX_ANGLE)
+			AttitudeControl.yaw_target_angle = YAW_TARGET_MAX_ANGLE;
+		else if(AttitudeControl.yaw_target_angle<YAW_TARGET_MIN_ANGLE)
+			AttitudeControl.yaw_target_angle = YAW_TARGET_MIN_ANGLE;	
+		AttitudeControl.external_pid.z.target = AttitudeControl.yaw_target_angle;
 		/****外环输入end****/	
 		remote_data_flash[1]=0;
 	}
 }
 /*飞行器飞行方向控制end*/
 
+/*飞行器飞行高度控制begin*/
+
+void aircraft_flight_Height_control()
+{
+	if(HeightControl.auto_height_control_isEnable)//开启自动定高
+	{
+	//	if(TOF.distance_m <2.0f||TOF.confidence <50)//TOF测距小于2m 或者可信度低于50
+		{
+			HeightControl.mode = TOF_MODE;
+			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.tof_params.Kp,HeightControl.tof_params.Ki,HeightControl.tof_params.Kd);
+		}
+	//	else
+		{
+	//		HeightControl.mode = BARO_MODE;
+	//		HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.baro_params.Kp,HeightControl.baro_params.Ki,HeightControl.baro_params.Kd);
+			
+		}
+		if(HeightControl.mode == BARO_MODE)//气压计定高
+		{
+			HeightControl.pid.target = HeightControl.target_altitude;
+			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.barometer_height);			
+		}
+		else if(HeightControl.mode == TOF_MODE)//TOF定高
+		{
+			 HeightControl.pid.target =  HeightControl.target_height;
+			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.tof_height);
+		}
+		else
+			return;
+	}
+	else
+		return;
+}
+/*飞行器飞行高度控制end*/
+
+
 void pid_control_init()
 {
-	pid_init(&pid_AttitudeControl.internal.pid_x);
-	pid_init(&pid_AttitudeControl.internal.pid_y);
-	pid_init(&pid_AttitudeControl.internal.pid_z);
-	pid_AttitudeControl.internal.pid_x.f_param_init(&pid_AttitudeControl.internal.pid_x,PID_Position,MOTOR_MAX_DUTY,MOTOR_MAX_DUTY*0.1,0,0,0,30.0f,0.0f,18.0f);
-	pid_enable(&pid_AttitudeControl.internal.pid_x,1);
-	pid_AttitudeControl.internal.pid_y.f_param_init(&pid_AttitudeControl.internal.pid_y,PID_Position,MOTOR_MAX_DUTY,MOTOR_MAX_DUTY*0.1,0,0,0,30.0f,0.0f,18.0f);
-	pid_enable(&pid_AttitudeControl.internal.pid_y,1);
-	pid_AttitudeControl.internal.pid_z.f_param_init(&pid_AttitudeControl.internal.pid_z,PID_Position,MOTOR_MAX_DUTY,MOTOR_MAX_DUTY*0.1,0,0,0,60.0f,0.0f,15.0f);
-	pid_enable(&pid_AttitudeControl.internal.pid_z,1);
+	/***姿态控制初始化begin***/
+	pid_init(&AttitudeControl.internal_pid.x);
+	AttitudeControl.sensor.gyro_x = &IMU_Data.gyro.x;
+	pid_init(&AttitudeControl.internal_pid.y);
+	AttitudeControl.sensor.gyro_y = &IMU_Data.gyro.y;
+	pid_init(&AttitudeControl.internal_pid.z);
+	AttitudeControl.sensor.gyro_z = &IMU_Data.gyro.z;
+	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,30.0f,0.0f,18.0f);
+	pid_enable(&AttitudeControl.internal_pid.x,0);//未开启飞机就不使能pid
+	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,30.0f,0.0f,18.0f);
+	pid_enable(&AttitudeControl.internal_pid.y,0);//未开启飞机就不使能pid
+	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,60.0f,0.0f,15.0f);
+	pid_enable(&AttitudeControl.internal_pid.z,0);//未开启飞机就不使能pid
 	
-	pid_init(&pid_AttitudeControl.external.pid_x);
-	pid_init(&pid_AttitudeControl.external.pid_y);
-	pid_init(&pid_AttitudeControl.external.pid_z);
-	pid_AttitudeControl.external.pid_x.f_param_init(&pid_AttitudeControl.external.pid_x,PID_Position,9999,100,0,0,0,2.5f,0.025f,20.0f);
-	pid_enable(&pid_AttitudeControl.external.pid_x,1);
-	pid_AttitudeControl.external.pid_y.f_param_init(&pid_AttitudeControl.external.pid_y,PID_Position,9999,100,0,0,0,2.5f,0.025f,20.0f);
-	pid_enable(&pid_AttitudeControl.external.pid_y,1);
-	pid_AttitudeControl.external.pid_z.f_param_init(&pid_AttitudeControl.external.pid_z,PID_Position,1000,5,0,0,0,6.0f,0.0f,0.0f);	
-	pid_enable(&pid_AttitudeControl.external.pid_z,1);
+	pid_init(&AttitudeControl.external_pid.x);
+	AttitudeControl.sensor.roll = &Angle_Data.roll;
+	pid_init(&AttitudeControl.external_pid.y);
+	AttitudeControl.sensor.pitch = &Angle_Data.pitch;
+	pid_init(&AttitudeControl.external_pid.z);
+	AttitudeControl.sensor.yaw = &Angle_Data.yaw;
+	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,9999,100,0,0,0,2.5f,0.025f,20.0f);
+	pid_enable(&AttitudeControl.external_pid.x,0);//未开启飞机就不使能pid
+	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,9999,100,0,0,0,2.5f,0.025f,20.0f);
+	pid_enable(&AttitudeControl.external_pid.y,0);//未开启飞机就不使能pid
+	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,1000,0,0,0,0,6.0f,0.0f,0.0f);	
+	pid_enable(&AttitudeControl.external_pid.z,0);//未开启飞机就不使能pid
+	/***姿态控制初始化end***/
+	
+	/***高度控制初始化begin***/
+	pid_init(&HeightControl.pid);
+	HeightControl.sensor.tof_height = &TOF.distance_m;
+	HeightControl.sensor.barometer_height = &my_aircraft.Altitude;
+	HeightControl.pid.f_param_init(&HeightControl.pid,PID_Position,MOTOR_MAX_THROTTLE,0,0,0,0,0.0f,0.0f,0.0f);
+	pid_enable(&HeightControl.pid,0);//未开启定高就不使能pid
+	HeightControl.mode = ALT_HOLD_DISABLED;//初始为手动控制
 
-	fatfs_params_read();
-	motor_init();
+	/***高度控制初始化end***/	
+	
+	fatfs_PID_params_read();//pid参数读取
+	motor_init();//电机初始化
 }
 
-int motor1_duty=0;
-int motor2_duty=0;
-int motor3_duty=0;
-int motor4_duty=0;
 void pid_internal_control()
 { 
-	motor1_duty=0;
-	motor2_duty=0;
-	motor3_duty=0;
-	motor4_duty=0;	
+//	aircraft_motor.duty1=0;
+//	aircraft_motor.duty2=0;
+//	aircraft_motor.duty3=0;
+//	aircraft_motor.duty4=0;	
 	/****pid计算begin****/
-	pid_AttitudeControl.internal.pid_x.f_cal_pid(&pid_AttitudeControl.internal.pid_x,IMU_Data.gyro.x*Gyro_Gain);//X轴
-	motor1_duty +=(int)pid_AttitudeControl.internal.pid_x.output;
-	motor2_duty -=(int)pid_AttitudeControl.internal.pid_x.output;
-	motor3_duty +=(int)pid_AttitudeControl.internal.pid_x.output;
-	motor4_duty -=(int)pid_AttitudeControl.internal.pid_x.output;
-	pid_AttitudeControl.internal.pid_y.f_cal_pid(&pid_AttitudeControl.internal.pid_y,IMU_Data.gyro.y*Gyro_Gain);//Y轴
-	motor1_duty -=(int)pid_AttitudeControl.internal.pid_y.output;
-	motor2_duty -=(int)pid_AttitudeControl.internal.pid_y.output;
-	motor3_duty +=(int)pid_AttitudeControl.internal.pid_y.output;
-	motor4_duty +=(int)pid_AttitudeControl.internal.pid_y.output;
-	pid_AttitudeControl.internal.pid_z.f_cal_pid(&pid_AttitudeControl.internal.pid_z,IMU_Data.gyro.z*Gyro_Gain);//Z轴
-	motor1_duty -=(int)pid_AttitudeControl.internal.pid_z.output;
-	motor2_duty +=(int)pid_AttitudeControl.internal.pid_z.output;
-	motor3_duty +=(int)pid_AttitudeControl.internal.pid_z.output;
-	motor4_duty -=(int)pid_AttitudeControl.internal.pid_z.output;	
-	/****pid计算end****/
-	
-	if(motor1_duty<MOTOR_MIN_DUTY) motor1_duty =MOTOR_MIN_DUTY;
-	if(motor2_duty<MOTOR_MIN_DUTY) motor2_duty =MOTOR_MIN_DUTY;
-	if(motor3_duty<MOTOR_MIN_DUTY) motor3_duty =MOTOR_MIN_DUTY;
-	if(motor4_duty<MOTOR_MIN_DUTY) motor4_duty =MOTOR_MIN_DUTY;
-	
-	if(motor1_duty>MOTOR_MAX_DUTY) motor1_duty =MOTOR_MAX_DUTY;
-	if(motor2_duty>MOTOR_MAX_DUTY) motor2_duty =MOTOR_MAX_DUTY;
-  if(motor3_duty>MOTOR_MAX_DUTY) motor3_duty =MOTOR_MAX_DUTY;
-	if(motor4_duty>MOTOR_MAX_DUTY) motor4_duty =MOTOR_MAX_DUTY;
+	AttitudeControl.internal_pid.x.f_cal_pid(&AttitudeControl.internal_pid.x,*AttitudeControl.sensor.gyro_x);//X轴
 
+	AttitudeControl.internal_pid.y.f_cal_pid(&AttitudeControl.internal_pid.y,*AttitudeControl.sensor.gyro_y);//Y轴
+
+	AttitudeControl.internal_pid.z.f_cal_pid(&AttitudeControl.internal_pid.z,*AttitudeControl.sensor.gyro_z);//Z轴
+
+	/****pid计算end****/
 	
 }
 void pid_external_control()
 {    
 	/****pid计算begin****/
-	pid_AttitudeControl.external.pid_x.f_cal_pid(&pid_AttitudeControl.external.pid_x,Angle_Data.roll);//ROLL
+	AttitudeControl.external_pid.x.f_cal_pid(&AttitudeControl.external_pid.x,*AttitudeControl.sensor.roll);//ROLL
 
-	pid_AttitudeControl.external.pid_y.f_cal_pid(&pid_AttitudeControl.external.pid_y,Angle_Data.pitch);//PITCH
+	AttitudeControl.external_pid.y.f_cal_pid(&AttitudeControl.external_pid.y,*AttitudeControl.sensor.pitch);//PITCH
 
-	pid_AttitudeControl.external.pid_z.f_cal_pid(&pid_AttitudeControl.external.pid_z,Angle_Data.yaw);//YAW
+	AttitudeControl.external_pid.z.f_cal_pid(&AttitudeControl.external_pid.z,*AttitudeControl.sensor.yaw);//YAW
 
 	/****pid计算end****/
 	
 	/****外环输出begin****/
-	pid_AttitudeControl.internal.pid_x.target = pid_AttitudeControl.external.pid_x.output;
+	AttitudeControl.internal_pid.x.target = AttitudeControl.external_pid.x.output;
 	
-	pid_AttitudeControl.internal.pid_y.target = pid_AttitudeControl.external.pid_y.output;
+	AttitudeControl.internal_pid.y.target = AttitudeControl.external_pid.y.output;
 	
-	pid_AttitudeControl.internal.pid_z.target = pid_AttitudeControl.external.pid_z.output;
+	AttitudeControl.internal_pid.z.target = AttitudeControl.external_pid.z.output;
 	/****外环输出end****/
 }
+
 /*飞行器保护措施begin*/
 uint8_t aircraft_protection()
 {
@@ -250,10 +337,10 @@ uint8_t aircraft_protection()
 		Aircraft_IMU_Error_cnt=0;
 	}
 	
-	if(motor1_duty>=MOTOR_MAX_DUTY*0.95f||motor2_duty>=MOTOR_MAX_DUTY*0.95f||motor3_duty>=MOTOR_MAX_DUTY*0.95f||motor4_duty>=MOTOR_MAX_DUTY*0.95f)//电机高占空比保护
+	if(aircraft_motor.duty1>=MOTOR_MAX_DUTY*0.95f||aircraft_motor.duty2>=MOTOR_MAX_DUTY*0.95f||aircraft_motor.duty3>=MOTOR_MAX_DUTY*0.95f||aircraft_motor.duty4>=MOTOR_MAX_DUTY*0.95f)//电机高占空比保护
 	{
 		Motor_Duty_Error_cnt++;
-		if(Motor_Duty_Error_cnt >= 20)//2s
+		if(Motor_Duty_Error_cnt >= 15)//1.5s
 		{
 			motor_deinit();
 			return 3;
@@ -268,9 +355,10 @@ uint8_t aircraft_protection()
 }
 /*飞行器保护措施end*/
 
+/*读取FLASH中保存的参数*/
 #define PARAMS_NAME "Param_s.txt"
 #define PARAMS_MAX_READ_SIZE  4096
-uint8_t fatfs_params_read()
+uint8_t fatfs_PID_params_read()
 {
 	cJSON *json,*json_get;
 	char read_buf[PARAMS_MAX_READ_SIZE];
@@ -296,114 +384,174 @@ uint8_t fatfs_params_read()
 //	char *out_data = cJSON_Print(json);   //将json形式打印成正常字符串形式
 //	printf("%s",out_data);
 	
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_x.kp" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.x.kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_x.kp = json_get->valuedouble;
+		AttitudeControl.internal_pid.x.kp = json_get->valuedouble;
+	}
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.x.ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		AttitudeControl.internal_pid.x.ki = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_x.ki" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.x.kd" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_x.ki = json_get->valuedouble;
+		AttitudeControl.internal_pid.x.kd = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_x.kd" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.y.kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_x.kd = json_get->valuedouble;
+		AttitudeControl.internal_pid.y.kp = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_y.kp" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.y.ki" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_y.kp = json_get->valuedouble;
+		AttitudeControl.internal_pid.y.ki = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_y.ki" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.y.kd" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_y.ki = json_get->valuedouble;
+		AttitudeControl.internal_pid.y.kd = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_y.kd" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.z.kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_y.kd = json_get->valuedouble;
+		AttitudeControl.internal_pid.z.kp = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_z.kp" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.z.ki" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_z.kp = json_get->valuedouble;
+		AttitudeControl.internal_pid.z.ki = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_z.ki" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.z.kd" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.internal.pid_z.ki = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.internal.pid_z.kd" );
-	if(json_get->type == cJSON_Number)  //从json获取键值内容
-	{
-		pid_AttitudeControl.internal.pid_z.kd = json_get->valuedouble;
+		AttitudeControl.internal_pid.z.kd = json_get->valuedouble;
  	
 	}	
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_x.kp" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.x.kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_x.kp = json_get->valuedouble;
+		AttitudeControl.external_pid.x.kp = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_x.ki" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.x.ki" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_x.ki = json_get->valuedouble;
+		AttitudeControl.external_pid.x.ki = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_x.kd" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.x.kd" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_x.kd = json_get->valuedouble;
+		AttitudeControl.external_pid.x.kd = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_y.kp" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.y.kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_y.kp = json_get->valuedouble;
+		AttitudeControl.external_pid.y.kp = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_y.ki" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.y.ki" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_y.ki = json_get->valuedouble;
+		AttitudeControl.external_pid.y.ki = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_y.kd" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.y.kd" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_y.kd = json_get->valuedouble;
+		AttitudeControl.external_pid.y.kd = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_z.kp" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.z.kp" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_z.kp = json_get->valuedouble;
+		AttitudeControl.external_pid.z.kp = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_z.ki" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.z.ki" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_z.ki = json_get->valuedouble;
+		AttitudeControl.external_pid.z.ki = json_get->valuedouble;
  	
 	}
-	json_get = cJSON_GetObjectItem( json ,"pid_AttitudeControl.external.pid_z.kd" );
+	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.z.kd" );
 	if(json_get->type == cJSON_Number)  //从json获取键值内容
 	{
-		pid_AttitudeControl.external.pid_z.kd = json_get->valuedouble;
+		AttitudeControl.external_pid.z.kd = json_get->valuedouble;
  	
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.Kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.tof_params.Kp = json_get->valuedouble;
+ 	
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.Ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.tof_params.Ki = json_get->valuedouble;
+ 	
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.Kd");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.tof_params.Kd = json_get->valuedouble;
 	}		
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_output");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.tof_params.max_output = json_get->valuedouble;
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_integral");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.tof_params.max_integral = json_get->valuedouble;
+	}		
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Kp" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.baro_params.Kp = json_get->valuedouble;
+ 	
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Ki" );
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.baro_params.Ki = json_get->valuedouble;
+ 	
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Kd");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.baro_params.Kd = json_get->valuedouble;
+	}		
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_output");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.baro_params.max_output = json_get->valuedouble;
+	}	
+	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_integral");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		HeightControl.baro_params.max_integral = json_get->valuedouble;
+	}		
+//	json_get = cJSON_GetObjectItem( json ,"HeightControl.base_throttle");
+//	if(json_get->type == cJSON_Number)  //从json获取键值内容
+//	{
+//		HeightControl.base_throttle = (int)json_get->valuedouble;
+//	}	
+					
+	printf("param_read_succese\n");
 	cJSON_Delete(json);  //释放内存 
 	cJSON_Delete(json_get);  //释放内存 		
 	return 0;

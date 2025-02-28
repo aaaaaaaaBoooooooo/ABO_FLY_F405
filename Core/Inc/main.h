@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "cJSON.h"
+#include "control.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -65,7 +66,7 @@ typedef struct
 	float Pressure;//气压
 	float Altitude;//海拔
 	float Temperature;//温度
-
+	uint8_t status;//状态
 }aircraft_type;//飞行器类
 
 extern remote_type my_remote;

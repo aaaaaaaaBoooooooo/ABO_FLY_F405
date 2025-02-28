@@ -42,12 +42,13 @@ f405_fc_rtos\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\usart.o: ..\CJSON\cJSON.h
+f405_fc_rtos\usart.o: ../user/Control/control.h
+f405_fc_rtos\usart.o: ../Core/Inc/main.h
+f405_fc_rtos\usart.o: ../user/Control/pid.h
 f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
-f405_fc_rtos\usart.o: ../user/Control/control.h
-f405_fc_rtos\usart.o: ../user/Control/pid.h
 f405_fc_rtos\usart.o: ../user/Angle/angle.h
 f405_fc_rtos\usart.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h

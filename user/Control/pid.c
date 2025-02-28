@@ -14,7 +14,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "pid.h"
 #include "main.h"
-
 /*参数初始化--------------------------------------------------------------*/
 static void pid_param_init(
 	volatile PID_TypeDef * pid, //pid结构体
@@ -50,8 +49,10 @@ void pid_enable(volatile PID_TypeDef * pid,uint8_t enable)
 	if(enable)
 	{
 		pid->enable =1;
-		//pid->iout = //使i项输出为当前输出，更加平滑
-		pid->err = pid->last_err;//使偏差变化率为0，降低d项影响
+
+		//pid->iout = now_output//使i项输出为当前输出，更加平滑
+		//pid->err = pid->last_err;//使偏差变化率为0，降低d项影响
+
 	}
 	else
 		pid->enable=0;

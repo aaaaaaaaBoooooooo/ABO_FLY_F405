@@ -43,6 +43,9 @@ f405_fc_rtos\angle.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\angle.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\angle.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\angle.o: ..\CJSON\cJSON.h
+f405_fc_rtos\angle.o: ../user/Control/control.h
+f405_fc_rtos\angle.o: ../Core/Inc/main.h
+f405_fc_rtos\angle.o: ../user/Control/pid.h
 f405_fc_rtos\angle.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\angle.o: ../Drivers/SYSTEM/delay/delay.h
 f405_fc_rtos\angle.o: ../Drivers/CMSIS/Include/core_cm4.h

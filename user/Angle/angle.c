@@ -202,9 +202,9 @@ void IMU_DataUpdate(void)
   
 		
 		
-	IMU_Data.gyro.x= icm42688_data.gyro_x-IMU_Data.gyro_offset.x;//IMU角速度数据更新+去零偏
-	IMU_Data.gyro.y= icm42688_data.gyro_y-IMU_Data.gyro_offset.y;
-	IMU_Data.gyro.z= icm42688_data.gyro_z-IMU_Data.gyro_offset.z;
+	IMU_Data.gyro.x= (icm42688_data.gyro_x-IMU_Data.gyro_offset.x)*Gyro_Gain;//IMU角速度数据更新+去零偏
+	IMU_Data.gyro.y= (icm42688_data.gyro_y-IMU_Data.gyro_offset.y)*Gyro_Gain;
+	IMU_Data.gyro.z= (icm42688_data.gyro_z-IMU_Data.gyro_offset.z)*Gyro_Gain;
 	
 	
 //	static Filter_LPF_1 LPF1[3]={{100,0,10},{100,0,10},{8330,0,10}};//加速度收敛
@@ -278,9 +278,9 @@ void IMU_GetAngle(float dt)
 	GyroIntegError.z += AccGravity.z * KiDef;
 	
 	//角速度融合加速度积分补偿值
-	Gyro.x = IMU_Data.gyro.x * Gyro_Gr + KpDef * AccGravity.x  +  GyroIntegError.x;//弧度制
-	Gyro.y = IMU_Data.gyro.y * Gyro_Gr + KpDef * AccGravity.y  +  GyroIntegError.y;
-	Gyro.z = IMU_Data.gyro.z * Gyro_Gr + KpDef * AccGravity.z  +  GyroIntegError.z;		
+	Gyro.x = IMU_Data.gyro.x * DegtoRad + KpDef * AccGravity.x  +  GyroIntegError.x;//弧度制
+	Gyro.y = IMU_Data.gyro.y * DegtoRad + KpDef * AccGravity.y  +  GyroIntegError.y;
+	Gyro.z = IMU_Data.gyro.z * DegtoRad + KpDef * AccGravity.z  +  GyroIntegError.z;		
 	
 	// 一阶龙格库塔法, 更新四元数
 	q0_t = (-NumQ.q1*Gyro.x - NumQ.q2*Gyro.y - NumQ.q3*Gyro.z) * HalfTime;
@@ -305,10 +305,10 @@ void IMU_GetAngle(float dt)
 	float vecyZ = 2 * NumQ.q2 *NumQ.q3 + 2 * NumQ.q0 * NumQ.q1;/*矩阵(3,2)项*/
 	float veczZ =  1 - 2 * NumQ.q1 *NumQ.q1 - 2 * NumQ.q2 * NumQ.q2;	/*矩阵(3,3)项*/		 
 
-	float yaw_G =IMU_Data.gyro.z * Gyro_Gain;//将Z轴角速度陀螺仪值 转换为Z角度/秒      Gyro_G陀螺仪初始化量程+-2000度每秒于1 / (65536 / 4000) = 0.03051756*2		
-	if((yaw_G > 0.5f) || (yaw_G < -0.5f)) //数据太小可以认为是干扰，不是偏航动作
+	//float yaw_G =IMU_Data.gyro.z * Gyro_Gain;//将Z轴角速度陀螺仪值 转换为Z角度/秒      Gyro_G陀螺仪初始化量程+-2000度每秒于1 / (65536 / 4000) = 0.03051756*2		
+	if(fabs(Gyro.z) > 0.005f) //数据太小可以认为是干扰，不是偏航动作
 	{
-		Angle_Data.yaw  += yaw_G * dt;//角速度积分成偏航角			
+		Angle_Data.yaw  += Gyro.z*RadtoDeg* dt;//角速度积分成偏航角			
 	}
 	Angle_Data.pitch  =  asin(vecxZ)* RadtoDeg;	 //俯仰角					
 	Angle_Data.roll	= atan2f(vecyZ,veczZ) * RadtoDeg;	//横滚角

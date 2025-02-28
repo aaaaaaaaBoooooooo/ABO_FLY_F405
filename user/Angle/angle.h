@@ -25,15 +25,16 @@
 #define G		        9.80665f		      	// m/s^2	
 #define RadtoDeg    	57.324841f				//弧度到角度 (弧度 * 180/3.1415)
 #define DegtoRad    	0.0174533f				//角度到弧度 (角度 * 3.1415/180)
-#define Acc_Gain  		0.0004883f				//加速度变成G (初始化加速度满量程-+16g LSBa = 2*4/65536.0)
+#define Acc_Gain  		0.0004883f				//加速度变成G (初始化加速度满量程-+16g LSBa = 2*16/65536.0)
 #define Gyro_Gain 		0.0610352f				//角速度变成度dps (初始化陀螺仪满量程+-2000 LSBg = 2*2000/65536.0)
+
 #define Gyro_Gr	    	0.0010641f			  	//角速度变成弧度(3.1415/180 * LSBg) 
-#define VAR_GyX				300.0f		            //1/方差   0.001f
-#define VAR_GyY				100.0f		            //1/方差   0.001f
+#define VAR_GyX				50.0f		            //1/方差   0.001f
+#define VAR_GyY				50.0f		            //1/方差   0.001f
 #define VAR_GyZ				50.0f		            //1/方差   0.001f
-#define VAR_AcX				100.0f		            //1/方差   0.001f
-#define VAR_AcY				100.0f		            //1/方差   0.001f
-#define VAR_AcZ				5000.0f		            //1/方差   0.001f
+#define VAR_AcX				50.0f		            //1/方差   0.001f
+#define VAR_AcY				50.0f		            //1/方差   0.001f
+#define VAR_AcZ				100.0f		            //1/方差   0.001f
 #define ALPHA			0.0f					//一阶互补滤波系数
 
 
@@ -64,8 +65,8 @@ typedef volatile struct {
 
 typedef struct{
 	vector3int16_t acc;// 加速度
-	vector3int16_t gyro;// 角速度
-	vector3int16_t mag;// 磁场强度
+	vector3float_t gyro;// 角速度
+	vector3float_t mag;// 磁场强度
 	vector3int16_t acc_offset;//陀螺仪零偏
 	vector3int16_t gyro_offset;//加速度计零偏
 	vector3int16_t mag_offset;//磁力计零偏

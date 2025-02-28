@@ -45,6 +45,9 @@ f405_fc_rtos\w25qxx.o: ../Drivers/CMSIS/Include/core_cm4.h
 f405_fc_rtos\w25qxx.o: ../Core/Inc/spi.h
 f405_fc_rtos\w25qxx.o: ../Core/Inc/main.h
 f405_fc_rtos\w25qxx.o: ..\CJSON\cJSON.h
+f405_fc_rtos\w25qxx.o: ../user/Control/control.h
+f405_fc_rtos\w25qxx.o: ../Core/Inc/main.h
+f405_fc_rtos\w25qxx.o: ../user/Control/pid.h
 f405_fc_rtos\w25qxx.o: ../Drivers/SYSTEM/delay/delay.h
 f405_fc_rtos\w25qxx.o: ../Drivers/CMSIS/Include/core_cm4.h
 f405_fc_rtos\w25qxx.o: ../Core/Inc/usart.h

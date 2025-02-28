@@ -42,11 +42,12 @@ f405_fc_rtos\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 f405_fc_rtos\gpio.o: ..\CJSON\cJSON.h
+f405_fc_rtos\gpio.o: ../user/Control/control.h
+f405_fc_rtos\gpio.o: ../Core/Inc/main.h
+f405_fc_rtos\gpio.o: ../user/Control/pid.h
 f405_fc_rtos\gpio.o: ../Drivers/BSP_HardWare/bmp390_task.h
 f405_fc_rtos\gpio.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h
 f405_fc_rtos\gpio.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\gpio.o: ../user/Angle/angle.h
 f405_fc_rtos\gpio.o: ../user/Math_DSP/HANA_math.h
-f405_fc_rtos\gpio.o: ../user/Control/control.h
-f405_fc_rtos\gpio.o: ../user/Control/pid.h
 f405_fc_rtos\gpio.o: ../Drivers/BSP_HardWare/icm42688.h

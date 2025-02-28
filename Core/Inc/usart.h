@@ -44,6 +44,16 @@ extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN Private defines */
+
+typedef struct
+{
+	uint16_t distance_mm;
+	float distance_cm;
+	float distance_m;
+	uint16_t noise;
+	uint16_t confidence;
+}TOF_TypeDef;
+
 void uart_printf(UART_HandleTypeDef *huart,const char *format, ...);
 void aircraft_data_send(void);
 /* USER CODE END Private defines */
@@ -55,7 +65,7 @@ void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 #define REMOTE_DATA_NUM 7
-#define AIRCFAFT_DARA_NUM 17
+#define AIRCFAFT_DARA_NUM 18
 #define UART3_RXBUFFERSIZE 128
 #define UART6_RXBUFFERSIZE 128
 #define UART4_RXBUFFERSIZE 128
@@ -65,6 +75,7 @@ extern uint8_t uart6_rx_buff[UART6_RXBUFFERSIZE];//串口6接收缓冲区
 extern uint8_t uart4_rx_buff[UART4_RXBUFFERSIZE];//串口4接收缓冲区
 extern uint8_t uart1_rx_buff[UART1_RXBUFFERSIZE];//串口1接收缓冲区
 extern uint8_t remote_data_flash[2];
+extern TOF_TypeDef TOF;
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
