@@ -90,9 +90,19 @@ typedef struct {
     int base_throttle;  // 基础悬停油门
 } HeightController;//高度控制器
 
+typedef struct
+{
+		PID_TypeDef pid;
+    PIDParams_TypeDef pid_params;
+		//HeightSensors_TypeDef sensor;
+    //HeightMode_TypeDef mode;
+		uint8_t auto_pos_control_isEnable;  //定高标志
+	
+}PositionController;//位置控制器
 
 extern AttiudeController AttitudeControl;
 extern HeightController HeightControl;
+extern PositionController PositionControl;//位置控制
 extern Motor_TypeDef aircraft_motor;//电机结构体
 void pid_control_init(void);
 void pid_internal_control(void);

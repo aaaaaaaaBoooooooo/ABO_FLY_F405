@@ -11,7 +11,7 @@
 #include "fatfs.h"
 AttiudeController AttitudeControl;//姿态控制
 HeightController HeightControl;//高度控制
-
+PositionController PositionControl;//位置控制
 Motor_TypeDef aircraft_motor;//电机结构体
 
 

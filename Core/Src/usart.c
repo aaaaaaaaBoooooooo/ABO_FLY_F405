@@ -172,7 +172,7 @@ void MX_USART6_UART_Init(void)
 
   /* USER CODE END USART6_Init 1 */
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
+  huart6.Init.BaudRate = 19200;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;
@@ -507,6 +507,8 @@ uint8_t remote_data_flash[2];
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	int i=0;
+	static uint32_t now_tick=0x0000;
+	static uint32_t last_tick=0x0000;
  if(huart == &huart3)
 	 {
 		 for(;i<(REMOTE_DATA_NUM+1);i++)
@@ -573,23 +575,24 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							switch(uart3_rx_buff[i+2])
 							{
 								case 0x01:
-									if(HeightControl.auto_height_control_isEnable==0)
+									last_tick = now_tick;//更新上一次时间
+									now_tick = HAL_GetTick();//获取当前时间
+									if(HeightControl.auto_height_control_isEnable==0  && (now_tick - last_tick) > 300 )
 									{										
 										HeightControl.auto_height_control_isEnable = 1; //开启自动定高
-										my_aircraft.status |= 0x02;
+										my_aircraft.status |= 0x02;//自动油门模式
 										HeightControl.base_throttle = aircraft_motor.throttle;
 										HeightControl.target_height = TOF.distance_m;//设定定高高度为当前高度
 										HeightControl.target_altitude = my_aircraft.Altitude;//设定定高海拔为当前海拔
 										//HeightControl.pid.iout = (float)aircraft_throttle;//使i项输出为当前输出，更加平滑
 										//HeightControl.pid.err = HeightControl.pid.last_err;//使偏差变化率为0，降低d项影响
 										pid_enable(&HeightControl.pid,1);//开启定高使能pid
+										break;
 									}
-									break;					
-								case 0x00:
-									if(HeightControl.auto_height_control_isEnable==1)
+									if(HeightControl.auto_height_control_isEnable==1 && (now_tick - last_tick) > 300)
 									{
 										HeightControl.auto_height_control_isEnable = 0; //关闭自动定高
-										my_aircraft.status &= 0xFD;
+										my_aircraft.status &= 0xFD;//关闭自动油门模式
 										HeightControl.mode = ALT_HOLD_DISABLED;//高度控制模式为手动
 										HeightControl.target_height = 0;
 										HeightControl.target_altitude =0;
@@ -597,8 +600,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 										HeightControl.pid.iout = 0;
 										HeightControl.pid.err = 0;
 										pid_enable(&HeightControl.pid,0);//关闭定高使能pid
+										break;
 									}
-									break;										
+									break;
+								case 0x02:
+									last_tick = now_tick;//更新上一次时间
+									now_tick = HAL_GetTick();//获取当前时间
+									if(PositionControl.auto_pos_control_isEnable==0 && (now_tick - last_tick) > 300 )
+									{	
+										PositionControl.auto_pos_control_isEnable = 1;//开启自动位置控制
+										my_aircraft.status |= 0x04;//自动方向模式
+
+										break;
+									}
+									if(PositionControl.auto_pos_control_isEnable==1 && (now_tick - last_tick) > 300)
+									{
+										PositionControl.auto_pos_control_isEnable = 0;//关闭自动位置控制
+										my_aircraft.status &= 0xFB;//手动方向模式
+
+										break;
+									}		
+									break;									
 							}
 							break;
 					}
@@ -613,7 +635,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
    }
 }
 TOF_TypeDef TOF = {0,0,0,0,25,30,0,0};
-void TOF_get_distance(uint8_t *uart_data,uint16_t size)
+OpticalFlow_TypeDef OpticalFlow;
+void TOF_get_data(uint8_t *uart_data,uint16_t size)
 {
 	char str1[9],str2[6],str3[11];
 	memcpy(str1,uart_data,9);
@@ -674,22 +697,41 @@ void TOF_get_distance(uint8_t *uart_data,uint16_t size)
 		TOF.distance_m = (float)TOF.distance_mm/1000.0f;
 	}
 }
+void OpticalFlow_get_data(uint8_t *uart_data,uint16_t size)
+{
+	if(uart_data[0] == 0xFE && uart_data[1] == 0x0A && uart_data[size - 1] == 0x55)
+	{
+		OpticalFlow.flow_x_integral = uart_data[3]<<8 | uart_data[2];
+		OpticalFlow.flow_y_integral = uart_data[5]<<8 | uart_data[4];
+		OpticalFlow.integration_timespan = uart_data[7]<<8 | uart_data[6];
+		OpticalFlow.valid = uart_data[10];
+		OpticalFlow.flow_x_speed = (OpticalFlow.flow_x_integral*0.1f*TOF.distance_mm)/(OpticalFlow.integration_timespan);//计算获得光流x轴速度 单位m/s
+		OpticalFlow.flow_y_speed = (OpticalFlow.flow_y_integral*0.1f*TOF.distance_mm)/OpticalFlow.integration_timespan;//计算获得光流y轴速度 单位m/s
+	}
+	
+	return;
+}
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-       /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-  UNUSED(Size);
-    if (huart->Instance == UART4)
-    {
-       uint8_t cnt = UART4_RXBUFFERSIZE - __HAL_DMA_GET_COUNTER(&hdma_uart4_rx);
-			TOF_get_distance(uart4_rx_buff,cnt)		;	
-       memset(uart4_rx_buff, 0, cnt);
-    }
+	uint16_t cnt;
+	if (huart->Instance == UART4)
+	{
+		cnt = UART4_RXBUFFERSIZE - __HAL_DMA_GET_COUNTER(&hdma_uart4_rx);
+		TOF_get_data(uart4_rx_buff,cnt)	;	
+		memset(uart4_rx_buff, 0, cnt);
+	}
+	else if(huart->Instance == USART6)
+	{
+		cnt = UART6_RXBUFFERSIZE - __HAL_DMA_GET_COUNTER(&hdma_usart6_rx);	
+		OpticalFlow_get_data(uart6_rx_buff,cnt);
+		memset(uart6_rx_buff, 0, cnt);		
+		
+	}
 
 
 }
 
-uint8_t remote_data_buf[AIRCFAFT_DARA_NUM];
+uint8_t remote_data_buf[AIRCFAFT_DATA_NUM];
 void aircraft_data_update()
 {
 	my_aircraft.Throttle = (aircraft_motor.throttle*100)/MOTOR_MAX_THROTTLE;
@@ -703,6 +745,9 @@ void aircraft_data_update()
 	my_aircraft.ROLL = (int8_t)Angle_Data.roll;
 	my_aircraft.PITCH = (int8_t)Angle_Data.pitch;
 	my_aircraft.YAW = (int8_t)Angle_Data.yaw;
+	
+	my_aircraft.X_speed = (int8_t)(OpticalFlow.flow_y_speed*10.0f);
+	my_aircraft.Y_speed = (int8_t)(OpticalFlow.flow_x_speed*10.0f);
 	
 }
 void aircraft_data_send()
@@ -725,8 +770,10 @@ void aircraft_data_send()
 	remote_data_buf[14] = (uint8_t)my_aircraft.Altitude;
 	remote_data_buf[15] = (int8_t)my_aircraft.Temperature;
 	remote_data_buf[16] = my_aircraft.status;
-	remote_data_buf[AIRCFAFT_DARA_NUM-1] = 0xA5;//帧尾
-	HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DARA_NUM);//上传飞行器实时数据至遥控器
+	remote_data_buf[17] = (int8_t)my_aircraft.X_speed;
+	remote_data_buf[18] = (int8_t)my_aircraft.Y_speed;
+	remote_data_buf[AIRCFAFT_DATA_NUM-1] = 0xA5;//帧尾
+	HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DATA_NUM);//上传飞行器实时数据至遥控器
 }
 
 /* USER CODE END 1 */

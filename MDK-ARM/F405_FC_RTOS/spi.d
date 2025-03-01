@@ -41,7 +41,7 @@ f405_fc_rtos\spi.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 f405_fc_rtos\spi.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\spi.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\spi.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
-f405_fc_rtos\spi.o: ..\CJSON\cJSON.h
+f405_fc_rtos\spi.o: ../CJSON/cJSON.h
 f405_fc_rtos\spi.o: ../user/Control/control.h
 f405_fc_rtos\spi.o: ../Core/Inc/main.h
 f405_fc_rtos\spi.o: ../user/Control/pid.h

@@ -41,7 +41,7 @@ f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart
 f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\hana_math.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
-f405_fc_rtos\hana_math.o: ..\CJSON\cJSON.h
+f405_fc_rtos\hana_math.o: ../CJSON/cJSON.h
 f405_fc_rtos\hana_math.o: ../user/Control/control.h
 f405_fc_rtos\hana_math.o: ../Core/Inc/main.h
 f405_fc_rtos\hana_math.o: ../user/Control/pid.h

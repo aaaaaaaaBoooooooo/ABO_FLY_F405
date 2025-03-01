@@ -139,6 +139,7 @@ int main(void)
 	delay_ms(100);
 	HAL_UART_Receive_DMA(&huart3,uart3_rx_buff,2*REMOTE_DATA_NUM);
 	HAL_UARTEx_ReceiveToIdle_DMA(&huart4,uart4_rx_buff,UART4_RXBUFFERSIZE);//开启UART4空闲中断，DMA接收测距数据
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart6,uart6_rx_buff,UART6_RXBUFFERSIZE);//开启UART6空闲中断，DMA接收光流数据
 	HAL_TIM_Base_Start_IT(&htim1);
 	HAL_TIM_Base_Start_IT(&htim5);
 	delay_ms(100);

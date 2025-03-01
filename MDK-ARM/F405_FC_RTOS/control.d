@@ -41,7 +41,7 @@ f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\control.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
-f405_fc_rtos\control.o: ..\CJSON\cJSON.h
+f405_fc_rtos\control.o: ../CJSON/cJSON.h
 f405_fc_rtos\control.o: ../user/Control/control.h
 f405_fc_rtos\control.o: ..\user\Control\pid.h
 f405_fc_rtos\control.o: ../Core/Inc/adc.h
@@ -54,7 +54,7 @@ f405_fc_rtos\control.o: ../Core/Inc/usart.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
-f405_fc_rtos\control.o: ..\user\cJSON\cJSON_usr.h
+f405_fc_rtos\control.o: ../user/cJSON/cJSON_usr.h
 f405_fc_rtos\control.o: ../FATFS/App/fatfs.h
 f405_fc_rtos\control.o: ../Middlewares/Third_Party/FatFs/src/ff.h
 f405_fc_rtos\control.o: ../Middlewares/Third_Party/FatFs/src/integer.h

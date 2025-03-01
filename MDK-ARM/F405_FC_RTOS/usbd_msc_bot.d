@@ -46,7 +46,7 @@ f405_fc_rtos\usbd_msc_bot.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_u
 f405_fc_rtos\usbd_msc_bot.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h
 f405_fc_rtos\usbd_msc_bot.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 f405_fc_rtos\usbd_msc_bot.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
-f405_fc_rtos\usbd_msc_bot.o: ..\CJSON\cJSON.h
+f405_fc_rtos\usbd_msc_bot.o: ../CJSON/cJSON.h
 f405_fc_rtos\usbd_msc_bot.o: ../user/Control/control.h
 f405_fc_rtos\usbd_msc_bot.o: ../Core/Inc/main.h
 f405_fc_rtos\usbd_msc_bot.o: ../user/Control/pid.h

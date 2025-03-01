@@ -53,11 +53,28 @@ typedef struct
 	float distance_m;
 	float d_center_x_err_mm;//与无人机中心x轴的偏差距离
 	float d_center_y_err_mm;//与无人机中心y轴的偏差距离
-	float distance_mm_offset;
-	uint16_t noise;
-	uint16_t confidence;
+	float distance_mm_offset;//与真实高度的零偏
+	uint16_t noise;//数据噪声
+	uint16_t confidence;//TOF数据可信度
 	
 }TOF_TypeDef;
+
+typedef struct
+{
+	int16_t flow_x_integral;//X像素点累计时间内的累加位移(radians*10000)
+													//除以10000乘以高度(mm)后为实际位移(mm)
+	int16_t flow_y_integral;//Y像素点累计时间内的累加位移(radians*10000)
+													//除以10000乘以高度(mm)后为实际位移(mm)
+	uint16_t integration_timespan;//上一次发送光流数据到本次发送的累计时间（us）
+	
+	uint16_t ground_distance;//预留，默认值999
+	uint8_t valid;     //状态值：0(0x00)为光流数据不可用
+	uint8_t version; //版本号
+	
+	float flow_x_speed;//光流水平x速度 单位m/s
+	float flow_y_speed;//光流水平y速度 单位m/s
+	
+}OpticalFlow_TypeDef;
 
 void uart_printf(UART_HandleTypeDef *huart,const char *format, ...);
 void aircraft_data_send(void);
@@ -70,7 +87,7 @@ void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 #define REMOTE_DATA_NUM 7
-#define AIRCFAFT_DARA_NUM 18
+#define AIRCFAFT_DATA_NUM 20
 #define UART3_RXBUFFERSIZE 128
 #define UART6_RXBUFFERSIZE 128
 #define UART4_RXBUFFERSIZE 128
