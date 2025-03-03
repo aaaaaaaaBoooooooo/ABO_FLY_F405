@@ -62,8 +62,8 @@ typedef struct
 	int8_t YAW;//偏航角
 	int8_t PITCH;//俯仰角
 	int8_t ROLL;//横滚角
-	int8_t X_speed;//X水平速度，单位dm/s
-	int8_t Y_speed;//Y水平速度，单位dm/s
+	int16_t X_speed;//X水平速度，单位dm/s
+	int16_t Y_speed;//Y水平速度，单位dm/s
 	uint16_t Height;//高度
 	float Pressure;//气压
 	float Altitude;//海拔

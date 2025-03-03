@@ -608,14 +608,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 									now_tick = HAL_GetTick();//获取当前时间
 									if(PositionControl.auto_pos_control_isEnable==0 && (now_tick - last_tick) > 300 )
 									{	
-										PositionControl.auto_pos_control_isEnable = 1;//开启自动位置控制
+										PositionControl.auto_pos_control_isEnable = 1;//开启自动定点
+										pid_enable(&PositionControl.pid_x,1);
+										pid_enable(&PositionControl.pid_y,1);
 										my_aircraft.status |= 0x04;//自动方向模式
 
 										break;
 									}
 									if(PositionControl.auto_pos_control_isEnable==1 && (now_tick - last_tick) > 300)
 									{
-										PositionControl.auto_pos_control_isEnable = 0;//关闭自动位置控制
+										PositionControl.auto_pos_control_isEnable = 0;//关闭自动定点
+										pid_enable(&PositionControl.pid_x,0);
+										pid_enable(&PositionControl.pid_y,0);										
 										my_aircraft.status &= 0xFB;//手动方向模式
 
 										break;
@@ -635,7 +639,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
    }
 }
 TOF_TypeDef TOF = {0,0,0,0,25,30,0,0};
-OpticalFlow_TypeDef OpticalFlow;
+
 void TOF_get_data(uint8_t *uart_data,uint16_t size)
 {
 	char str1[9],str2[6],str3[11];
@@ -692,21 +696,53 @@ void TOF_get_data(uint8_t *uart_data,uint16_t size)
 				TOF.noise += (uart_data[38]-0x30) ;
 			}					
 		}
-		TOF.distance_mm = (TOF.distance_mm*cosf(Angle_Data.pitch*DegtoRad)*cosf(Angle_Data.roll*DegtoRad)+TOF.d_center_y_err_mm*sinf(Angle_Data.roll*DegtoRad))+TOF.distance_mm_offset;//TOF高度矫正
+		TOF.distance_mm = (TOF.distance_mm*cosf(Angle_Data.pitch*DegtoRad)*cosf(Angle_Data.roll*DegtoRad)+TOF.d_center_y_err_mm*sinf(Angle_Data.roll*DegtoRad))+TOF.distance_offset_mm;//TOF高度矫正
 		TOF.distance_cm = (float)TOF.distance_mm/10.0f;
 		TOF.distance_m = (float)TOF.distance_mm/1000.0f;
 	}
 }
+OpticalFlow_TypeDef OpticalFlow = {0,0,0,0,0,0,0,0,45,0,0,0,0,0,0,0};
 void OpticalFlow_get_data(uint8_t *uart_data,uint16_t size)
 {
+	float yaw_err=0;
+	float pitch_err=0;
+	float roll_err=0;
 	if(uart_data[0] == 0xFE && uart_data[1] == 0x0A && uart_data[size - 1] == 0x55)
 	{
-		OpticalFlow.flow_x_integral = uart_data[3]<<8 | uart_data[2];
-		OpticalFlow.flow_y_integral = uart_data[5]<<8 | uart_data[4];
+		
+		OpticalFlow.last_yaw = OpticalFlow.now_yaw;
+		OpticalFlow.now_yaw = Angle_Data.yaw;
+		OpticalFlow.last_pitch = OpticalFlow.now_pitch;
+		OpticalFlow.now_pitch = Angle_Data.pitch;
+		OpticalFlow.last_roll = OpticalFlow.now_roll;
+		OpticalFlow.now_roll = Angle_Data.roll;	
+		yaw_err = OpticalFlow.now_yaw - OpticalFlow.last_yaw;
+		pitch_err = OpticalFlow.now_pitch - OpticalFlow.last_pitch;
+		roll_err = OpticalFlow.now_roll - OpticalFlow.last_roll;
+		
+		OpticalFlow.flow_y_integral = uart_data[3]<<8 | uart_data[2];
+		OpticalFlow.flow_x_integral = uart_data[5]<<8 | uart_data[4];
 		OpticalFlow.integration_timespan = uart_data[7]<<8 | uart_data[6];
 		OpticalFlow.valid = uart_data[10];
-		OpticalFlow.flow_x_speed = (OpticalFlow.flow_x_integral*0.1f*TOF.distance_mm)/(OpticalFlow.integration_timespan);//计算获得光流x轴速度 单位m/s
-		OpticalFlow.flow_y_speed = (OpticalFlow.flow_y_integral*0.1f*TOF.distance_mm)/OpticalFlow.integration_timespan;//计算获得光流y轴速度 单位m/s
+		
+		OpticalFlow.flow_yaw_x_com_mm = OpticalFlow.d_center_x_err_mm*(1-cosf(yaw_err*DegtoRad));//X轴补偿
+		OpticalFlow.flow_yaw_y_com_mm = OpticalFlow.d_center_x_err_mm*sinf(yaw_err*DegtoRad);//Y轴补偿
+		OpticalFlow.flow_pitch_x_com_mm =TOF.distance_mm*tanf(pitch_err*DegtoRad);//pitch旋转补偿		
+		OpticalFlow.flow_roll_y_com_mm = TOF.distance_mm*tanf(roll_err*DegtoRad);//roll旋转补偿
+
+		
+		OpticalFlow.flow_y_integral_mm = OpticalFlow.flow_y_integral*0.0001f*TOF.distance_mm;//除以10000乘以高度(mm)后为实际位移(mm)
+		OpticalFlow.flow_x_integral_mm = OpticalFlow.flow_x_integral*0.0001f*TOF.distance_mm;//除以10000乘以高度(mm)后为实际位移(mm)
+		
+		OpticalFlow.flow_y_integral_mm -=OpticalFlow.flow_yaw_y_com_mm  ;//像素积分yaw旋转补偿
+		OpticalFlow.flow_x_integral_mm -=OpticalFlow.flow_yaw_x_com_mm  ;//像素积分yaw旋转补偿
+
+		OpticalFlow.flow_y_integral_mm -=OpticalFlow.flow_roll_y_com_mm  ;//像素积分roll旋转补偿
+		OpticalFlow.flow_x_integral_mm +=OpticalFlow.flow_pitch_x_com_mm  ;//像素积分pitch旋转补偿
+		
+		OpticalFlow.flow_x_speed = (OpticalFlow.flow_x_integral_mm*1000)/(OpticalFlow.integration_timespan);//计算获得光流x轴速度 单位m/s
+		OpticalFlow.flow_y_speed = (OpticalFlow.flow_y_integral_mm*1000)/OpticalFlow.integration_timespan;//计算获得光流y轴速度 单位m/s
+		
 	}
 	
 	return;
@@ -746,8 +782,8 @@ void aircraft_data_update()
 	my_aircraft.PITCH = (int8_t)Angle_Data.pitch;
 	my_aircraft.YAW = (int8_t)Angle_Data.yaw;
 	
-	my_aircraft.X_speed = (int8_t)(OpticalFlow.flow_y_speed*10.0f);
-	my_aircraft.Y_speed = (int8_t)(OpticalFlow.flow_x_speed*10.0f);
+	my_aircraft.X_speed = (int16_t)(OpticalFlow.flow_x_speed*100.0f);
+	my_aircraft.Y_speed = (int16_t)(OpticalFlow.flow_y_speed*100.0f);
 	
 }
 void aircraft_data_send()
@@ -770,10 +806,13 @@ void aircraft_data_send()
 	remote_data_buf[14] = (uint8_t)my_aircraft.Altitude;
 	remote_data_buf[15] = (int8_t)my_aircraft.Temperature;
 	remote_data_buf[16] = my_aircraft.status;
-	remote_data_buf[17] = (int8_t)my_aircraft.X_speed;
-	remote_data_buf[18] = (int8_t)my_aircraft.Y_speed;
+	remote_data_buf[17] = my_aircraft.X_speed>>8;
+	remote_data_buf[18] = (uint8_t)my_aircraft.X_speed;
+	remote_data_buf[19] = my_aircraft.Y_speed>>8;
+	remote_data_buf[20] = (uint8_t)my_aircraft.Y_speed;
 	remote_data_buf[AIRCFAFT_DATA_NUM-1] = 0xA5;//帧尾
-	HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DATA_NUM);//上传飞行器实时数据至遥控器
+	if(HAL_DMA_GetState(&hdma_usart3_tx) == HAL_DMA_STATE_READY)
+		HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DATA_NUM);//上传飞行器实时数据至遥控器
 }
 
 /* USER CODE END 1 */

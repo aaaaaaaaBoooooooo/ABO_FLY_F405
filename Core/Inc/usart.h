@@ -53,7 +53,7 @@ typedef struct
 	float distance_m;
 	float d_center_x_err_mm;//与无人机中心x轴的偏差距离
 	float d_center_y_err_mm;//与无人机中心y轴的偏差距离
-	float distance_mm_offset;//与真实高度的零偏
+	float distance_offset_mm;//与真实高度的零偏
 	uint16_t noise;//数据噪声
 	uint16_t confidence;//TOF数据可信度
 	
@@ -71,8 +71,29 @@ typedef struct
 	uint8_t valid;     //状态值：0(0x00)为光流数据不可用
 	uint8_t version; //版本号
 	
+	float flow_x_integral_mm;
+	float flow_y_integral_mm;
+	
+	float d_center_x_err_mm;//与无人机中心x轴的偏差距离
+	float d_center_y_err_mm;//与无人机中心y轴的偏差距离	
+	
+	float last_yaw;//上一次的yaw角度
+	float now_yaw;//这次的yaw角度
+	float last_pitch;//上一次的pitch角度
+	float now_pitch;//这次的pitch角度
+	float last_roll;//上一次的roll角度
+	float now_roll;//这次的roll角度
+	
+	float flow_yaw_x_com_mm;//光流因yaw角旋转的x累加位移补偿值
+	float flow_yaw_y_com_mm;//光流因yaw角旋转的y累加位移补偿值
+	float flow_pitch_x_com_mm;//光流因pitch角旋转的x累加位移补偿值
+	float flow_pitch_y_com_mm;//光流因pitch角旋转的y累加位移补偿值
+	float flow_roll_x_com_mm;//光流因roll角旋转的x累加位移补偿值
+	float flow_roll_y_com_mm;//光流因roll角旋转的y累加位移补偿值	
 	float flow_x_speed;//光流水平x速度 单位m/s
 	float flow_y_speed;//光流水平y速度 单位m/s
+	
+	
 	
 }OpticalFlow_TypeDef;
 
@@ -87,7 +108,7 @@ void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 #define REMOTE_DATA_NUM 7
-#define AIRCFAFT_DATA_NUM 20
+#define AIRCFAFT_DATA_NUM 22
 #define UART3_RXBUFFERSIZE 128
 #define UART6_RXBUFFERSIZE 128
 #define UART4_RXBUFFERSIZE 128
@@ -98,6 +119,7 @@ extern uint8_t uart4_rx_buff[UART4_RXBUFFERSIZE];//串口4接收缓冲区
 extern uint8_t uart1_rx_buff[UART1_RXBUFFERSIZE];//串口1接收缓冲区
 extern uint8_t remote_data_flash[2];
 extern TOF_TypeDef TOF;
+extern OpticalFlow_TypeDef OpticalFlow;
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

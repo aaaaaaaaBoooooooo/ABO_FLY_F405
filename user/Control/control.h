@@ -41,6 +41,12 @@ typedef struct {
     float *pitch;
 		float *yaw;
 } AttitudeSensors_TypeDef;//姿态传感器
+typedef struct {
+    float *speed_x;
+    float *speed_y;
+    float *pos_x;
+    float *pos_y;		
+} PosSensors_TypeDef;//位置传感器
 /*控制器*/
 typedef struct {
     float Kp;
@@ -92,11 +98,13 @@ typedef struct {
 
 typedef struct
 {
-		PID_TypeDef pid;
-    PIDParams_TypeDef pid_params;
-		//HeightSensors_TypeDef sensor;
+		PID_TypeDef pid_x;
+		PID_TypeDef pid_y;
+    PIDParams_TypeDef pid_x_params;
+		PIDParams_TypeDef pid_y_params;
+		PosSensors_TypeDef sensor;
     //HeightMode_TypeDef mode;
-		uint8_t auto_pos_control_isEnable;  //定高标志
+		uint8_t auto_pos_control_isEnable;  //定点标志
 	
 }PositionController;//位置控制器
 

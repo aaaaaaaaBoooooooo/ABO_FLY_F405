@@ -151,7 +151,8 @@ int main(void)
   while (1)
   {
 		aircraft_data_send();
-		delay_ms(5);
+		
+		//delay_ms(5);
 	
     /* USER CODE END WHILE */
 
