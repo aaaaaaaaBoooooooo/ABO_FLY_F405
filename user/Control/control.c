@@ -205,7 +205,7 @@ void aircraft_flight_Height_control()
 {
 	if(HeightControl.auto_height_control_isEnable)//开启自动定高
 	{
-		if(TOF.distance_m <1.0f&&TOF.confidence >80)//TOF测距小于3.5m 并且可信度高于80
+		if(TOF.distance_m <3.0f&&TOF.confidence >80)//TOF测距小于3.5m 并且可信度高于80
 		{
 			HeightControl.mode = TOF_MODE;//TOF定高
 			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.tof_params.Kp,HeightControl.tof_params.Ki,HeightControl.tof_params.Kd);
