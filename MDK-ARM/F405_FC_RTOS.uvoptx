@@ -203,7 +203,12 @@
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PositionControl</ItemText>
+          <ItemText>PositionControl,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>aircraft_BMP390_data</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
