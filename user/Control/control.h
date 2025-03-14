@@ -2,21 +2,22 @@
 #define __CONTROL_H
 #include "main.h"
 #include "pid.h"
-#define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,x)
+#define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,!x)
 #define LED_TOGGLE   		HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
 #define MOTOR_MAX_THROTTLE 7000				//电机最大油门
 #define MOTOR_MIN_THROTTLE 0 					//电机最小油门
 #define MOTOR_MAX_DUTY  9999          //电机最大占空比
 #define MOTOR_MIN_DUTY  0							//电机最小占空比
 
-#define ROLL_TARGET_MAX_ANGLE  15
-#define ROLL_TARGET_MIN_ANGLE  -15
-#define PITCH_TARGET_MAX_ANGLE  15
-#define PITCH_TARGET_MIN_ANGLE -15
-#define YAW_TARGET_MAX_ANGLE  360
-#define YAW_TARGET_MIN_ANGLE  -360
+#define ROLL_TARGET_MAX_ANGLE  10.0f
+#define ROLL_TARGET_MIN_ANGLE  -10.0f
+#define PITCH_TARGET_MAX_ANGLE  10.0f
+#define PITCH_TARGET_MIN_ANGLE -10.0f
+#define YAW_TARGET_MAX_ANGLE  360.0f
+#define YAW_TARGET_MIN_ANGLE  -360.0f
 
-
+#define X_TARGET_MAX_SPEED 2.0f
+#define Y_TARGET_MAX_SPEED 2.0f
 /*电机*/
 typedef struct {
 	int duty1;
@@ -98,12 +99,11 @@ typedef struct {
 
 typedef struct
 {
-		PID_TypeDef pid_x;
-		PID_TypeDef pid_y;
-    PIDParams_TypeDef pid_x_params;
-		PIDParams_TypeDef pid_y_params;
+		PID_TypeDef internal_pid_x;//内环
+		PID_TypeDef internal_pid_y;
+		PID_TypeDef external_pid_x;//外环
+		PID_TypeDef external_pid_y;
 		PosSensors_TypeDef sensor;
-    //HeightMode_TypeDef mode;
 		uint8_t auto_pos_control_isEnable;  //定点标志
 	
 }PositionController;//位置控制器

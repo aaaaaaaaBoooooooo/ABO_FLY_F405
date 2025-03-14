@@ -40,45 +40,39 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		pid_internal_control();//pid姿态控制内环   输出电机PWM占空比
 		motor_throttle_control();//油门控制
 		motor_control();
-		//motor_speed_set();//电机执行
 		
 		if(tim1_cnt_5ms >= 5)
 		{
 			aircraft_flight_direction_control();//飞行方向控制
 			pid_external_control();//pid姿态控制外环  输出期望角速度
-			
+
 			tim1_cnt_5ms =0;
 		}
-//		if(tim1_cnt_10ms >= 10)
-//		{
-//		
-//			tim1_cnt_10ms =0;
-//		}
 		if(tim1_cnt_22ms >= 22)
 		{
 			aircraft_flight_Height_control();//高度pid控制
 			tim1_cnt_22ms =0;
 		}		
 		tim1_cnt_5ms++;
-//		tim1_cnt_10ms++;
 		tim1_cnt_22ms++;
 	}
 	else if(htim->Instance == TIM5)//定时器5中断 10ms
 	{
+		rx_data_tim_cnt++;//接收遥控数据定时计数
+		//uart_printf(&huart1,"%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",Angle_Data.roll,Angle_Data.pitch,Angle_Data.yaw,IMU_Data.gyro.x,IMU_Data.gyro.y,IMU_Data.gyro.z);
 		if(tim5_cnt_20ms >= 2)
 		{
-			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());
+			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());//获取当前飞机电池电压
 			
 			if(aircraft_BMP390_data.pressure!=-1)
-			{
-				my_aircraft.Pressure = aircraft_BMP390_data.pressure;//气压测量，单位Pa
-				my_aircraft.Altitude = convert_Pa_to_meter(my_aircraft.Pressure);//海拔测量，单位m
+			{   
+				my_aircraft.Altitude = convert_Pa_to_meter(aircraft_BMP390_data.pressure);//海拔测量，单位m
 			}
 			if(aircraft_BMP390_data.temperature!=-1)
 			{
 				my_aircraft.Temperature = aircraft_BMP390_data.temperature;//温度测量，单位摄氏度
 			}
-			uart_printf(&huart1,"%.3f,%.3f,%.3f,%.2f,%.2f\n",Angle_Data.roll,Angle_Data.pitch,Angle_Data.yaw,my_aircraft.Height,my_aircraft.Altitude);
+			
 			tim5_cnt_20ms = 0; 
 		}	
 		if(tim5_cnt_100ms >= 10)
@@ -89,12 +83,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 					break;
 				case 1:
 					uart_printf(&huart1,"BATTERY_LOW_POWER!\n");
+					LED_TOGGLE;//闪烁LED报错		
+					my_aircraft.status |=0x08;
 				break;
 				case 2:
 					uart_printf(&huart1,"AIRCRAFT_IMU_ERROR!\n");
+					LED_TOGGLE;//闪烁LED报错
+					my_aircraft.status |=0x08;
 				break;
 				case 3:
 					uart_printf(&huart1,"MOTOR_DUTY_ERROR!\n");
+					LED_TOGGLE;//闪烁LED报错
+					my_aircraft.status |=0x08;
 				break;				
 			}
 			
@@ -102,7 +102,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		if(tim5_cnt_1000ms >= 100)
 		{
-			LED_TOGGLE;			
+			if(my_aircraft.status & 0x01)
+			{
+			LED_TOGGLE;				
+			}
+			else
+			{
+				LED(0);//关闭LED
+			}				
 			tim5_cnt_1000ms =0;
 		}
 		tim5_cnt_20ms++;

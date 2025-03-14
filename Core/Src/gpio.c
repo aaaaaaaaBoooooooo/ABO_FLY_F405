@@ -39,6 +39,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if(imu_init_success)
 			{
 				IMU_DataUpdate();//更新处理后的IMU数据
+				
 				IMU_GetAngle(0.0009898f);//姿态解算 示波器测中断时间为989.8us
 			}
 	}

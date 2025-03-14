@@ -10,7 +10,7 @@
 #include "icm42688.h"
 #include "filter.h"
 #include "HANA_math.h"
-#include "stdio.h"
+#include "stdio.h" 
 
 #define Gyro_NUM	500 // 角速度采样个数
 #define Acc_NUM   100 // 加速度采样个数
@@ -18,6 +18,7 @@
 
 IMU_st IMU_Data={0};//IMU惯性测量单元数据
 Angle_st Angle_Data={0};//角度数据
+
 
 /*******************************************************************************
 ** 函数名称: IMU_Calibration()
@@ -218,9 +219,9 @@ void IMU_DataUpdate(void)
 //		LPF1[i].old_data = acc_LPF_in[i];
 //	}
 	
-	IMU_Data.acc.x=icm42688_data.acc_x - IMU_Data.acc_offset.x;//IMU加速度数据更新+
-	IMU_Data.acc.y=icm42688_data.acc_y - IMU_Data.acc_offset.x;
-	IMU_Data.acc.z=icm42688_data.acc_z - IMU_Data.acc_offset.x;
+	IMU_Data.acc.x=icm42688_data.acc_x;//IMU加速度数据更新
+	IMU_Data.acc.y=icm42688_data.acc_y;
+	IMU_Data.acc.z=icm42688_data.acc_z;
 	
 }
 /*******************************************************************************
@@ -310,7 +311,7 @@ void IMU_GetAngle(float dt)
 	{
 		Angle_Data.yaw  += Gyro.z*RadtoDeg* dt;//角速度积分成偏航角			
 	}
-	Angle_Data.pitch  =  asin(vecxZ)* RadtoDeg;	 //俯仰角					
+	Angle_Data.pitch  =  asinf(vecxZ)* RadtoDeg;	 //俯仰角					
 	Angle_Data.roll	= atan2f(vecyZ,veczZ) * RadtoDeg;	//横滚角
 
 		//	NormAcc = pImu->accX* vecxZ + pImu->accY * vecyZ + pImu->accZ * veczZ;	/*Z轴垂直方向上的加速度，此值涵盖了倾斜时在Z轴角速度的向量和，不是单纯重力感应得出的值*/				

@@ -188,27 +188,42 @@
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>aircraft_throttle,0x0A</ItemText>
+          <ItemText>HeightControl,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>HeightControl,0x0A</ItemText>
+          <ItemText>OpticalFlow,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>OpticalFlow,0x0A</ItemText>
+          <ItemText>PositionControl,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PositionControl,0x0A</ItemText>
+          <ItemText>aircraft_BMP390_data</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>1</WinNumber>
-          <ItemText>aircraft_BMP390_data</ItemText>
+          <ItemText>rx_data_correct_cnt,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>11</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>rx_data_cnt,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>12</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>AttitudeControl</ItemText>
+        </Ww>
+        <Ww>
+          <count>13</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>IMU_Data,0x0A</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

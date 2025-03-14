@@ -92,7 +92,8 @@ typedef struct
 	float flow_roll_y_com_mm;//光流因roll角旋转的y累加位移补偿值	
 	float flow_x_speed;//光流水平x速度 单位m/s
 	float flow_y_speed;//光流水平y速度 单位m/s
-	
+	float flow_x_pos;//光流水平x位置 单位m
+	float flow_y_pos;//光流水平y位置 单位m
 	
 	
 }OpticalFlow_TypeDef;
@@ -108,7 +109,7 @@ void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 #define REMOTE_DATA_NUM 7
-#define AIRCFAFT_DATA_NUM 22
+#define AIRCFAFT_DATA_NUM 24
 #define UART3_RXBUFFERSIZE 128
 #define UART6_RXBUFFERSIZE 128
 #define UART4_RXBUFFERSIZE 128
@@ -120,6 +121,10 @@ extern uint8_t uart1_rx_buff[UART1_RXBUFFERSIZE];//串口1接收缓冲区
 extern uint8_t remote_data_flash[2];
 extern TOF_TypeDef TOF;
 extern OpticalFlow_TypeDef OpticalFlow;
+
+extern int rx_data_correct_cnt;
+extern int rx_data_cnt;
+extern int rx_data_tim_cnt;
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

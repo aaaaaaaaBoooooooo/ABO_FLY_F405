@@ -55,7 +55,16 @@ void pid_enable(volatile PID_TypeDef * pid,uint8_t enable)
 
 	}
 	else
+	{
 		pid->enable=0;
+		pid->pout = 0;
+		pid->iout = 0;
+		pid->dout = 0;
+		pid->output = 0;
+		pid->err = 0;
+		pid->last_err = 0;
+		pid->far_err = 0;
+	}
 }
 
 

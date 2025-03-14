@@ -279,7 +279,7 @@ uint8_t icm42688_init (void)
 		/*INT_SOURCE3*/
 		icm42688_write_register(icm42688_INT_SOURCE4,0x00);//Null
 
-		/*****¿¹»ìµþÂË²¨Æ÷@536Hz*****/
+		/*****¿¹»ìµþÂË²¨Æ÷@488Hz*****/
 	
 		/*GYRO¿¹»ìµþÂË²¨Æ÷ÅäÖÃ*/
 		/*Ö¸¶¨Bank1*/
@@ -287,16 +287,16 @@ uint8_t icm42688_init (void)
 		icm42688_write_register(icm42688_INTF_CONFIG4, 0x02); //ÉèÖÃÎª4ÏßSPIÍ¨ÐÅ
 		/*GYRO¿¹»ìµþÂË²¨Æ÷ÅäÖÃ*/
 		icm42688_write_register(icm42688_GYRO_CONFIG_STATIC2,0xA0);//¿ªÆô¿¹»ìµþÂË²¨Æ÷
-		icm42688_write_register(icm42688_GYRO_CONFIG_STATIC3,0x0C);//GYRO_AAF_DELT 12 (default 13)
-		icm42688_write_register(icm42688_GYRO_CONFIG_STATIC4,0x90);//GYRO_AAF_DELTSQR 144 (default 170)
+		icm42688_write_register(icm42688_GYRO_CONFIG_STATIC3,0x0B);//GYRO_AAF_DELT 11 (default7 13)
+		icm42688_write_register(icm42688_GYRO_CONFIG_STATIC4,0x7A);//GYRO_AAF_DELTSQR 122 (default 170)
 		icm42688_write_register(icm42688_GYRO_CONFIG_STATIC5,0x80);//GYRO_AAF_BITSHIFT 8 (default 8)
 		
 		/*ACCEL¿¹»ìµþÂË²¨Æ÷ÅäÖÃ*/
 		/*Ö¸¶¨Bank2*/
 		icm42688_write_register(icm42688_REG_BANK_SEL,icm42688_Bank_2);
 		/*ACCEL¿¹»ìµþÂË²¨Æ÷ÅäÖÃ*/
-		icm42688_write_register(icm42688_ACCEL_CONFIG_STATIC2,0x18);//¿ªÆô¿¹»ìµþÂË²¨Æ÷ ACCEL_AFF_DELT 12 (default 24)
-		icm42688_write_register(icm42688_ACCEL_CONFIG_STATIC3,0x90);//ACCEL_AFF_DELTSQR 144 (default 64)
+		icm42688_write_register(icm42688_ACCEL_CONFIG_STATIC2,0x16);//¿ªÆô¿¹»ìµþÂË²¨Æ÷ ACCEL_AFF_DELT 11 (default 24)
+		icm42688_write_register(icm42688_ACCEL_CONFIG_STATIC3,0x7A);//ACCEL_AFF_DELTSQR 122 (default 64)
 		icm42688_write_register(icm42688_ACCEL_CONFIG_STATIC4,0x80);//ACCEL_AAF_BITSHIFT 8 (default 6)
 
 		/*****×Ô¶¨ÒåÂË²¨Æ÷1ºÅ@111Hz*****/
