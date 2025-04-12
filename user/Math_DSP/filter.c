@@ -63,27 +63,27 @@ float LPF_1_Filter_2(Filter_LPF_1 *LPF_1,float dt)
 **备注 : None
 **====================================================================================================*/
 /*====================================================================================================*/
-int16_t AntiPulse_MovingAverage_Filter(MovAverage *_MovAverage)
+int32_t AntiPulse_MovingAverage_Filter(MovAverage *_MovAverage)
 {
-		uint8_t i;	
+		int32_t i;	
 		int32_t sum=0;
-		int16_t max=0;
-		int16_t min=0xffff;
-	    _MovAverage->max_cnt = 10;
-			_MovAverage->average[_MovAverage->cnt] = _MovAverage->input;	
-			_MovAverage->cnt++;			
-			if(_MovAverage->cnt==_MovAverage->max_cnt)
-			{
-				_MovAverage->cnt=0;
-			}	
-			for(i=0;i<_MovAverage->max_cnt;i++)
-			{
-					if(_MovAverage->average[i]>max)
-							max = _MovAverage->average[i];
-					else if(_MovAverage->average[i]<min)
-							min = _MovAverage->average[i];
-					sum += _MovAverage->average[i];
-			}
+		int32_t max=0;
+		int32_t min=0xffff;
+		//_MovAverage->max_cnt = 10; max_cnt 为窗口大小
+		_MovAverage->average[_MovAverage->cnt] = _MovAverage->input;	
+		_MovAverage->cnt++;			
+		if(_MovAverage->cnt==_MovAverage->max_cnt)
+		{
+			_MovAverage->cnt=0;
+		}	
+		for(i=0;i<_MovAverage->max_cnt;i++)
+		{
+				if(_MovAverage->average[i]>max)
+						max = _MovAverage->average[i];
+				else if(_MovAverage->average[i]<min)
+						min = _MovAverage->average[i];
+				sum += _MovAverage->average[i];
+		}
 		return ((sum-max-min)/(_MovAverage->max_cnt-2));                                    
 }
 

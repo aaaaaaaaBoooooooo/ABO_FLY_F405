@@ -52,7 +52,8 @@ typedef struct
 	uint8_t KEY_DOWN;
 	uint8_t KEY_LEFT;
 	uint8_t KEY_RIGHT;
-	
+	uint8_t signal;//信号强度
+	uint8_t error_rate;//误码率	
 }remote_type;//遥控器类
 typedef struct 
 {
@@ -69,6 +70,8 @@ typedef struct
 	float Altitude;//海拔
 	float Temperature;//温度
 	uint8_t status;//状态
+	uint8_t signal;//信号强度
+	uint8_t error_rate;//误码率	
 }aircraft_type;//飞行器类
 
 extern remote_type my_remote;
