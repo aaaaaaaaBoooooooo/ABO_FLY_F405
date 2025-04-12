@@ -120,6 +120,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 	LED(1);//µ„¡¡LED		
+
  	while(icm42688_init())	//Õ”¬›“«≥ı ºªØ
 	{
 		printf("ICM42688 Init Failed!");

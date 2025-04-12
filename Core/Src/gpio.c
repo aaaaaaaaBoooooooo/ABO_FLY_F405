@@ -36,7 +36,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 	else if(GPIO_Pin==IMU_INT1_Pin)
 	{
-			if(imu_init_success)
+			if(my_ahrs.is_init_success)
 			{
 				IMU_DataUpdate();//更新处理后的IMU数据
 				

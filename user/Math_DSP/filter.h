@@ -51,15 +51,15 @@ extern float LPF_1_Filter_2(Filter_LPF_1 *LPF_1,float dt);
 
 typedef struct {
 	
-	uint16_t cnt;
-	int16_t input;
-	int16_t *average;
+	int32_t cnt;
+	int32_t input;
+	int32_t *average;
 
-	uint8_t max_cnt;
+	int32_t max_cnt;
 }MovAverage;
 
 
-int16_t AntiPulse_MovingAverage_Filter(MovAverage *_MovAverage);
+int32_t AntiPulse_MovingAverage_Filter(MovAverage *_MovAverage);
 
 
 

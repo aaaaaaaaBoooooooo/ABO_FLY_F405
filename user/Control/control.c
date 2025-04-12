@@ -12,13 +12,20 @@
 AttiudeController AttitudeControl;//姿态控制
 HeightController HeightControl;//高度控制
 PositionController PositionControl;//位置控制
-Motor_TypeDef aircraft_motor;//电机结构体
+Motor_TypeDef aircraft_motor = {0,0,0,0,0,1,1,1,1};//电机结构体
 
 
 /*空心杯电机控制begin*/
 //电机转速设置
 void motor_speed_set()
 {
+	/***电机电压补偿处理begin***/
+	aircraft_motor.duty1 *=aircraft_motor.volt_k1;
+	aircraft_motor.duty2 *=aircraft_motor.volt_k2;
+	aircraft_motor.duty3 *=aircraft_motor.volt_k3;
+	aircraft_motor.duty4 *=aircraft_motor.volt_k4;
+	/***电机电压补偿处理end***/	
+	
 	/***限幅处理begin***/
 	if(aircraft_motor.duty1>MOTOR_MAX_DUTY)		aircraft_motor.duty1 = MOTOR_MAX_DUTY;
 	else if(aircraft_motor.duty1<MOTOR_MIN_DUTY)		aircraft_motor.duty1 = MOTOR_MIN_DUTY;
@@ -124,7 +131,7 @@ void motor_throttle_control()
 		if(remote_data_flash[0]==1)
 		{
 			if(abs((int)my_remote.YG_LEFT_UD-128)>50)
-				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.3;
+				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.13;
 			else 
 				aircraft_motor.throttle+=0;
 
@@ -142,33 +149,33 @@ void motor_throttle_control()
 /*飞行器飞行方向控制begin*/
 void aircraft_flight_direction_control()
 {
-	static uint32_t poscontrol_cnt_4 = 0;
-	static uint32_t poscontrol_cnt_10 = 0;
+	static uint32_t poscontrol_speed_cnt = 0;
+	static uint32_t poscontrol_postion_cnt = 0;
 	if(PositionControl.auto_pos_control_isEnable)//开启自动定点
 	{
-		if(poscontrol_cnt_4>=4)//内环50Hz
+		if(poscontrol_speed_cnt>=4)//内环50Hz
 		{
 			
 			AttitudeControl.pitch_target_angle = PositionControl.internal_pid_x.f_cal_pid(&PositionControl.internal_pid_x,*PositionControl.sensor.speed_x);
 			
 			AttitudeControl.roll_target_angle = - PositionControl.internal_pid_y.f_cal_pid(&PositionControl.internal_pid_y,*PositionControl.sensor.speed_y);		
 			
-			poscontrol_cnt_4 = 0;
+			poscontrol_speed_cnt = 0;
 		}
-		if(poscontrol_cnt_10>=10)//外环20Hz
+		if(poscontrol_postion_cnt>=4)//外环50Hz
 		{
 			PositionControl.internal_pid_x.target = PositionControl.external_pid_x.f_cal_pid(&PositionControl.external_pid_x,*PositionControl.sensor.pos_x);
 			
 			PositionControl.internal_pid_y.target = PositionControl.external_pid_y.f_cal_pid(&PositionControl.external_pid_y,*PositionControl.sensor.pos_y);				
-			poscontrol_cnt_10 = 0;
+			poscontrol_postion_cnt = 0;
 		}
-		poscontrol_cnt_4++;
-		poscontrol_cnt_10++;
+		poscontrol_speed_cnt++;
+		poscontrol_postion_cnt++;
 	}
 	else//手动方向控制
 	{
-		poscontrol_cnt_4 = 0;
-		poscontrol_cnt_10 = 0;		
+		poscontrol_speed_cnt = 0;
+		poscontrol_postion_cnt = 0;		
 		if(remote_data_flash[1]==1)
 		{
 			if(abs((int)my_remote.YG_RIGHT_LR-128)>25)
@@ -202,7 +209,7 @@ void aircraft_flight_direction_control()
 				AttitudeControl.pitch_target_angle = 0;
 			
 			if(abs((int)my_remote.YG_LEFT_LR-128)>100)
-				AttitudeControl.yaw_target_angle += (float)(my_remote.YG_LEFT_LR-128)*0.012f;
+				AttitudeControl.yaw_target_angle += (float)(my_remote.YG_LEFT_LR-128)*0.008f;
 			else
 				AttitudeControl.yaw_target_angle -=0;
 				
@@ -264,7 +271,7 @@ void aircraft_flight_Height_control()
 		else
 			return;
 	}
-	else
+	else   
 		return;
 }
 /*飞行器飞行高度控制end*/
@@ -274,29 +281,29 @@ void pid_control_init()
 {
 	/***姿态控制初始化begin***/
 	pid_init(&AttitudeControl.internal_pid.x);
-	AttitudeControl.sensor.gyro_x = &IMU_Data.gyro.x;
+	AttitudeControl.sensor.gyro_x = &my_ahrs.IMU_Data.gyro.x;
 	pid_init(&AttitudeControl.internal_pid.y);
-	AttitudeControl.sensor.gyro_y = &IMU_Data.gyro.y;
+	AttitudeControl.sensor.gyro_y = &my_ahrs.IMU_Data.gyro.y;
 	pid_init(&AttitudeControl.internal_pid.z);
-	AttitudeControl.sensor.gyro_z = &IMU_Data.gyro.z;
+	AttitudeControl.sensor.gyro_z = &my_ahrs.IMU_Data.gyro.z;
 	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
 	pid_enable(&AttitudeControl.internal_pid.x,0);//未开启飞机就不使能pid
 	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
 	pid_enable(&AttitudeControl.internal_pid.y,0);//未开启飞机就不使能pid
-	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,60.0f,0.0f,15.0f);
+	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY*0.3,0,0,0,0,60.0f,0.0f,15.0f);
 	pid_enable(&AttitudeControl.internal_pid.z,0);//未开启飞机就不使能pid
 	
 	pid_init(&AttitudeControl.external_pid.x);
-	AttitudeControl.sensor.roll = &Angle_Data.roll;
+	AttitudeControl.sensor.roll = &my_ahrs.Angle_Data.roll;
 	pid_init(&AttitudeControl.external_pid.y);
-	AttitudeControl.sensor.pitch = &Angle_Data.pitch;
+	AttitudeControl.sensor.pitch = &my_ahrs.Angle_Data.pitch;
 	pid_init(&AttitudeControl.external_pid.z);
-	AttitudeControl.sensor.yaw = &Angle_Data.yaw;
-	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,9999,50,0,0,0,2.5f,0.025f,20.0f);
+	AttitudeControl.sensor.yaw = &my_ahrs.Angle_Data.yaw;
+	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,500,100,0,0,0,2.5f,0.025f,20.0f);
 	pid_enable(&AttitudeControl.external_pid.x,0);//未开启飞机就不使能pid
-	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,9999,50,0,0,0,2.5f,0.025f,20.0f);
+	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,500,100,0,0,0,2.5f,0.025f,20.0f);
 	pid_enable(&AttitudeControl.external_pid.y,0);//未开启飞机就不使能pid
-	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,1000,0,0,0,0,6.0f,0.0f,0.0f);	
+	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,100,0,0,0,0,6.0f,0.0f,0.0f);	
 	pid_enable(&AttitudeControl.external_pid.z,0);//未开启飞机就不使能pid
 	/***姿态控制初始化end***/
 	
@@ -324,8 +331,8 @@ void pid_control_init()
 	pid_init(&PositionControl.external_pid_y);
 	PositionControl.sensor.pos_x = &OpticalFlow.flow_x_pos;
 	PositionControl.sensor.pos_y = &OpticalFlow.flow_y_pos;
-	PositionControl.external_pid_x.f_param_init(&PositionControl.external_pid_x,PID_Position,X_TARGET_MAX_SPEED,0,0,0,0,0.0f,0.0f,0.0f);
-	PositionControl.external_pid_y.f_param_init(&PositionControl.external_pid_y,PID_Position,Y_TARGET_MAX_SPEED,0,0,0,0,0.0f,0.0f,0.0f);
+	PositionControl.external_pid_x.f_param_init(&PositionControl.external_pid_x,PID_Position,X_TARGET_MAX_SPEED,X_TARGET_MAX_SPEED,0,0,0,0.0f,0.0f,0.0f);
+	PositionControl.external_pid_y.f_param_init(&PositionControl.external_pid_y,PID_Position,Y_TARGET_MAX_SPEED,Y_TARGET_MAX_SPEED,0,0,0,0.0f,0.0f,0.0f);
 	pid_enable(&PositionControl.external_pid_x,0);//未开启定点就不使能pid
 	pid_enable(&PositionControl.external_pid_y,0);//未开启定点就不使能pid
 	/***位置控制初始化end***/
@@ -388,7 +395,7 @@ uint8_t aircraft_protection()
 		Battery_Low_Power_cnt =0;
 	}
 	
-	if(fabs(Angle_Data.roll)>60||fabs(Angle_Data.pitch)>60)//飞行器姿态错误保护
+	if(fabs(my_ahrs.Angle_Data.roll)>60||fabs(my_ahrs.Angle_Data.pitch)>60)//飞行器姿态错误保护
 	{
 		Aircraft_IMU_Error_cnt++;
 		if(Aircraft_IMU_Error_cnt >= 2)//0.2s
@@ -676,6 +683,26 @@ uint8_t fatfs_PID_params_read()
 	{
 		PositionControl.external_pid_y.kd = json_get->valuedouble;
 	}
+	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k1");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		aircraft_motor.volt_k1 = json_get->valuedouble;
+	}	
+	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k2");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		aircraft_motor.volt_k2 = json_get->valuedouble;
+	}
+	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k3");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		aircraft_motor.volt_k3 = json_get->valuedouble;
+	}
+	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k4");
+	if(json_get->type == cJSON_Number)  //从json获取键值内容
+	{
+		aircraft_motor.volt_k4 = json_get->valuedouble;
+	}	
 	
 	printf("param_read_succese\n");
 	cJSON_Delete(json);  //释放内存 

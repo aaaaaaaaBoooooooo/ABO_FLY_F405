@@ -99,7 +99,7 @@ static float pid_calculate(volatile PID_TypeDef* pid, float measure)
 			
 				 
 			//是否进入死区
-			if((__fabs(pid->err) > pid->DeadBand))
+			if((__fabs(pid->err) >= pid->DeadBand))
 			{    
 				if(pid->id==PID_Position) //位置式PID
 				{ 
@@ -116,17 +116,17 @@ static float pid_calculate(volatile PID_TypeDef* pid, float measure)
 					 pid->output = pid->pout + pid->iout + pid->dout;//绝对输出
 					 //pid->output = pid->output*0.7f + pid->last_output*0.3f;  //权重滤波
 			
-//					/***输出限幅"反计算抗饱和法"***/
-//					if(pid->output>pid->MaxOutput)         
-//					{
-//						pid->iout -= pid->output - pid->MaxOutput;
-//						pid->output = pid->MaxOutput;
-//					}
-//					if(pid->output < -(pid->MaxOutput))
-//					{
-//						pid->iout += pid->output - pid->MaxOutput;
-//						pid->output = -(pid->MaxOutput);
-//					}
+					/***输出限幅"反计算抗饱和法"***/
+					if(pid->output>pid->MaxOutput)         
+					{
+						//pid->iout -= pid->output - pid->MaxOutput;
+						pid->output = pid->MaxOutput;
+					}
+					if(pid->output < -(pid->MaxOutput))
+					{
+						//pid->iout += pid->output - pid->MaxOutput;
+						pid->output = -(pid->MaxOutput);
+					}
 				}
 				else if(pid->id==PID_Speed)//增量式PID
 				{ 

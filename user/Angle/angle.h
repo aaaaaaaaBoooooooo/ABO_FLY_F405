@@ -32,8 +32,8 @@
 #define VAR_GyX				50.0f		            //1/方差   0.001f
 #define VAR_GyY				50.0f		            //1/方差   0.001f
 #define VAR_GyZ				50.0f		            //1/方差   0.001f
-#define VAR_AcX				50.0f		            //1/方差   0.001f
-#define VAR_AcY				50.0f		            //1/方差   0.001f
+#define VAR_AcX				100.0f		            //1/方差   0.001f
+#define VAR_AcY				100.0f		            //1/方差   0.001f
 #define VAR_AcZ				100.0f		            //1/方差   0.001f
 #define ALPHA			0.0f					//一阶互补滤波系数
 
@@ -66,21 +66,27 @@ typedef volatile struct {
 typedef struct{
 	vector3int16_t acc;// 加速度
 	vector3float_t gyro;// 角速度
+	int16_t temperature;//温度
 	vector3float_t mag;// 磁场强度
 	vector3int16_t acc_offset;//陀螺仪零偏
 	vector3int16_t gyro_offset;//加速度计零偏
 	vector3int16_t mag_offset;//磁力计零偏
-}IMU_st;
+}IMU_DATA_TypeDef;//IMU原始数据
 
 typedef struct{
 	float roll;
 	float pitch;
 	float yaw;
-}Angle_st;
+}Angle_DATA_TypeDef;//欧拉角姿态数据
 
-extern  IMU_st IMU_Data;
-extern  Angle_st Angle_Data;
-extern 	uint8_t imu_init_success;
+typedef struct{
+	IMU_DATA_TypeDef IMU_Data;
+	Angle_DATA_TypeDef Angle_Data;
+	uint8_t is_init_success;
+}AHRS_TypeDef;
+
+extern  AHRS_TypeDef my_ahrs;
+
 /*函数描述-----------------------------------------------------------*/
 
 

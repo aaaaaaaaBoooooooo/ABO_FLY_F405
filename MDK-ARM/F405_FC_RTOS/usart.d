@@ -52,3 +52,4 @@ f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
 f405_fc_rtos\usart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\usart.o: ../user/Angle/angle.h
 f405_fc_rtos\usart.o: ../user/Math_DSP/HANA_math.h
+f405_fc_rtos\usart.o: ../user/Math_DSP/filter.h
