@@ -68,7 +68,57 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define DATA_FILE_NAME "fly_data.txt"
+char DATA_FILE_BUFFER[65];//一次写入的格式  "time:data1,data2,data3,data4,data5,data6\r\n"
+/*无人机飞行数据采集*/
+void aircraft_fly_data_store()
+{
+	uint32_t time,time_0;
+	static uint8_t aircraft_last_status=0;
+	FIL file;     // 文件句柄
+	FRESULT res;
+  UINT bytes_written;  // 写入的字节数
 
+	while(1)
+	{
+		if(aircraft_last_status == 0x00 && my_aircraft.status == 0x01 )
+		{
+			aircraft_last_status = 0x01;
+			time_0 = HAL_GetTick();
+			/***打开文件***/
+			res = f_open(&file, DATA_FILE_NAME,FA_WRITE);	
+		}
+		else if(aircraft_last_status == 0x01 && my_aircraft.status ==0x00 )
+		{
+			aircraft_last_status = 0x00;
+			/***关闭文件***/
+			f_close(&file);
+		}
+		if(my_fatfs_init_success&&my_aircraft.status & 0x01)//飞机正在飞行
+		{
+			delay_us(550);
+			if (res == FR_OK)
+			{
+				time = HAL_GetTick() - time_0;
+				sprintf(DATA_FILE_BUFFER,"%-6d:%13f,%13f,%13f,%13f\r\n",time,my_ahrs.Angle_Data.pitch,AttitudeControl.pitch_target_angle,my_ahrs.Angle_Data.roll,AttitudeControl.roll_target_angle);
+				if(f_size(&file) < (12*1024*1024))
+				{
+					/****移动文件读写指针到文件结束处，以便添加数据***/
+					f_lseek(&file,f_size(&file));
+					// 写入数据到文件
+					f_write(&file, DATA_FILE_BUFFER, sizeof(DATA_FILE_BUFFER), &bytes_written);
+				}
+			}
+			else
+			{
+				while(1)
+				{
+						
+				}
+			}
+		}
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -157,8 +207,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		aircraft_data_send();
-		
+		//aircraft_fly_data_store();
 		//delay_ms(5);
 	
     /* USER CODE END WHILE */

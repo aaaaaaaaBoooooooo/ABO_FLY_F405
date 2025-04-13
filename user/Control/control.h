@@ -2,7 +2,7 @@
 #define __CONTROL_H
 #include "main.h"
 #include "pid.h"
-#define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,!((GPIO_PinState)x))
+#define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,(GPIO_PinState)!x)
 #define LED_TOGGLE   		HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
 #define MOTOR_MAX_THROTTLE 2800				//电机最大油门 约为最大占空比的0.8
 #define MOTOR_MIN_THROTTLE 0 					//电机最小油门

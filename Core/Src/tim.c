@@ -59,8 +59,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	else if(htim->Instance == TIM5)//定时器5中断 10ms
 	{
 		rx_data_tim_cnt++;//接收遥控数据定时计数
-		uart_printf(&huart1,"%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",my_ahrs.Angle_Data.roll,my_ahrs.Angle_Data.pitch,my_ahrs.Angle_Data.yaw,my_ahrs.IMU_Data.gyro.x,my_ahrs.IMU_Data.gyro.y,my_ahrs.IMU_Data.gyro.z);
+		//uart_printf(&huart1,"%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",my_ahrs.Angle_Data.roll,my_ahrs.Angle_Data.pitch,my_ahrs.Angle_Data.yaw,my_ahrs.IMU_Data.gyro.x,my_ahrs.IMU_Data.gyro.y,my_ahrs.IMU_Data.gyro.z);
 		//uart_printf(&huart1,"%f,%f,%d\n",OpticalFlow.flow_x_speed,OpticalFlow.flow_y_speed,TOF.distance_mm);
+		aircraft_data_send();
 		if(tim5_cnt_20ms >= 2)
 		{
 			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());//获取当前飞机电池电压
@@ -105,7 +106,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		{
 			if(my_aircraft.status & 0x01)
 			{
-			LED_TOGGLE;				
+				LED_TOGGLE;				
 			}
 			else
 			{

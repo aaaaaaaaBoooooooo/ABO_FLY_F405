@@ -108,25 +108,28 @@ uint8_t fatfs_write_file(TCHAR *path,char * write_buf,uint32_t data_size)
 	FRESULT res;
   UINT bytes_written;  // 写入的字节数
 	// 		打开文件（如果文件不存在，则创建）
-	res = f_open(&file, path, FA_CREATE_ALWAYS | FA_WRITE);
+	res = f_open(&file, path,FA_WRITE);
 	if (res == FR_OK)
 	{
-			printf("File opened/created successfully.\n");
+			
+			//printf("File opened/created successfully.\n");
 
+			/****移动文件读写指针到文件结束处，以便添加数据***/
+			f_lseek(&file,f_size(&file));
 			// 写入数据到文件
 			res = f_write(&file, write_buf, data_size, &bytes_written);
 			if (res == FR_OK)
 			{
 					// 关闭文件
 					f_close(&file);
-					printf("Data written successfully. Bytes written: %u\n", bytes_written);
+					//printf("Data written successfully. Bytes written: %u\n", bytes_written);
 					return 0;
 			}
 			else
 			{
 					// 关闭文件
 					f_close(&file);
-					printf("Write error: %d\n", res);
+					//printf("Write error: %d\n", res);
 					return 1;
 			}
 

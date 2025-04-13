@@ -531,6 +531,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							my_aircraft.status=uart3_rx_buff[i+2];
 							if(my_aircraft.status == 0x01)//启动飞行器
 							{
+								my_aircraft.fly_start_time = HAL_GetTick();
 								pid_enable(&AttitudeControl.internal_pid.x,1);//开启飞机使能pid
 								pid_enable(&AttitudeControl.internal_pid.y,1);//开启飞机使能pid
 								pid_enable(&AttitudeControl.internal_pid.z,1);//开启飞机使能pid

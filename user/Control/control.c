@@ -337,7 +337,8 @@ void pid_control_init()
 	pid_enable(&PositionControl.external_pid_y,0);//未开启定点就不使能pid
 	/***位置控制初始化end***/
 	
-	fatfs_PID_params_read();//pid参数读取
+	if(my_fatfs_init_success)
+			fatfs_PID_params_read();//pid参数读取
 	motor_init();//电机初始化
 }
 

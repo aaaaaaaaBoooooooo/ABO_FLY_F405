@@ -34,13 +34,13 @@ void IMU_Calibration(void)
 {
 	uint16_t i=0;
 	vector3float_t gyro[Gyro_NUM];//角速度计原始数据
-	vector3float_t gyro_avg = {0,0,0};//角速度计平均值
-	vector3float_t gyro_var 		 = {0,0,0};//存放角速度计方差
+	vector3float_t gyro_avg = {0.0f,0.0f,0.0f};//角速度计平均值
+	vector3float_t gyro_var 		 = {0.0f,0.0f,0.0f};//存放角速度计方差
 
 	
 	vector3float_t acc[Acc_NUM];//加速度计原始数据
-	vector3float_t acc_avg  = {0,0,0};//加速度计平均值
-	vector3float_t acc_var      = {0,0,0};//存放加速度计方差
+	vector3float_t acc_avg  = {0.0f,0.0f,0.0f};//加速度计平均值
+	vector3float_t acc_var      = {0.0f,0.0f,0.0f};//存放加速度计方差
 
 	do
 	{
@@ -60,27 +60,25 @@ void IMU_Calibration(void)
 		acc_var.x = 0;
 		acc_var.y = 0;
 		acc_var.z = 0;
-		my_ahrs.IMU_Data.acc_offset.x = 0;
-		my_ahrs.IMU_Data.acc_offset.y = 0;
-		my_ahrs.IMU_Data.acc_offset.z = 0;		
+		my_ahrs.IMU_Data.acc_offset = 0;	
 		/****数据清零end****/
 		
 		for(i=0; i<Gyro_NUM; i++)//采集陀螺仪数据计算均值
 		{
 
 			//获取icm42688数据
-			icm42688_get_gyro();// 获取陀螺仪数据	
+			icm42688_get_gyro();// 获取陀螺仪数据	  单位为°/s
 
-			gyro[i].x = icm42688_data.gyro_x;
-			gyro[i].y = icm42688_data.gyro_y;
-			gyro[i].z = icm42688_data.gyro_z;
+			gyro[i].x = icm42688_gyro_transition (icm42688_data.gyro_x);
+			gyro[i].y = icm42688_gyro_transition (icm42688_data.gyro_y);
+			gyro[i].z = icm42688_gyro_transition (icm42688_data.gyro_z);
 
 			//累加求和
 			gyro_avg.x += gyro[i].x;
 			gyro_avg.y += gyro[i].y;
 			gyro_avg.z += gyro[i].z;
 
-			delay_ms(5);
+			delay_ms(1);
 			
 		}
 		//求平均
@@ -92,19 +90,18 @@ void IMU_Calibration(void)
 		for(i=0;i<Acc_NUM;i++)//采集加速度数据计算均值
 		{
 			//获取icm42688数据
-			icm42688_get_acc();// 获取加速度计数据	
+			icm42688_get_acc();// 获取加速度计数据	  // 单位为 g(m/s^2)
 
-			acc[i].x = icm42688_data.acc_x;
-			acc[i].y = icm42688_data.acc_y;
-			acc[i].z = icm42688_data.acc_z;
+			acc[i].x = icm42688_acc_transition(icm42688_data.acc_x);
+			acc[i].y = icm42688_acc_transition(icm42688_data.acc_y);
+			acc[i].z = icm42688_acc_transition(icm42688_data.acc_z);
 
 			//累加求和
 			acc_avg.x += acc[i].x;
 			acc_avg.y += acc[i].y;
 			acc_avg.z += acc[i].z;
 
-			delay_ms(10);			
-	
+			delay_ms(1);			
 		}
 		//求平均
 		acc_avg.x = acc_avg.x/Acc_NUM;
@@ -126,28 +123,23 @@ void IMU_Calibration(void)
 			acc_var.z += (float) (1.0f/(Acc_NUM-1)) * (acc[i].z - acc_avg.z) * (acc[i].z - acc_avg.z);
 		}
 
-		printf("gyro_var\nx:%d\ny:%d\nz:%d\n",(int)(1000.0f*gyro_var.x),(int)(1000.0f*gyro_var.y),(int)(1000.0f*gyro_var.z));
-		printf("acc_var\nx:%d\ny:%d\nz:%d\n",(int)acc_var.x,(int)acc_var.y,(int)acc_var.z);
+		printf("gyro_var\nx:%f\ny:%f\nz:%f\n",gyro_var.x,gyro_var.y,gyro_var.z);
+		printf("acc_var\nx:%f\ny:%f\nz:%f\n",acc_var.x,acc_var.y,acc_var.z);
 		
 
 		//判断并保存静止时的零偏
 		if( gyro_var.x<VAR_GyX && gyro_var.y<VAR_GyY && gyro_var.z<VAR_GyZ&&acc_var.x<VAR_AcX && acc_var.y<VAR_AcY &&acc_var.z<VAR_AcZ)//方差足够小
 		{
 			/***零漂获取begin***/
-			my_ahrs.IMU_Data.gyro_offset.x  = (int16_t)gyro_avg.x;
-			my_ahrs.IMU_Data.gyro_offset.y  = (int16_t)gyro_avg.y;
-			my_ahrs.IMU_Data.gyro_offset.z  = (int16_t)gyro_avg.z;
-			my_ahrs.IMU_Data.acc_offset.x		=	(int16_t)acc_avg.x;
-			my_ahrs.IMU_Data.acc_offset.y  = (int16_t)acc_avg.y;
-			my_ahrs.IMU_Data.acc_offset.z  = (int16_t)acc_avg.z;
+			my_ahrs.IMU_Data.gyro_offset.x  = gyro_avg.x;
+			my_ahrs.IMU_Data.gyro_offset.y  = gyro_avg.y;
+			my_ahrs.IMU_Data.gyro_offset.z  = gyro_avg.z;
+			my_ahrs.IMU_Data.acc_offset		=		1.0f/invSqrt(acc_avg.x*acc_avg.x + acc_avg.y*acc_avg.y +acc_avg.z*acc_avg.z);
+
 			/***零漂获取end***/
 			
-			printf("gyro_offset.x:%d\r\n",my_ahrs.IMU_Data.gyro_offset.x);
-			printf("gyro_offset.y:%d\r\n",my_ahrs.IMU_Data.gyro_offset.y);
-			printf("gyro_offset.z:%d\r\n",my_ahrs.IMU_Data.gyro_offset.z);
-			printf("acc_offset.x:%d\r\n",my_ahrs.IMU_Data.acc_offset.x);
-			printf("acc_offset.y:%d\r\n",my_ahrs.IMU_Data.acc_offset.y);
-			printf("acc_offset.z:%d\r\n",my_ahrs.IMU_Data.acc_offset.z);
+			printf("gyro_offset:x%f\n  y%f\n  z%f\r\n",my_ahrs.IMU_Data.gyro_offset.x,my_ahrs.IMU_Data.gyro_offset.y,my_ahrs.IMU_Data.gyro_offset.z);
+			printf("acc_offset:%f\r\n",my_ahrs.IMU_Data.acc_offset);
 			my_ahrs.is_init_success=1;//零漂校准成功
 			delay_ms(1000);//延时等待姿态解算稳定
 			return;
@@ -199,9 +191,9 @@ void IMU_DataUpdate(void)
   
 		
 		
-	my_ahrs.IMU_Data.gyro.x= (icm42688_data.gyro_x-my_ahrs.IMU_Data.gyro_offset.x)*Gyro_Gain;//IMU角速度数据更新+去零偏
-	my_ahrs.IMU_Data.gyro.y= (icm42688_data.gyro_y-my_ahrs.IMU_Data.gyro_offset.y)*Gyro_Gain;
-	my_ahrs.IMU_Data.gyro.z= (icm42688_data.gyro_z-my_ahrs.IMU_Data.gyro_offset.z)*Gyro_Gain;
+	my_ahrs.IMU_Data.gyro.x= icm42688_gyro_transition(icm42688_data.gyro_x)-my_ahrs.IMU_Data.gyro_offset.x;//IMU角速度数据更新+去零偏   单位为°/s
+	my_ahrs.IMU_Data.gyro.y= icm42688_gyro_transition(icm42688_data.gyro_y)-my_ahrs.IMU_Data.gyro_offset.y;
+	my_ahrs.IMU_Data.gyro.z= icm42688_gyro_transition(icm42688_data.gyro_z)-my_ahrs.IMU_Data.gyro_offset.z;
 	
 	
 //	static Filter_LPF_1 LPF1[3]={{100,0,10},{100,0,10},{8330,0,10}};//加速度收敛
@@ -215,9 +207,9 @@ void IMU_DataUpdate(void)
 //		LPF1[i].old_data = acc_LPF_in[i];
 //	}
 	
-	my_ahrs.IMU_Data.acc.x=icm42688_data.acc_x;//IMU加速度数据更新
-	my_ahrs.IMU_Data.acc.y=icm42688_data.acc_y;
-	my_ahrs.IMU_Data.acc.z=icm42688_data.acc_z;
+	my_ahrs.IMU_Data.acc.x=icm42688_acc_transition(icm42688_data.acc_x);//IMU加速度数据更新      // 单位为 g(m/s^2)
+	my_ahrs.IMU_Data.acc.y=icm42688_acc_transition(icm42688_data.acc_y);
+	my_ahrs.IMU_Data.acc.z=icm42688_acc_transition(icm42688_data.acc_z);
 	
 }
 /*******************************************************************************
@@ -231,9 +223,9 @@ void IMU_DataUpdate(void)
 ** 创建人员: JLB
 ** 创建日期: 2024-3-16
 **------------------------------------------------------------------------------
-** 修改人员:
-** 修改日期:
-** 修改描述:
+** 修改人员:ABO
+** 修改日期:2025-4-12
+** 修改描述:优化了Mahony算法解算流程
 **------------------------------------------------------------------------------
 ********************************************************************************/
 void IMU_GetAngle(float dt) 
@@ -244,21 +236,22 @@ void IMU_GetAngle(float dt)
 				float z;
 				} halfGravity,//角速度通过四元数旋转矩阵获得的理论重力加速度向量
 					Acc,//实际加速度计测量的重力加速度向量（静态时准确，动态时不准）
-					Gyro,//
+					Gyro,//经加速度修正后的角速度
 					AccGravity;//重力加速度的实际值与理论值叉乘之后的模值，代表误差
 
 	static struct V GyroIntegError = {0};//误差积分补偿项
-	static  float twoKpDef = 1.0f ;//角速度和加速度融合滤波系数  控制对加速度计的相信程度，一般动态下加速度计不可信
-	static  float twoKiDef = 0.000f;//误差积分融合滤波系数   一般做了零漂矫正就不需要积分了（或者一个极小量）
 	static Quaternion NumQ = {1, 0, 0, 0};//四元数
 	float q0_t,q1_t,q2_t,q3_t;//龙格库塔法暂存变量	
 	float NormQuat; //归一化系数
 	float HalfTime = dt * 0.5f;//半采样时间->减少乘法次数
+	float INV_TAU = 0.11f;//Mahony滤波PI控制器时间常数的倒数
+	float twoKpDef = 8.584f *INV_TAU ;//角速度和加速度融合滤波系数  控制对加速度计的相信程度，一般动态下加速度计不可信
+	float twoKiDef = 9.210632f*INV_TAU*INV_TAU*dt;//误差积分融合滤波系数   一般做了零漂矫正就不需要积分了（或者一个极小量）
 
 
 /*****************Mahony融合滤波迭代算法begin********************/
 
-    /*** 只在加速度计数据有效时才进行误差运算 ***/
+    /*** 只在加速度计数据有效时才进行误差运算 ***/     
 	if(!((my_ahrs.IMU_Data.acc.x == 0.0f) && (my_ahrs.IMU_Data.acc.y == 0.0f) && (my_ahrs.IMU_Data.acc.z == 0.0f))) 
 	{
 		/***通过四元数得到理论重力加速度向量Gravity的一半----减少后续计算中的乘法次数***/ 
@@ -272,6 +265,14 @@ void IMU_GetAngle(float dt)
 		Acc.y = my_ahrs.IMU_Data.acc.y * NormQuat;
 		Acc.z = my_ahrs.IMU_Data.acc.z * NormQuat;	
 		
+#ifdef Dynamic_PI
+		/***动态PI系数***/
+		float now_G = 1.0f/NormQuat;
+		INV_TAU *= expf(-fabs(now_G - my_ahrs.IMU_Data.acc_offset)/my_ahrs.IMU_Data.acc_offset);
+		twoKiDef = 9.210632f*INV_TAU*INV_TAU*dt;
+		twoKpDef = 8.584f *INV_TAU ;
+#endif
+
 		/***对实际重力加速度向量Acc与理论重力加速度向量Gravity做外积得到二者的误差***/
 		AccGravity.x = (Acc.y * halfGravity.z - Acc.z * halfGravity.y);
 		AccGravity.y = (Acc.z * halfGravity.x - Acc.x * halfGravity.z);

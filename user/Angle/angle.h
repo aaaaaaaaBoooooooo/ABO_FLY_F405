@@ -22,7 +22,6 @@
 /*头文件----------------------------------------------------------------------*/
 #include "HANA_math.h"
 /*宏定义-----------------------------------------------------------------------*/
-#define G		        9.7923f		      	// m/s^2	chengdu
 #define RadtoDeg    	57.29578f				//弧度到角度 (弧度 * 180/3.1415926)
 #define DegtoRad    	0.0174533f				//角度到弧度 (角度 * 3.1415/180)
 #define Acc_Gain  		0.0004883f				//加速度变成G (初始化加速度满量程-+16g LSBa = 2*16/65536.0)
@@ -40,7 +39,7 @@
 
 #define ANGLE_TO_RAD(x)    ((x) * PI / 180.0)                                   // 角度转换为弧度
 #define RAD_TO_ANGLE(x)    ((x) * 180.0 / PI)                                   // 弧度转换为角度
-
+#define Dynamic_PI
 
 typedef struct
 {
@@ -64,13 +63,13 @@ typedef volatile struct {
 } Quaternion;
 
 typedef struct{
-	vector3int16_t acc;// 加速度
+	vector3float_t acc;// 加速度
 	vector3float_t gyro;// 角速度
-	int16_t temperature;//温度
+	float temperature;//温度
 	vector3float_t mag;// 磁场强度
-	vector3int16_t acc_offset;//陀螺仪零偏
-	vector3int16_t gyro_offset;//加速度计零偏
-	vector3int16_t mag_offset;//磁力计零偏
+	vector3float_t gyro_offset;//陀螺仪零偏
+	float acc_offset;//加速度计静态模值（重力加速度）
+	vector3float_t mag_offset;//磁力计零偏
 }IMU_DATA_TypeDef;//IMU原始数据
 
 typedef struct{
