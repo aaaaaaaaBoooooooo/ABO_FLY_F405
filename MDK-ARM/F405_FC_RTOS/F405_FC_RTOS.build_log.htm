@@ -22,11 +22,18 @@ Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
 D:\D\JLB_Often\STM32\STM32projects\Projects\F405_FC_RTOS\MDK-ARM\F405_FC_RTOS.uvprojx
-Project File Date:  04/12/2025
+Project File Date:  04/14/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\Keil5\ARM\ARMCC\Bin'
 Build target 'F405_FC_RTOS'
+compiling W25QXX.c...
+..\Drivers\BSP_HardWare\W25QXX.c(125): warning:  #177-D: variable "i"  was declared but never referenced
+   	uint16_t i;  
+..\Drivers\BSP_HardWare\W25QXX.c: 1 warning, 0 errors
+linking...
+Program Size: Code=75396 RO-data=1080 RW-data=588 ZI-data=43540  
+FromELF: creating hex file...
 After Build - User command #1: D:\D\JLB_Often\STM32\STM32projects\Projects\F405_FC_RTOS\MDK-ARM\Keil5_disp_size_bar_v0.4.exe
 [Keil5_disp_size_bar V0.4]: find project satrt!
 [Keil5_disp_size_bar V0.4]: Found file: .//F405_FC_RTOS.uvprojx
@@ -35,12 +42,12 @@ After Build - User command #1: D:\D\JLB_Often\STM32\STM32projects\Projects\F405_
 [Keil5_disp_size_bar V0.4]: Found file: .//F405_FC_RTOS/F405_FC_RTOS.map
 [Keil5_disp_size_bar V0.4]: map file read end
 ram:
-  112 KB   ram1:|¡ö¡ö¡ö¡ö¡ö¡ö¡ö_____________| 38.39 % (   43.00 KB /   112.00 KB) [70656 B]
+  112 KB   ram1:|¡ö¡ö¡ö¡ö¡ö¡ö¡ö_____________| 38.48 % (   43.09 KB /   112.00 KB) [70560 B]
    16 KB   ram2:|____________________|  0.00 % (    0.00 KB /    16.00 KB) [16384 B]
 flash:
- 1024 KB flash1:|¡ö___________________|  7.12 % (   72.93 KB /  1024.00 KB) [973900 B]
+ 1024 KB flash1:|¡ö___________________|  7.29 % (   74.68 KB /  1024.00 KB) [972100 B]
  
-"F405_FC_RTOS\F405_FC_RTOS.axf" - 0 Error(s), 0 Warning(s).
+"F405_FC_RTOS\F405_FC_RTOS.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -63,7 +70,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE@6.1.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

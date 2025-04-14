@@ -124,14 +124,24 @@ void motor_throttle_control()
 {
 	if(HeightControl.auto_height_control_isEnable)//自动定高油门控制
 	{
-		aircraft_motor.throttle = HeightControl.base_throttle + HeightControl.pid.output;
+		if(remote_data_flash[0]==1)//定高高度控制
+		{
+			if(abs((int)my_remote.YG_LEFT_UD-128)>20)
+				 HeightControl.target_height += ((int)my_remote.YG_LEFT_UD - 128)*0.00015f;
+			else 
+				aircraft_motor.throttle+=0;
+
+			remote_data_flash[0] = 0;
+		}	
+		aircraft_motor.throttle = HeightControl.base_throttle + HeightControl.pid.output;//油门输出
+	
 	}
 	else//默认手动油门控制
 	{
 		if(remote_data_flash[0]==1)
 		{
-			if(abs((int)my_remote.YG_LEFT_UD-128)>50)
-				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.13;
+			if(abs((int)my_remote.YG_LEFT_UD-128)>40)
+				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.2f;
 			else 
 				aircraft_motor.throttle+=0;
 

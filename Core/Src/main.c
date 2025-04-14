@@ -207,7 +207,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		//aircraft_fly_data_store();
+		aircraft_fly_data_store();
 		//delay_ms(5);
 	
     /* USER CODE END WHILE */

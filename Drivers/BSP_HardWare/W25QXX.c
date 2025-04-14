@@ -129,7 +129,9 @@ void W25QXX_Write_Page(uint8_t* pBuffer,uint32_t WriteAddr,uint16_t NumByteToWri
     SPI_ReadWriteByte((uint8_t)((WriteAddr)>>16)); //发送24bit地址    
     SPI_ReadWriteByte((uint8_t)((WriteAddr)>>8));   
     SPI_ReadWriteByte((uint8_t)WriteAddr);   
-    for(i=0;i<NumByteToWrite;i++)SPI_ReadWriteByte(pBuffer[i]);//循环写数  
+    //for(i=0;i<NumByteToWrite;i++)SPI_ReadWriteByte(pBuffer[i]);//循环写数  
+		HAL_SPI_Transmit_DMA(&hspi2,pBuffer,NumByteToWrite);
+		while(HAL_DMA_GetState(hspi2.hdmatx) != HAL_DMA_STATE_READY);
 	W25QXX_CS(1);			                 //取消片选 
 	W25QXX_Wait_Busy();					   //等待写入结束
 } 
