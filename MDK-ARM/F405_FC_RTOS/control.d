@@ -47,7 +47,6 @@ f405_fc_rtos\control.o: ..\user\Control\pid.h
 f405_fc_rtos\control.o: ../Core/Inc/adc.h
 f405_fc_rtos\control.o: ../Core/Inc/tim.h
 f405_fc_rtos\control.o: ../user/Angle/angle.h
-f405_fc_rtos\control.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\control.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
 f405_fc_rtos\control.o: ../Core/Inc/usart.h

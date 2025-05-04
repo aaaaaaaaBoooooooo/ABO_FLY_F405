@@ -122,7 +122,7 @@ void W25QXX_Read(uint8_t* pBuffer,uint32_t ReadAddr,uint16_t NumByteToRead)
 //NumByteToWrite:要写入的字节数(最大256),该数不应该超过该页的剩余字节数!!!	 
 void W25QXX_Write_Page(uint8_t* pBuffer,uint32_t WriteAddr,uint16_t NumByteToWrite)
 {
- 	uint16_t i;  
+ 	//uint16_t i;  
     W25QXX_Write_Enable();                  //SET WEL 
 	W25QXX_CS(0);                            //使能器件  
     SPI_ReadWriteByte(W25X_PageProgram);      //发送写页命令   

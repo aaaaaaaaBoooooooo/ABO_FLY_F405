@@ -49,5 +49,4 @@ f405_fc_rtos\gpio.o: ../Drivers/BSP_HardWare/bmp390_task.h
 f405_fc_rtos\gpio.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h
 f405_fc_rtos\gpio.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\gpio.o: ../user/Angle/angle.h
-f405_fc_rtos\gpio.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\gpio.o: ../Drivers/BSP_HardWare/icm42688.h

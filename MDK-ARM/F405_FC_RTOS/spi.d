@@ -46,6 +46,4 @@ f405_fc_rtos\spi.o: ../user/Control/control.h
 f405_fc_rtos\spi.o: ../Core/Inc/main.h
 f405_fc_rtos\spi.o: ../user/Control/pid.h
 f405_fc_rtos\spi.o: ../user/Angle/angle.h
-f405_fc_rtos\spi.o: ../user/Math_DSP/HANA_math.h
-f405_fc_rtos\spi.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\spi.o: ../Drivers/BSP_HardWare/icm42688.h

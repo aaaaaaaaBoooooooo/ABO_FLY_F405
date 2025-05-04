@@ -72,7 +72,6 @@ f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/bmp390_task.h
 f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h
 f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/icm42688.h
 f405_fc_rtos\main.o: ../user/Angle/angle.h
-f405_fc_rtos\main.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/W25QXX.h
 f405_fc_rtos\main.o: ../Drivers/SYSTEM/sys/sys.h
 f405_fc_rtos\main.o: ../Drivers/CMSIS/Include/core_cm4.h

@@ -1,23 +1,15 @@
+/********************************Copyright (c)**********************************`
+** 文件名称: filter.h
+** 创建人员: aBo
+** 创建日期: 2025-5-04
+** 文档描述: 滤波器相关函数声明
+********************************End of Head************************************/
 #ifndef __filter_H
 #define __filter_H
-#include <math.h>
-#include <string.h>
-#include "stdint.h"
+#include "main.h"
 
 #define PI 3.1415927f
-#define Moving_Len  10
 ////////////////////////////////////////
-
-//ò??×?¨???ü??2¨?a??
-typedef struct 
-{
-	float LastP;
-	float Now_P;
-	float out;
-	float Kg;
-	float Q;
-	float R;	
-}kalman_1_struct;
 
 typedef struct{
 	float x;
@@ -29,15 +21,8 @@ typedef struct{
 	float gain;
 }kalman1_state;
 
-extern float kalman_1(kalman_1_struct *ekf,float input);  //ò????¨???ü
 void kalman1_init(kalman1_state *state, float init_x, float init_p);
 float kalman1_filter(kalman1_state *state, float z_measure);
-
-///////////////////////////////////////////////////////////////////////////////////
-//?D?μ??2¨
-extern int16_t MovMiddle(int16_t input);
-
-////////////////////////////////////////////////////////////////////////
 
 /*  LPF 1st filter   */
 typedef struct{
@@ -45,9 +30,7 @@ typedef struct{
 		float new_data;
 		float factor;
 }Filter_LPF_1;
-extern float LPF_1_Filter_1(Filter_LPF_1 *LPF_1);
-extern float LPF_1_Filter_2(Filter_LPF_1 *LPF_1,float dt);
-
+float LPF_1st(Filter_LPF_1 *LPF_1,float dt);
 
 typedef struct {
 	
@@ -58,11 +41,6 @@ typedef struct {
 	int32_t max_cnt;
 }MovAverage;
 
-
 int32_t AntiPulse_MovingAverage_Filter(MovAverage *_MovAverage);
 
-
-
-short Moving_filter(short data);
-///////////////////////////////////////////////////////////////////////////////////
 #endif

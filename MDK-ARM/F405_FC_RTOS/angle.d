@@ -1,6 +1,5 @@
 f405_fc_rtos\angle.o: ..\user\Angle\angle.c
 f405_fc_rtos\angle.o: ..\user\Angle\angle.h
-f405_fc_rtos\angle.o: ../user/Math_DSP/HANA_math.h
 f405_fc_rtos\angle.o: ../Core/Inc/main.h
 f405_fc_rtos\angle.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 f405_fc_rtos\angle.o: ../Core/Inc/stm32f4xx_hal_conf.h
@@ -46,10 +45,10 @@ f405_fc_rtos\angle.o: ../CJSON/cJSON.h
 f405_fc_rtos\angle.o: ../user/Control/control.h
 f405_fc_rtos\angle.o: ../Core/Inc/main.h
 f405_fc_rtos\angle.o: ../user/Control/pid.h
-f405_fc_rtos\angle.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\angle.o: ../Drivers/SYSTEM/delay/delay.h
 f405_fc_rtos\angle.o: ../Drivers/CMSIS/Include/core_cm4.h
 f405_fc_rtos\angle.o: ../Drivers/BSP_HardWare/icm42688.h
 f405_fc_rtos\angle.o: ../user/Math_DSP/filter.h
-f405_fc_rtos\angle.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
+f405_fc_rtos\angle.o: ../user/Math_DSP/HANA_math.h
+f405_fc_rtos\angle.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
 f405_fc_rtos\angle.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h

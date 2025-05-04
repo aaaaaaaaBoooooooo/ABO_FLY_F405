@@ -664,8 +664,8 @@ TOF_TypeDef TOF = {0,0,0,0,25,30,0,0};
 
 void TOF_get_data(uint8_t *uart_data,uint16_t size)
 {
-	static int32_t MovFilter_Buf[10];
-	static MovAverage TOF_MovFiler = {0,0,MovFilter_Buf,5};
+//	static int32_t MovFilter_Buf[10];
+//	static MovAverage TOF_MovFiler = {0,0,MovFilter_Buf,5};
 	char str1[9],str2[6],str3[11];
 	uint16_t tof_distance=0;
 	memcpy(str1,uart_data,9);

@@ -1,9 +1,5 @@
 f405_fc_rtos\filter.o: ..\user\Math_DSP\filter.c
 f405_fc_rtos\filter.o: ..\user\Math_DSP\filter.h
-f405_fc_rtos\filter.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
-f405_fc_rtos\filter.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
-f405_fc_rtos\filter.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
-f405_fc_rtos\filter.o: ..\user\Math_DSP\HANA_math.h
 f405_fc_rtos\filter.o: ../Core/Inc/main.h
 f405_fc_rtos\filter.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 f405_fc_rtos\filter.o: ../Core/Inc/stm32f4xx_hal_conf.h
@@ -12,6 +8,7 @@ f405_fc_rtos\filter.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 f405_fc_rtos\filter.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 f405_fc_rtos\filter.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h
 f405_fc_rtos\filter.o: ../Drivers/CMSIS/Include/core_cm4.h
+f405_fc_rtos\filter.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 f405_fc_rtos\filter.o: ../Drivers/CMSIS/Include/cmsis_version.h
 f405_fc_rtos\filter.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 f405_fc_rtos\filter.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -48,3 +45,6 @@ f405_fc_rtos\filter.o: ../CJSON/cJSON.h
 f405_fc_rtos\filter.o: ../user/Control/control.h
 f405_fc_rtos\filter.o: ../Core/Inc/main.h
 f405_fc_rtos\filter.o: ../user/Control/pid.h
+f405_fc_rtos\filter.o: ..\user\Math_DSP\HANA_math.h
+f405_fc_rtos\filter.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
+f405_fc_rtos\filter.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
