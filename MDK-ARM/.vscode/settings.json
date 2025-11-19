@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "filter.h": "c"
+        "filter.h": "c",
+        "usart.h": "c"
     }
 }

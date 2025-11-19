@@ -16,9 +16,17 @@
 #define OUTPUT_RATE			BMP3_ODR_50_HZ
 #define IIR_FILTER_COEFF 	BMP3_IIR_FILTER_COEFF_3
 
+typedef struct
+{
+    struct bmp3_data data;
+    struct bmp3_dev dev;
+	uint8_t is_valid;//tof is valid 
+	
+}Barometer_TypeDef;
+
 extern uint8_t bmp390_data_dma_buf[BMP3_LEN_P_T_DATA];
-extern struct bmp3_data aircraft_BMP390_data;
-extern uint8_t bmp390_init_success;
+
+extern Barometer_TypeDef my_bmp390;
 
 
 uint8_t BMP390_Init(void);

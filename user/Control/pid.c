@@ -4,7 +4,7 @@
   * @author  aBo
   * @version V1.0.0
   * @date    2025/2/24
-  * @brief   ¶ÔÃ¿Ò»¸öpid½á¹¹Ìå¶¼ÒªÏÈ½øĞĞº¯ÊıµÄÁ¬½Ó£¬ÔÙ½øĞĞ³õÊ¼»¯
+  * @brief   å¯¹æ¯ä¸€ä¸ªpidç»“æ„ä½“éƒ½è¦å…ˆè¿›è¡Œå‡½æ•°çš„è¿æ¥ï¼Œå†è¿›è¡Œåˆå§‹åŒ–
   ******************************************************************************
   * @attention 
   *
@@ -14,15 +14,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "pid.h"
 #include "main.h"
-/*²ÎÊı³õÊ¼»¯--------------------------------------------------------------*/
+#include "math.h"
+/*å‚æ•°åˆå§‹åŒ–--------------------------------------------------------------*/
 static void pid_param_init(
-	volatile PID_TypeDef * pid, //pid½á¹¹Ìå
-	PID_ID   id,								//PIDÀàĞÍ
-	uint16_t maxout,						//PIDÊä³öÏŞ·ù
-	uint16_t intergral_limit,		//»ı·ÖÏŞ·ù
-	float deadband,							//ËÀÇø
-	uint16_t period,						//PID¿ØÖÆÖÜÆÚ
-	int16_t  target,						//PIDÄ¿±ê
+	volatile PID_TypeDef * pid, //pidç»“æ„ä½“
+	PID_ID   id,								//PIDç±»å‹
+	uint16_t maxout,						//PIDè¾“å‡ºé™å¹…
+	uint16_t intergral_limit,		//ç§¯åˆ†é™å¹…
+	float deadband,							//æ­»åŒº
+	uint16_t period,						//PIDæ§åˆ¶å‘¨æœŸ
+	int16_t  target,						//PIDç›®æ ‡
 
 	float 	kp, 							
 	float 	ki, 
@@ -42,7 +43,7 @@ static void pid_param_init(
 	
 	pid->output = 0;
 }
-/*PID¿ªÆôor¹Ø±Õ*/
+/*PIDå¼€å¯orå…³é—­*/
 void pid_enable(volatile PID_TypeDef * pid,uint8_t enable)
 {
 	pid->enable =enable;
@@ -50,8 +51,8 @@ void pid_enable(volatile PID_TypeDef * pid,uint8_t enable)
 	{
 		pid->enable =1;
 
-		//pid->iout = now_output//Ê¹iÏîÊä³öÎªµ±Ç°Êä³ö£¬¸ü¼ÓÆ½»¬
-		//pid->err = pid->last_err;//Ê¹Æ«²î±ä»¯ÂÊÎª0£¬½µµÍdÏîÓ°Ïì
+		//pid->iout = now_output//ä½¿ié¡¹è¾“å‡ºä¸ºå½“å‰è¾“å‡ºï¼Œæ›´åŠ å¹³æ»‘
+		//pid->err = pid->last_err;//ä½¿åå·®å˜åŒ–ç‡ä¸º0ï¼Œé™ä½dé¡¹å½±å“
 
 	}
 	else
@@ -61,6 +62,8 @@ void pid_enable(volatile PID_TypeDef * pid,uint8_t enable)
 		pid->iout = 0;
 		pid->dout = 0;
 		pid->output = 0;
+		pid->last_output =0;
+		pid->measure = 0;
 		pid->err = 0;
 		pid->last_err = 0;
 		pid->far_err = 0;
@@ -68,7 +71,7 @@ void pid_enable(volatile PID_TypeDef * pid,uint8_t enable)
 }
 
 
-/*ÖĞÍ¾¸ü¸Ä²ÎÊıÉè¶¨--------------------------------------------------------------*/
+/*ä¸­é€”æ›´æ”¹å‚æ•°è®¾å®š--------------------------------------------------------------*/
 static void pid_reset(volatile PID_TypeDef * pid, float kp, float ki, float kd)
 {
 	pid->kp = kp;
@@ -77,7 +80,7 @@ static void pid_reset(volatile PID_TypeDef * pid, float kp, float ki, float kd)
 	
 }
 
-/*pid¼ÆËã-----------------------------------------------------------------------*/	
+/*pidè®¡ç®—-----------------------------------------------------------------------*/	
 static float pid_calculate(volatile PID_TypeDef* pid, float measure)
 {
 	if(pid->enable)
@@ -88,35 +91,35 @@ static float pid_calculate(volatile PID_TypeDef* pid, float measure)
 		//	pid->thistime = HAL_GetTick();
 				 
 		//	pid->dtime = pid->thistime-pid->lasttime;
-			//¸üĞÂ²âÁ¿Öµ
+			//æ›´æ–°æµ‹é‡å€¼
 			pid->measure = measure;
-			//¸üĞÂÆ«²îºÍÊä³ö
+			//æ›´æ–°åå·®å’Œè¾“å‡º
 			pid->far_err = pid->last_err;	
 			pid->last_err  = pid->err;
 			pid->last_output = pid->output;
-			//¼ÆËãµ±Ç°Æ«²î
+			//è®¡ç®—å½“å‰åå·®
 			pid->err = pid->target - pid->measure;
 			
 				 
-			//ÊÇ·ñ½øÈëËÀÇø
-			if((__fabs(pid->err) >= pid->DeadBand))
+			//æ˜¯å¦è¿›å…¥æ­»åŒº
+			if((fabs(pid->err) >= pid->DeadBand))
 			{    
-				if(pid->id==PID_Position) //Î»ÖÃÊ½PID
+				if(pid->id==PID_Position) //ä½ç½®å¼PID
 				{ 
 					 pid->pout = pid->kp * pid->err;
 					 pid->iout += (pid->ki * pid->err);
 					 pid->dout =  pid->kd * (pid->err - pid->last_err); 
 					 
-					 //»ı·ÖÊÇ·ñ³¬³öÏŞÖÆ
+					 //ç§¯åˆ†æ˜¯å¦è¶…å‡ºé™åˆ¶
 					 if(pid->iout > pid->IntegralLimit)
 								pid->iout = pid->IntegralLimit;
 					 if(pid->iout < - pid->IntegralLimit)
 							pid->iout = - pid->IntegralLimit;
-					 //pidÊä³öºÍ
-					 pid->output = pid->pout + pid->iout + pid->dout;//¾ø¶ÔÊä³ö
-					 //pid->output = pid->output*0.7f + pid->last_output*0.3f;  //È¨ÖØÂË²¨
+					 //pidè¾“å‡ºå’Œ
+					 pid->output = pid->pout + pid->iout + pid->dout;//ç»å¯¹è¾“å‡º
+					 //pid->output = pid->output*0.7f + pid->last_output*0.3f;  //æƒé‡æ»¤æ³¢
 			
-					/***Êä³öÏŞ·ù"·´¼ÆËã¿¹±¥ºÍ·¨"***/
+					/***è¾“å‡ºé™å¹…"åè®¡ç®—æŠ—é¥±å’Œæ³•"***/
 					if(pid->output>pid->MaxOutput)         
 					{
 						//pid->iout -= pid->output - pid->MaxOutput;
@@ -128,13 +131,13 @@ static float pid_calculate(volatile PID_TypeDef* pid, float measure)
 						pid->output = -(pid->MaxOutput);
 					}
 				}
-				else if(pid->id==PID_Speed)//ÔöÁ¿Ê½PID
+				else if(pid->id==PID_Speed)//å¢é‡å¼PID
 				{ 
 					 pid->pout = pid->kp * (pid->err - pid->last_err);
 					 pid->iout = pid->ki * (pid->err);
 					 pid->dout = pid->kd * (pid->err - 2*pid->last_err + pid->far_err); 
-					 //pidÊä³öºÍ
-					 pid->output += pid->pout + pid->iout + pid->dout;//ÔöÁ¿Êä³ö	
+					 //pidè¾“å‡ºå’Œ
+					 pid->output += pid->pout + pid->iout + pid->dout;//å¢é‡è¾“å‡º	
 				}
 
 			}
@@ -152,7 +155,7 @@ static float pid_calculate(volatile PID_TypeDef* pid, float measure)
 		return 0;
 }
 
-/*pid½á¹¹Ìå³õÊ¼»¯£¬Ã¿Ò»¸öpid²ÎÊıĞèÒªµ÷ÓÃÒ»´Î-----------------------------------------------------*/
+/*pidç»“æ„ä½“åˆå§‹åŒ–ï¼Œæ¯ä¸€ä¸ªpidå‚æ•°éœ€è¦è°ƒç”¨ä¸€æ¬¡-----------------------------------------------------*/
 void pid_init(volatile PID_TypeDef* pid)
 {
 	pid->f_param_init = pid_param_init;

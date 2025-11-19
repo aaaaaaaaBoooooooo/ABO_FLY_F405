@@ -431,6 +431,11 @@
               <FilePath>..\user\cJSON\cJSON_usr.c</FilePath>
             </File>
             <File>
+              <FileName>flight_data_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FATFS\App\flight_data_manager.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>

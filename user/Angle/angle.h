@@ -17,17 +17,17 @@
 #define Gyro_Gain 		0.0610352f				//角速度变成度dps (初始化陀螺仪满量程+-2000°/s	LSB = 2*2000/65536.0)
 
 #define Gyro_Gr	    	0.0010641f			  	//角速度变成弧度(3.1415/180 * LSBg) 
-#define VAR_GyX				0.01f		            //陀螺仪X轴静态方差阈值   
-#define VAR_GyY				0.01f		            //陀螺仪Y轴静态方差阈值   
-#define VAR_GyZ				0.01f		            //陀螺仪Z轴静态方差阈值   
-#define VAR_AcX				0.001f		            //加速度计X轴静态方差阈值   
-#define VAR_AcY				0.001f		            //加速度计Y轴静态方差阈值   
-#define VAR_AcZ				0.001f		            //加速度计Z轴静态方差阈值
+#define VAR_GyX				0.1f		            //陀螺仪X轴静态方差阈值   
+#define VAR_GyY				0.1f		            //陀螺仪Y轴静态方差阈值   
+#define VAR_GyZ				0.1f		            //陀螺仪Z轴静态方差阈值   
+#define VAR_AcX				0.01f		            //加速度计X轴静态方差阈值   
+#define VAR_AcY				0.01f		            //加速度计Y轴静态方差阈值   
+#define VAR_AcZ				0.01f		            //加速度计Z轴静态方差阈值
 
 
 #define Dynamic_PI	//使能动态PI系数
 //#define SIX_CAL		//使能6面校准
-//#define USE_MMU     //使能磁力计
+//#define USE_MMU     //使能磁力计 
 
 typedef struct
 {

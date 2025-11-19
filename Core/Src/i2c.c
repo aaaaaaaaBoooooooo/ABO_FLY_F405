@@ -28,8 +28,8 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
 	if(hi2c==&hi2c1)
 	{
-		if(bmp390_init_success)
-			aircraft_BMP390_data = bmp390_getdata_DMA(bmp390_data_dma_buf);
+		if(my_bmp390.is_valid)
+			my_bmp390.data = bmp390_getdata_DMA(bmp390_data_dma_buf);
 		
 	}		
 	

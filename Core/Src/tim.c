@@ -35,68 +35,65 @@ uint32_t tim5_cnt_100ms=0;
 uint32_t tim5_cnt_1000ms=0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if(htim->Instance == TIM1)//¶¨Ê±Æ÷1ÖÐ¶Ï 1ms
+  if(htim->Instance == TIM1)//ï¿½ï¿½Ê±ï¿½ï¿½1ï¿½Ð¶ï¿½ 1ms
 	{
-		pid_internal_control();//pid×ËÌ¬¿ØÖÆÄÚ»·   Êä³öµç»úPWMÕ¼¿Õ±È
-		motor_throttle_control();//ÓÍÃÅ¿ØÖÆ
-		motor_control();//µç»úÊä³ö
-		
+		pid_internal_control();//pidï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PWMÕ¼ï¿½Õ±ï¿½
+		motor_throttle_control();//ï¿½ï¿½ï¿½Å¿ï¿½ï¿½ï¿½
+    motor_control();
 		if(tim1_cnt_5ms >= 5)
-		{
-			aircraft_flight_direction_control();//·ÉÐÐ·½Ïò¿ØÖÆ
-			pid_external_control();//pid×ËÌ¬¿ØÖÆÍâ»·  Êä³öÆÚÍû½ÇËÙ¶È
-
+		{ 
+      aircraft_status_check();   
+      aircraft_flight_direction_control();
+      pid_external_control();
 			tim1_cnt_5ms =0;
 		}
 		if(tim1_cnt_22ms >= 22)
 		{
-			aircraft_flight_Height_control();//¸ß¶Èpid¿ØÖÆ
+			aircraft_flight_Height_control();//ï¿½ß¶ï¿½pidï¿½ï¿½ï¿½ï¿½
 			tim1_cnt_22ms =0;
 		}		
 		tim1_cnt_5ms++;
 		tim1_cnt_22ms++;
 	}
-	else if(htim->Instance == TIM5)//¶¨Ê±Æ÷5ÖÐ¶Ï 10ms
+	else if(htim->Instance == TIM5)//ï¿½ï¿½Ê±ï¿½ï¿½5ï¿½Ð¶ï¿½ 10ms
 	{
-		rx_data_tim_cnt++;//½ÓÊÕÒ£¿ØÊý¾Ý¶¨Ê±¼ÆÊý
-		uart_printf(&huart1,"%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",my_ahrs.Angle_Data.roll,my_ahrs.Angle_Data.pitch,my_ahrs.Angle_Data.yaw,my_ahrs.IMU_Data.gyro.x,my_ahrs.IMU_Data.gyro.y,my_ahrs.IMU_Data.gyro.z);
+		rx_data_tim_cnt++;//ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½Ý¶ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
+		//uart_printf(&huart1,"%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",my_ahrs.Angle_Data.roll,my_ahrs.Angle_Data.pitch,my_ahrs.Angle_Data.yaw,my_ahrs.IMU_Data.gyro.x,my_ahrs.IMU_Data.gyro.y,my_ahrs.IMU_Data.gyro.z);
 		//uart_printf(&huart1,"%f,%f,%d\n",OpticalFlow.flow_x_speed,OpticalFlow.flow_y_speed,TOF.distance_mm);
 		aircraft_data_send();
 		if(tim5_cnt_20ms >= 2)
 		{
-			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());//»ñÈ¡µ±Ç°·É»úµç³ØµçÑ¹
+			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());//ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½É»ï¿½ï¿½ï¿½Øµï¿½Ñ¹
 			
-			if(aircraft_BMP390_data.pressure!=-1)
+			if(my_bmp390.data.pressure!=-1)
 			{   
-				my_aircraft.Altitude = convert_Pa_to_meter(aircraft_BMP390_data.pressure);//º£°Î²âÁ¿£¬µ¥Î»m
+				my_aircraft.Altitude = convert_Pa_to_meter(my_bmp390.data.pressure);//ï¿½ï¿½ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»m
 			}
-			if(aircraft_BMP390_data.temperature!=-1)
+			if(my_bmp390.data.temperature!=-1)
 			{
-				my_aircraft.Temperature = aircraft_BMP390_data.temperature;//ÎÂ¶È²âÁ¿£¬µ¥Î»ÉãÊÏ¶È
+				my_aircraft.Temperature = my_bmp390.data.temperature;//ï¿½Â¶È²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ï¶ï¿½
 			}
 			
 			tim5_cnt_20ms = 0; 
 		}	
 		if(tim5_cnt_100ms >= 10)
 		{
-			switch(aircraft_protection())//·ÉÐÐÆ÷±£»¤
+			switch(aircraft_protection())//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			{
-				case 0:
-					break;
 				case 1:
 					uart_printf(&huart1,"BATTERY_LOW_POWER!\n");
-					LED_TOGGLE;//ÉÁË¸LED±¨´í		
-					my_aircraft.status |=0x08;
+					LED_TOGGLE;//ï¿½ï¿½Ë¸LEDï¿½ï¿½ï¿½ï¿½		
+
 				break;
 				case 2:
 					uart_printf(&huart1,"AIRCRAFT_IMU_ERROR!\n");
-					LED_TOGGLE;//ÉÁË¸LED±¨´í
-					my_aircraft.status |=0x08;
+					LED_TOGGLE;//ï¿½ï¿½Ë¸LEDï¿½ï¿½ï¿½ï¿½
+
 				break;
 				case 3:
 					uart_printf(&huart1,"MOTOR_DUTY_ERROR!\n");
-					LED_TOGGLE;//ÉÁË¸LED±¨´í
-					my_aircraft.status |=0x08;
+					LED_TOGGLE;//ï¿½ï¿½Ë¸LEDï¿½ï¿½ï¿½ï¿½
+
 				break;				
 			}
 			
@@ -106,11 +103,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		{
 			if(my_aircraft.status & 0x01)
 			{
-				LED_TOGGLE;				
+				//LED_TOGGLE;				
+				LED(1);
 			}
 			else
 			{
-				LED(0);//¹Ø±ÕLED
+				LED(0);//ï¿½Ø±ï¿½LED
 			}				
 			tim5_cnt_1000ms =0;
 		}
@@ -126,6 +124,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
+TIM_HandleTypeDef htim9;
 
 /* TIM1 init function */
 void MX_TIM1_Init(void)
@@ -375,6 +374,53 @@ void MX_TIM5_Init(void)
   /* USER CODE END TIM5_Init 2 */
 
 }
+/* TIM9 init function */
+void MX_TIM9_Init(void)
+{
+
+  /* USER CODE BEGIN TIM9_Init 0 */
+
+  /* USER CODE END TIM9_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM9_Init 1 */
+
+  /* USER CODE END TIM9_Init 1 */
+  htim9.Instance = TIM9;
+  htim9.Init.Prescaler = 0;
+  htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim9.Init.Period = 65535;
+  htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim9) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim9, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim9) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim9, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM9_Init 2 */
+
+  /* USER CODE END TIM9_Init 2 */
+  HAL_TIM_MspPostInit(&htim9);
+
+}
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 {
@@ -441,6 +487,17 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
   /* USER CODE BEGIN TIM5_MspInit 1 */
 
   /* USER CODE END TIM5_MspInit 1 */
+  }
+  else if(tim_baseHandle->Instance==TIM9)
+  {
+  /* USER CODE BEGIN TIM9_MspInit 0 */
+
+  /* USER CODE END TIM9_MspInit 0 */
+    /* TIM9 clock enable */
+    __HAL_RCC_TIM9_CLK_ENABLE();
+  /* USER CODE BEGIN TIM9_MspInit 1 */
+
+  /* USER CODE END TIM9_MspInit 1 */
   }
 }
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
@@ -510,6 +567,27 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 
   /* USER CODE END TIM4_MspPostInit 1 */
   }
+  else if(timHandle->Instance==TIM9)
+  {
+  /* USER CODE BEGIN TIM9_MspPostInit 0 */
+
+  /* USER CODE END TIM9_MspPostInit 0 */
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /**TIM9 GPIO Configuration
+    PA3     ------> TIM9_CH2
+    */
+    GPIO_InitStruct.Pin = WS2812_PWM_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF3_TIM9;
+    HAL_GPIO_Init(WS2812_PWM_GPIO_Port, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN TIM9_MspPostInit 1 */
+
+  /* USER CODE END TIM9_MspPostInit 1 */
+  }
 
 }
 
@@ -576,6 +654,17 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
   /* USER CODE BEGIN TIM5_MspDeInit 1 */
 
   /* USER CODE END TIM5_MspDeInit 1 */
+  }
+  else if(tim_baseHandle->Instance==TIM9)
+  {
+  /* USER CODE BEGIN TIM9_MspDeInit 0 */
+
+  /* USER CODE END TIM9_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM9_CLK_DISABLE();
+  /* USER CODE BEGIN TIM9_MspDeInit 1 */
+
+  /* USER CODE END TIM9_MspDeInit 1 */
   }
 }
 

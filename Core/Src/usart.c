@@ -47,7 +47,7 @@ PUTCHAR_PROTOTYPE
 #define APP_TX_DATA_SIZE  200
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
-//¶à´®¿ÚDMAÊý¾Ý¸ñÊ½»¯´òÓ¡
+//ï¿½à´®ï¿½ï¿½DMAï¿½ï¿½ï¿½Ý¸ï¿½Ê½ï¿½ï¿½ï¿½ï¿½Ó¡
 void uart_printf(UART_HandleTypeDef *huart,const char *format, ...)
 {
     va_list args;
@@ -58,7 +58,7 @@ void uart_printf(UART_HandleTypeDef *huart,const char *format, ...)
     va_end(args);
 		if(length>APP_TX_DATA_SIZE)
 			length = APP_TX_DATA_SIZE;
-    HAL_UART_Transmit_DMA(huart,UserTxBufferFS, length);   //Ö»ÐèÒª¸ü¸ÄÕâ¶ù¾ÍÄÜÒ»Ö±µ½ÆäËûÆ½Ì¨
+    HAL_UART_Transmit_DMA(huart,UserTxBufferFS, length);   //Ö»ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½Ì¨
 
 }
 /* USER CODE END 0 */
@@ -172,10 +172,10 @@ void MX_USART6_UART_Init(void)
 
   /* USER CODE END USART6_Init 1 */
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 19200;
-  huart6.Init.WordLength = UART_WORDLENGTH_8B;
-  huart6.Init.StopBits = UART_STOPBITS_1;
-  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.BaudRate = 100000;
+  huart6.Init.WordLength = UART_WORDLENGTH_9B;
+  huart6.Init.StopBits = UART_STOPBITS_2;
+  huart6.Init.Parity = UART_PARITY_EVEN;
   huart6.Init.Mode = UART_MODE_TX_RX;
   huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart6.Init.OverSampling = UART_OVERSAMPLING_16;
@@ -379,7 +379,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     hdma_usart6_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     hdma_usart6_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_usart6_rx.Init.Mode = DMA_NORMAL;
-    hdma_usart6_rx.Init.Priority = DMA_PRIORITY_HIGH;
+    hdma_usart6_rx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     hdma_usart6_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart6_rx) != HAL_OK)
     {
@@ -497,10 +497,10 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 #include "filter.h"
-uint8_t uart3_rx_buff[UART3_RXBUFFERSIZE];//´®¿Ú3½ÓÊÕ»º³åÇø
-uint8_t uart6_rx_buff[UART6_RXBUFFERSIZE];//´®¿Ú6½ÓÊÕ»º³åÇø
-uint8_t uart4_rx_buff[UART4_RXBUFFERSIZE];//´®¿Ú4½ÓÊÕ»º³åÇø
-uint8_t uart1_rx_buff[UART1_RXBUFFERSIZE];//´®¿Ú1½ÓÊÕ»º³åÇø
+uint8_t uart3_rx_buff[UART3_RXBUFFERSIZE];//ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½
+uint8_t uart6_rx_buff[UART6_RXBUFFERSIZE];//ï¿½ï¿½ï¿½ï¿½6ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½
+uint8_t uart4_rx_buff[UART4_RXBUFFERSIZE];//ï¿½ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½
+uint8_t uart1_rx_buff[UART1_RXBUFFERSIZE];//ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½
 
 int rx_data_correct_cnt;
 int rx_data_cnt;
@@ -515,7 +515,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	 {
 		 for(;i<(REMOTE_DATA_NUM+1);i++)
 		 {
-			 if(uart3_rx_buff[i]==0x5A&&uart3_rx_buff[i+6]==0xA5)//Ö¡Í·Ö¡Î²ÕýÈ·
+			 if(uart3_rx_buff[i]==0x5A&&uart3_rx_buff[i+6]==0xA5)//Ö¡Í·Ö¡Î²ï¿½ï¿½È·
 			 {
 					switch(uart3_rx_buff[i+1])
 					{
@@ -529,63 +529,67 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							break;
 						case 0x02:
 							my_aircraft.status=uart3_rx_buff[i+2];
-							if(my_aircraft.status == 0x01)//Æô¶¯·ÉÐÐÆ÷
+							if(my_aircraft.status == 0x01)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 							{
 								my_aircraft.fly_start_time = HAL_GetTick();
-								pid_enable(&AttitudeControl.internal_pid.x,1);//¿ªÆô·É»úÊ¹ÄÜpid
-								pid_enable(&AttitudeControl.internal_pid.y,1);//¿ªÆô·É»úÊ¹ÄÜpid
-								pid_enable(&AttitudeControl.internal_pid.z,1);//¿ªÆô·É»úÊ¹ÄÜpid
-								pid_enable(&AttitudeControl.external_pid.x,1);//¿ªÆô·É»úÊ¹ÄÜpid
-								pid_enable(&AttitudeControl.external_pid.y,1);//¿ªÆô·É»úÊ¹ÄÜpid
-								pid_enable(&AttitudeControl.external_pid.z,1);//¿ªÆô·É»úÊ¹ÄÜpid
+								pid_enable(&AttitudeControl.internal_pid.x,1);//ï¿½ï¿½ï¿½ï¿½ï¿½É»ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.internal_pid.y,1);//ï¿½ï¿½ï¿½ï¿½ï¿½É»ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.internal_pid.z,1);//ï¿½ï¿½ï¿½ï¿½ï¿½É»ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.external_pid.x,1);//ï¿½ï¿½ï¿½ï¿½ï¿½É»ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.external_pid.y,1);//ï¿½ï¿½ï¿½ï¿½ï¿½É»ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.external_pid.z,1);//ï¿½ï¿½ï¿½ï¿½ï¿½É»ï¿½Ê¹ï¿½ï¿½pid
+								AttitudeControl.yaw_target_angle = *AttitudeControl.sensor.yaw;
 							}
-							else if(my_aircraft.status == 0x00)//¹Ø±Õ·ÉÐÐÆ÷
+							else if(my_aircraft.status == 0x00)//ï¿½Ø±Õ·ï¿½ï¿½ï¿½ï¿½ï¿½
 							{
-								pid_enable(&AttitudeControl.internal_pid.x,0);//¹Ø±Õ·É»ú²»Ê¹ÄÜpid
-								pid_enable(&AttitudeControl.internal_pid.y,0);//¹Ø±Õ·É»ú²»Ê¹ÄÜpid
-								pid_enable(&AttitudeControl.internal_pid.z,0);//¹Ø±Õ·É»ú²»Ê¹ÄÜpid
-								pid_enable(&AttitudeControl.external_pid.x,0);//¹Ø±Õ·É»ú²»Ê¹ÄÜpid
-								pid_enable(&AttitudeControl.external_pid.y,0);//¹Ø±Õ·É»ú²»Ê¹ÄÜpid
-								pid_enable(&AttitudeControl.external_pid.z,0);//¹Ø±Õ·É»ú²»Ê¹ÄÜpid			
+								pid_enable(&AttitudeControl.internal_pid.x,0);//ï¿½Ø±Õ·É»ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.internal_pid.y,0);//ï¿½Ø±Õ·É»ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.internal_pid.z,0);//ï¿½Ø±Õ·É»ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.external_pid.x,0);//ï¿½Ø±Õ·É»ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.external_pid.y,0);//ï¿½Ø±Õ·É»ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
+								pid_enable(&AttitudeControl.external_pid.z,0);//ï¿½Ø±Õ·É»ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid			
 
-								HeightControl.auto_height_control_isEnable = 0; //¹Ø±Õ×Ô¶¯¶¨¸ß
-								HeightControl.mode = ALT_HOLD_DISABLED;//¸ß¶È¿ØÖÆÄ£Ê½ÎªÊÖ¶¯
+								HeightControl.auto_height_control_isEnable = 0; //ï¿½Ø±ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+								HeightControl.mode = ALT_HOLD_DISABLED;//ï¿½ß¶È¿ï¿½ï¿½ï¿½Ä£Ê½Îªï¿½Ö¶ï¿½
 								HeightControl.target_height = 0;
 								HeightControl.target_altitude =0;
 								HeightControl.base_throttle =0;
-								pid_enable(&HeightControl.pid,0);//¹Ø±Õ¶¨¸ßÊ¹ÄÜpid		
+								pid_enable(&HeightControl.pid,0);//ï¿½Ø±Õ¶ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid		
 
-								PositionControl.auto_pos_control_isEnable = 0;//¹Ø±Õ×Ô¶¯¶¨µã
+								PositionControl.auto_pos_control_isEnable = 0;//ï¿½Ø±ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 								pid_enable(&PositionControl.internal_pid_x,0);
 								pid_enable(&PositionControl.internal_pid_y,0);
 								pid_enable(&PositionControl.external_pid_x,0);
 								pid_enable(&PositionControl.external_pid_y,0);	
 								PositionControl.external_pid_x.target = 0;
-								PositionControl.external_pid_y.target = 0;									
+								PositionControl.external_pid_y.target = 0;		
+								AttitudeControl.yaw_target_angle = 0;
 							}
 							break;
 						case 0x03:
 							switch(uart3_rx_buff[i+2])
 							{
 								case 0x01:
+									AttitudeControl.pitch_compensate +=0.05f;
+									if(AttitudeControl.pitch_compensate>5.0f)
+											AttitudeControl.pitch_compensate =5.0f;
+
+									break;
+								case 0x02:
 									AttitudeControl.pitch_compensate -=0.05f;
 									if(AttitudeControl.pitch_compensate<-5.0f)
 											AttitudeControl.pitch_compensate =-5.0f;
 									break;
-								case 0x02:
-									AttitudeControl.pitch_compensate +=0.05f;
-									if(AttitudeControl.pitch_compensate>5.0f)
-											AttitudeControl.pitch_compensate =5.0f;
-									break;
 								case 0x03:
-									AttitudeControl.roll_compensate +=0.05f;
-									if(AttitudeControl.roll_compensate>5.0f)
-											AttitudeControl.roll_compensate =5.0f;
-									break;
-								case 0x04:
 									AttitudeControl.roll_compensate -=0.05f;
 									if(AttitudeControl.roll_compensate<-5.0f)
 											AttitudeControl.roll_compensate =-5.0f;
+
+									break;
+								case 0x04:
+									AttitudeControl.roll_compensate +=0.05f;
+									if(AttitudeControl.roll_compensate>5.0f)
+											AttitudeControl.roll_compensate =5.0f;
 									break;							
 							}
 							break;
@@ -593,56 +597,56 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							switch(uart3_rx_buff[i+2])
 							{
 								case 0x01:
-									last_tick = now_tick;//¸üÐÂÉÏÒ»´ÎÊ±¼ä
-									now_tick = HAL_GetTick();//»ñÈ¡µ±Ç°Ê±¼ä
+									last_tick = now_tick;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ê±ï¿½ï¿½
+									now_tick = HAL_GetTick();//ï¿½ï¿½È¡ï¿½ï¿½Ç°Ê±ï¿½ï¿½
 									if(HeightControl.auto_height_control_isEnable==0  && (now_tick - last_tick) > 300 )
 									{										
-										HeightControl.auto_height_control_isEnable = 1; //¿ªÆô×Ô¶¯¶¨¸ß
-										my_aircraft.status |= 0x02;//×Ô¶¯ÓÍÃÅÄ£Ê½
+										HeightControl.auto_height_control_isEnable = 1; //ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+										my_aircraft.status |= 0x02;//ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 										HeightControl.base_throttle = aircraft_motor.throttle;
-										HeightControl.target_height = TOF.distance_m;//Éè¶¨¶¨¸ß¸ß¶ÈÎªµ±Ç°¸ß¶È
-										HeightControl.target_altitude = my_aircraft.Altitude;//Éè¶¨¶¨¸ßº£°ÎÎªµ±Ç°º£°Î
-										pid_enable(&HeightControl.pid,1);//¿ªÆô¶¨¸ßÊ¹ÄÜpid
+										HeightControl.target_height = TOF.distance_m;//ï¿½è¶¨ï¿½ï¿½ï¿½ß¸ß¶ï¿½Îªï¿½ï¿½Ç°ï¿½ß¶ï¿½
+										HeightControl.target_altitude = my_aircraft.Altitude;//ï¿½è¶¨ï¿½ï¿½ï¿½ßºï¿½ï¿½ï¿½Îªï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½
+										pid_enable(&HeightControl.pid,1);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
 										break;
 									}
 									if(HeightControl.auto_height_control_isEnable==1 && (now_tick - last_tick) > 300)
 									{
-										HeightControl.auto_height_control_isEnable = 0; //¹Ø±Õ×Ô¶¯¶¨¸ß
-										my_aircraft.status &= 0xFD;//¹Ø±Õ×Ô¶¯ÓÍÃÅÄ£Ê½
-										HeightControl.mode = ALT_HOLD_DISABLED;//¸ß¶È¿ØÖÆÄ£Ê½ÎªÊÖ¶¯
+										HeightControl.auto_height_control_isEnable = 0; //ï¿½Ø±ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+										my_aircraft.status &= 0xFD;//ï¿½Ø±ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
+										HeightControl.mode = ALT_HOLD_DISABLED;//ï¿½ß¶È¿ï¿½ï¿½ï¿½Ä£Ê½Îªï¿½Ö¶ï¿½
 										HeightControl.target_height = 0;
 										HeightControl.target_altitude =0;
 										HeightControl.base_throttle =0;
-										pid_enable(&HeightControl.pid,0);//¹Ø±Õ¶¨¸ßÊ¹ÄÜpid
+										pid_enable(&HeightControl.pid,0);//ï¿½Ø±Õ¶ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½pid
 										break;
 									}
 									break;
 								case 0x02:
-									last_tick = now_tick;//¸üÐÂÉÏÒ»´ÎÊ±¼ä
-									now_tick = HAL_GetTick();//»ñÈ¡µ±Ç°Ê±¼ä
+									last_tick = now_tick;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ê±ï¿½ï¿½
+									now_tick = HAL_GetTick();//ï¿½ï¿½È¡ï¿½ï¿½Ç°Ê±ï¿½ï¿½
 									if(PositionControl.auto_pos_control_isEnable==0 && (now_tick - last_tick) > 300 )
 									{	
-										PositionControl.auto_pos_control_isEnable = 1;//¿ªÆô×Ô¶¯¶¨µã
+										PositionControl.auto_pos_control_isEnable = 1;//ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 										pid_enable(&PositionControl.internal_pid_x,1);
 										pid_enable(&PositionControl.internal_pid_y,1);
 										pid_enable(&PositionControl.external_pid_x,1);
 										pid_enable(&PositionControl.external_pid_y,1);
 										PositionControl.external_pid_x.target = OpticalFlow.flow_x_pos;
 										PositionControl.external_pid_y.target = OpticalFlow.flow_y_pos;
-										my_aircraft.status |= 0x04;//×Ô¶¯·½ÏòÄ£Ê½
+										my_aircraft.status |= 0x04;//ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 
 										break;
 									}
 									if(PositionControl.auto_pos_control_isEnable==1 && (now_tick - last_tick) > 300)
 									{
-										PositionControl.auto_pos_control_isEnable = 0;//¹Ø±Õ×Ô¶¯¶¨µã
+										PositionControl.auto_pos_control_isEnable = 0;//ï¿½Ø±ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 										pid_enable(&PositionControl.internal_pid_x,0);
 										pid_enable(&PositionControl.internal_pid_y,0);
 										pid_enable(&PositionControl.external_pid_x,0);
 										pid_enable(&PositionControl.external_pid_y,0);		
 										PositionControl.external_pid_x.target = 0;
 										PositionControl.external_pid_y.target = 0;									
-										my_aircraft.status &= 0xFB;//ÊÖ¶¯·½ÏòÄ£Ê½
+										my_aircraft.status &= 0xFB;//ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 
 										break;
 									}		
@@ -650,29 +654,30 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 							}
 							break;
 					}
-					rx_data_correct_cnt++;//ÕýÈ·Ö¡¼ÆÊý
+					rx_data_correct_cnt++;//ï¿½ï¿½È·Ö¡ï¿½ï¿½ï¿½ï¿½
 					break;
 			 }
 
 
 		 }
-		 rx_data_cnt++;//È«²¿½ÓÊÕÖ¡¼ÆÊý
+		 rx_data_cnt++;//È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½
      memset(uart3_rx_buff, 0, UART3_RXBUFFERSIZE);		
    }
 }
-TOF_TypeDef TOF = {0,0,0,0,25,30,0,0};
+TOF_TypeDef TOF = {0,0,0,0,0,30,0,0,0};//
 
 void TOF_get_data(uint8_t *uart_data,uint16_t size)
 {
-//	static int32_t MovFilter_Buf[10];
-//	static MovAverage TOF_MovFiler = {0,0,MovFilter_Buf,5};
+
 	char str1[9],str2[6],str3[11];
 	uint16_t tof_distance=0;
+  static Filter_LPF_1 TOF_LPF_1 = {0,0,0.0001};
 	memcpy(str1,uart_data,9);
 	memcpy(str2,&uart_data[17],6);
 	memcpy(str3,&uart_data[27],11);
 	if(strncmp(str1,"Distance:",9)==0 && strncmp(str2,"Noise:",6)==0 && strncmp(str3,"Confidence:",11)==0 &&uart_data[size-2]==0x0D&&uart_data[size-1]==0x0A)
 	{
+    TOF.is_valid = 1;//TOF æœ‰æ•ˆ
 		TOF.distance_mm=0;
 		TOF.noise=0;
 		TOF.confidence=0;
@@ -692,12 +697,14 @@ void TOF_get_data(uint8_t *uart_data,uint16_t size)
 		{
 			tof_distance += (uart_data[12]-0x30) ;
 		}
-		if(tof_distance>=30&&tof_distance<=4000)//²â¾àÊý¾ÝÔÚÕý³£·¶Î§ÄÚ
+		if(tof_distance>=30&&tof_distance<=4000)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î§ï¿½ï¿½
 		{   
-//			TOF_MovFiler.input = tof_distance;
-//			TOF.distance_mm = AntiPulse_MovingAverage_Filter(&TOF_MovFiler);
-			TOF.distance_mm = tof_distance;
-			TOF.distance_mm = (TOF.distance_mm*cosf(my_ahrs.Angle_Data.pitch*DegtoRad)*cosf(my_ahrs.Angle_Data.roll*DegtoRad)+TOF.d_center_y_err_mm*sinf(my_ahrs.Angle_Data.roll*DegtoRad))+TOF.distance_offset_mm;//TOF¸ß¶È½ÃÕý
+      /***ï¿½ï¿½Í¨ï¿½Ë²ï¿½begin***/
+      TOF_LPF_1.new_data = (float)tof_distance;
+      TOF.distance_mm = LPF_1st(&TOF_LPF_1,0.02f);; 
+      TOF_LPF_1.old_data = TOF_LPF_1.new_data;
+      /***ï¿½ï¿½Í¨ï¿½Ë²ï¿½end***/
+			TOF.distance_mm = (TOF.distance_mm*cosf(my_ahrs.Angle_Data.pitch*DegtoRad)*cosf(my_ahrs.Angle_Data.roll*DegtoRad)+TOF.d_center_x_err_mm*sinf(my_ahrs.Angle_Data.pitch*DegtoRad))+TOF.distance_offset_mm;//TOFï¿½ß¶È½ï¿½ï¿½ï¿½
 			TOF.distance_cm = (float)TOF.distance_mm/10.0f;
 			TOF.distance_m = (float)TOF.distance_mm/1000.0f;
 		}
@@ -763,36 +770,68 @@ void OpticalFlow_get_data(uint8_t *uart_data,uint16_t size)
 		}
 		else if(OpticalFlow.valid == 0xF5)
 		{
-			OpticalFlow.flow_yaw_x_com_mm = OpticalFlow.d_center_x_err_mm*(1-cosf(yaw_err*DegtoRad));//XÖá²¹³¥
-			OpticalFlow.flow_yaw_y_com_mm = OpticalFlow.d_center_x_err_mm*sinf(yaw_err*DegtoRad);//YÖá²¹³¥
-			OpticalFlow.flow_pitch_x_com_mm =TOF.distance_mm*tanf(pitch_err*DegtoRad);//pitchÐý×ª²¹³¥		
-			OpticalFlow.flow_roll_y_com_mm = TOF.distance_mm*tanf(roll_err*DegtoRad);//rollÐý×ª²¹³¥
+			OpticalFlow.flow_yaw_x_com_mm = OpticalFlow.d_center_x_err_mm*(1-cosf(yaw_err*DegtoRad));//Xï¿½á²¹ï¿½ï¿½
+			OpticalFlow.flow_yaw_y_com_mm = OpticalFlow.d_center_x_err_mm*sinf(yaw_err*DegtoRad);//Yï¿½á²¹ï¿½ï¿½
+			OpticalFlow.flow_pitch_x_com_mm =TOF.distance_mm*tanf(pitch_err*DegtoRad);//pitchï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½		
+			OpticalFlow.flow_roll_y_com_mm = TOF.distance_mm*tanf(roll_err*DegtoRad);//rollï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 
 			
-			OpticalFlow.flow_y_integral_mm = OpticalFlow.flow_y_integral*TOF.distance_mm*0.0001f;//³ýÒÔ10000³ËÒÔ¸ß¶È(mm)ºóÎªÊµ¼ÊÎ»ÒÆ(mm)
-			OpticalFlow.flow_x_integral_mm = OpticalFlow.flow_x_integral*TOF.distance_mm*0.0001f;//³ýÒÔ10000³ËÒÔ¸ß¶È(mm)ºóÎªÊµ¼ÊÎ»ÒÆ(mm)
+			OpticalFlow.flow_y_integral_mm = OpticalFlow.flow_y_integral*TOF.distance_mm*0.0001f;//ï¿½ï¿½ï¿½ï¿½10000ï¿½ï¿½ï¿½Ô¸ß¶ï¿½(mm)ï¿½ï¿½ÎªÊµï¿½ï¿½Î»ï¿½ï¿½(mm)
+			OpticalFlow.flow_x_integral_mm = OpticalFlow.flow_x_integral*TOF.distance_mm*0.0001f;//ï¿½ï¿½ï¿½ï¿½10000ï¿½ï¿½ï¿½Ô¸ß¶ï¿½(mm)ï¿½ï¿½ÎªÊµï¿½ï¿½Î»ï¿½ï¿½(mm)
 			
-			OpticalFlow.flow_y_integral_mm -=OpticalFlow.flow_yaw_y_com_mm  ;//ÏñËØ»ý·ÖyawÐý×ª²¹³¥
-			OpticalFlow.flow_x_integral_mm -=OpticalFlow.flow_yaw_x_com_mm  ;//ÏñËØ»ý·ÖyawÐý×ª²¹³¥
+			OpticalFlow.flow_y_integral_mm -=OpticalFlow.flow_yaw_y_com_mm  ;//ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½yawï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
+			OpticalFlow.flow_x_integral_mm -=OpticalFlow.flow_yaw_x_com_mm  ;//ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½yawï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 
-			OpticalFlow.flow_y_integral_mm -=OpticalFlow.flow_roll_y_com_mm  ;//ÏñËØ»ý·ÖrollÐý×ª²¹³¥
-			OpticalFlow.flow_x_integral_mm +=OpticalFlow.flow_pitch_x_com_mm  ;//ÏñËØ»ý·ÖpitchÐý×ª²¹³¥
+			OpticalFlow.flow_y_integral_mm -=OpticalFlow.flow_roll_y_com_mm  ;//ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½rollï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
+			OpticalFlow.flow_x_integral_mm +=OpticalFlow.flow_pitch_x_com_mm  ;//ï¿½ï¿½ï¿½Ø»ï¿½ï¿½ï¿½pitchï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 			
-			OpticalFlow.flow_x_speed = (float)(OpticalFlow.flow_x_integral_mm*1000.0f)/(float)(OpticalFlow.integration_timespan);//¼ÆËã»ñµÃ¹âÁ÷xÖáËÙ¶È µ¥Î»m/s
-			OpticalFlow.flow_y_speed = (float)(OpticalFlow.flow_y_integral_mm*1000.0f)/(float)OpticalFlow.integration_timespan;//¼ÆËã»ñµÃ¹âÁ÷yÖáËÙ¶È µ¥Î»m/s
+			OpticalFlow.flow_x_speed = (float)(OpticalFlow.flow_x_integral_mm*1000.0f)/(float)(OpticalFlow.integration_timespan);//ï¿½ï¿½ï¿½ï¿½ï¿½Ã¹ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ù¶ï¿½ ï¿½ï¿½Î»m/s
+			OpticalFlow.flow_y_speed = (float)(OpticalFlow.flow_y_integral_mm*1000.0f)/(float)OpticalFlow.integration_timespan;//ï¿½ï¿½ï¿½ï¿½ï¿½Ã¹ï¿½ï¿½ï¿½yï¿½ï¿½ï¿½Ù¶ï¿½ ï¿½ï¿½Î»m/s
 			if(fabs(OpticalFlow.flow_x_integral_mm) > 0.01f)
 			{
-				OpticalFlow.flow_x_pos += OpticalFlow.flow_x_integral_mm*0.001f;//»ý·ÖµÃµ½XÎ»ÒÆ
+				OpticalFlow.flow_x_pos += OpticalFlow.flow_x_integral_mm*0.001f;//ï¿½ï¿½ï¿½ÖµÃµï¿½XÎ»ï¿½ï¿½
 			}
 			if(fabs(OpticalFlow.flow_y_integral_mm) >0.02f)
 			{
-					OpticalFlow.flow_y_pos += OpticalFlow.flow_y_integral_mm*0.001f;//»ý·ÖµÃµ½YÎ»ÒÆ
+					OpticalFlow.flow_y_pos += OpticalFlow.flow_y_integral_mm*0.001f;//ï¿½ï¿½ï¿½ÖµÃµï¿½YÎ»ï¿½ï¿½
 			}			
 		}
 	}
 	
 	return;
 }
+uint16_t rc_sbus_ch[16];
+void RC_SBUS_Get_Data(uint8_t *uart_data,uint16_t size)
+{
+	if(size < RC_SBUS_DATA_NUM)
+		return;
+	if(uart_data[0] == 0x0F && uart_data[RC_SBUS_DATA_NUM-1] == 0x00)
+  {
+    rc_sbus_ch[0] = ((uint16_t)uart_data[ 1] >> 0 | ((int16_t)uart_data[ 2] << 8 )) & 0x07FF;
+    rc_sbus_ch[1] = ((uint16_t)uart_data[ 2] >> 3 | ((int16_t)uart_data[ 3] << 5 )) & 0x07FF;
+    rc_sbus_ch[2] = ((uint16_t)uart_data[ 3] >> 6 | ((int16_t)uart_data[ 4] << 2 )  | (int16_t)uart_data[ 5] << 10 ) & 0x07FF;
+    rc_sbus_ch[3] = ((uint16_t)uart_data[ 5] >> 1 | ((int16_t)uart_data[ 6] << 7 )) & 0x07FF;
+    rc_sbus_ch[4] = ((uint16_t)uart_data[ 6] >> 4 | ((int16_t)uart_data[ 7] << 4 )) & 0x07FF;
+    rc_sbus_ch[5] = ((uint16_t)uart_data[ 7] >> 7 | ((int16_t)uart_data[ 8] << 1 )  | (int16_t)uart_data[9] <<  9 ) & 0x07FF;
+    rc_sbus_ch[6] = ((uint16_t)uart_data[ 9] >> 2 | ((int16_t)uart_data[10] << 6 )) & 0x07FF;
+    rc_sbus_ch[7] = ((uint16_t)uart_data[10] >> 5 | ((int16_t)uart_data[11] << 3 )) & 0x07FF;
+    
+    rc_sbus_ch[8] = ((uint16_t)uart_data[12] << 0 | ((int16_t)uart_data[13] << 8 )) & 0x07FF;
+    rc_sbus_ch[9] = ((uint16_t)uart_data[13] >> 3 | ((int16_t)uart_data[14] << 5 )) & 0x07FF;
+    rc_sbus_ch[10] = ((uint16_t)uart_data[14] >> 6 | ((int16_t)uart_data[15] << 2 )  | (int16_t)uart_data[16] << 10 ) & 0x07FF;
+    rc_sbus_ch[11] = ((uint16_t)uart_data[16] >> 1 | ((int16_t)uart_data[17] << 7 )) & 0x07FF;
+    rc_sbus_ch[12] = ((uint16_t)uart_data[17] >> 4 | ((int16_t)uart_data[18] << 4 )) & 0x07FF;
+    rc_sbus_ch[13] = ((uint16_t)uart_data[18] >> 7 | ((int16_t)uart_data[19] << 1 )  | (int16_t)uart_data[20] <<  9 ) & 0x07FF;
+    rc_sbus_ch[14] = ((uint16_t)uart_data[20] >> 2 | ((int16_t)uart_data[21] << 6 )) & 0x07FF;
+    rc_sbus_ch[15] = ((uint16_t)uart_data[21] >> 5 | ((int16_t)uart_data[22] << 3 )) & 0x07FF;
+  }
+	else
+  {
+    return;
+  }
+	memcpy(&my_remote.sbus.CH[0],rc_sbus_ch,16*2);
+}
+ 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
 	uint16_t cnt;
@@ -805,7 +844,8 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	else if(huart->Instance == USART6)
 	{
 		cnt = UART6_RXBUFFERSIZE - __HAL_DMA_GET_COUNTER(&hdma_usart6_rx);	
-		OpticalFlow_get_data(uart6_rx_buff,cnt);
+		//OpticalFlow_get_data(uart6_rx_buff,cnt);
+		RC_SBUS_Get_Data(uart6_rx_buff,cnt);
 		memset(uart6_rx_buff, 0, cnt);		
 		
 	}
@@ -845,31 +885,31 @@ void aircraft_data_send()
 {
 	aircraft_data_update();
 	remote_data_buf[0] = 0x5A;//Ö¡Í·
-	remote_data_buf[1] = 0x01;//ÏûÏ¢ID
-	remote_data_buf[2] = my_aircraft.Throttle;//ÓÍÃÅ
-	remote_data_buf[3] = my_aircraft.Height>>8;//¸ß¶È
-	remote_data_buf[4] = my_aircraft.Height&0xff;//¸ß¶È
-	remote_data_buf[5] = my_aircraft.Motor_PWM_duty[0];//µç»ú1
-	remote_data_buf[6] = my_aircraft.Motor_PWM_duty[1];//µç»ú2
-	remote_data_buf[7] = my_aircraft.Motor_PWM_duty[2];//µç»ú3
-	remote_data_buf[8] = my_aircraft.Motor_PWM_duty[3];//µç»ú4
-	remote_data_buf[9] = my_aircraft.ROLL;//ºá¹ö½Ç
-	remote_data_buf[10] = my_aircraft.PITCH;//¸©Ñö½Ç
-	remote_data_buf[11] = my_aircraft.YAW;//Æ«º½½Ç
-	remote_data_buf[12] = my_aircraft.Battery_Volt;//µç³ØµçÑ¹
-	remote_data_buf[13] = (uint16_t)my_aircraft.Altitude>>8;//ÆøÑ¹¼Æº£°Î
+	remote_data_buf[1] = 0x01;//ï¿½ï¿½Ï¢ID
+	remote_data_buf[2] = my_aircraft.Throttle;//ï¿½ï¿½ï¿½ï¿½
+	remote_data_buf[3] = my_aircraft.Height>>8;//ï¿½ß¶ï¿½
+	remote_data_buf[4] = my_aircraft.Height&0xff;//ï¿½ß¶ï¿½
+	remote_data_buf[5] = my_aircraft.Motor_PWM_duty[0];//ï¿½ï¿½ï¿½1
+	remote_data_buf[6] = my_aircraft.Motor_PWM_duty[1];//ï¿½ï¿½ï¿½2
+	remote_data_buf[7] = my_aircraft.Motor_PWM_duty[2];//ï¿½ï¿½ï¿½3
+	remote_data_buf[8] = my_aircraft.Motor_PWM_duty[3];//ï¿½ï¿½ï¿½4
+	remote_data_buf[9] = my_aircraft.ROLL;//ï¿½ï¿½ï¿½ï¿½ï¿½
+	remote_data_buf[10] = my_aircraft.PITCH;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	remote_data_buf[11] = my_aircraft.YAW;//Æ«ï¿½ï¿½ï¿½ï¿½
+	remote_data_buf[12] = my_aircraft.Battery_Volt;//ï¿½ï¿½Øµï¿½Ñ¹
+	remote_data_buf[13] = (uint16_t)my_aircraft.Altitude>>8;//ï¿½ï¿½Ñ¹ï¿½Æºï¿½ï¿½ï¿½
 	remote_data_buf[14] = (uint8_t)my_aircraft.Altitude;
-	remote_data_buf[15] = (int8_t)my_aircraft.Temperature;//ÆøÑ¹¼ÆÎÂ¶È
-	remote_data_buf[16] = my_aircraft.status;//·ÉÐÐÆ÷µ±Ç°×´Ì¬
-	remote_data_buf[17] = my_aircraft.X_speed>>8;//·ÉÐÐÆ÷XË®Æ½ËÙ¶È
+	remote_data_buf[15] = (int8_t)my_aircraft.Temperature;//ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½Â¶ï¿½
+	remote_data_buf[16] = my_aircraft.status;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°×´Ì¬
+	remote_data_buf[17] = my_aircraft.X_speed>>8;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½XË®Æ½ï¿½Ù¶ï¿½
 	remote_data_buf[18] = (uint8_t)my_aircraft.X_speed;
-	remote_data_buf[19] = my_aircraft.Y_speed>>8;//·ÉÐÐÆ÷YË®Æ½ËÙ¶È
+	remote_data_buf[19] = my_aircraft.Y_speed>>8;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½YË®Æ½ï¿½Ù¶ï¿½
 	remote_data_buf[20] = (uint8_t)my_aircraft.Y_speed;
-	remote_data_buf[21] = my_aircraft.signal;//·ÉÐÐÆ÷½ÓÊÕÐÅºÅ 
-	remote_data_buf[22] = my_aircraft.error_rate;//·ÉÐÐÆ÷ÐÅºÅÎóÂëÂÊ
+	remote_data_buf[21] = my_aircraft.signal;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ 
+	remote_data_buf[22] = my_aircraft.error_rate;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	remote_data_buf[AIRCFAFT_DATA_NUM-1] = 0xA5;//Ö¡Î²
 	if(HAL_DMA_GetState(&hdma_usart3_tx) == HAL_DMA_STATE_READY)
-		HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DATA_NUM);//ÉÏ´«·ÉÐÐÆ÷ÊµÊ±Êý¾ÝÖÁÒ£¿ØÆ÷
+		HAL_UART_Transmit_DMA(&huart3,remote_data_buf,AIRCFAFT_DATA_NUM);//ï¿½Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÊµÊ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½
 	
 }
 

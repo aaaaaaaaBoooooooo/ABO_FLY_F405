@@ -30,17 +30,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin==BMP_INT_Pin)
 	{
-		//aircraft_BMP390_data = bmp390_getdata();//BMP390²âÁ¿-×èÈû
-		if(bmp390_init_success)
-			bmp390_getregs_DMA();//BMP390²âÁ¿-DMA   ÔÚI2CÖÐ¶ÏÖÐ´¦ÀíÊý¾Ý
+		//aircraft_BMP390_data = bmp390_getdata();//BMP390ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½
+		if(my_bmp390.is_valid)
+			bmp390_getregs_DMA();//BMP390ï¿½ï¿½ï¿½ï¿½-DMA   ï¿½ï¿½I2Cï¿½Ð¶ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 	else if(GPIO_Pin==IMU_INT1_Pin)
 	{
 			if(my_ahrs.is_init_success)
 			{
-				IMU_DataUpdate();//¸üÐÂ´¦ÀíºóµÄIMUÊý¾Ý
+				IMU_DataUpdate();//ï¿½ï¿½ï¿½Â´ï¿½ï¿½ï¿½ï¿½ï¿½IMUï¿½ï¿½ï¿½ï¿½
 				
-				IMU_GetAngle(0.0009898f);//×ËÌ¬½âËã Ê¾²¨Æ÷²âÖÐ¶ÏÊ±¼äÎª989.8us
+				IMU_GetAngle(0.0009898f);//ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½Ê±ï¿½ï¿½Îª989.8us
 			}
 	}
 }
@@ -80,34 +80,34 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : PtPin */
+  /*Configure GPIO pin : LED_Pin */
   GPIO_InitStruct.Pin = LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
+  /*Configure GPIO pin : IMU_CS_Pin */
   GPIO_InitStruct.Pin = IMU_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(IMU_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
+  /*Configure GPIO pin : FLASH_CS_Pin */
   GPIO_InitStruct.Pin = FLASH_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FLASH_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PCPin PCPin */
+  /*Configure GPIO pins : IMU_INT1_Pin IMU_INT2_Pin */
   GPIO_InitStruct.Pin = IMU_INT1_Pin|IMU_INT2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
+  /*Configure GPIO pin : BMP_INT_Pin */
   GPIO_InitStruct.Pin = BMP_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

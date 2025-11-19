@@ -7,9 +7,7 @@
 extern volatile uint8_t int1_flag;
 extern volatile uint8_t int2_flag;
 
-struct bmp3_data aircraft_BMP390_data;
-
-struct bmp3_dev dev;
+Barometer_TypeDef my_bmp390;
 
 static uint8_t dev_addr = 0;
 
@@ -52,7 +50,6 @@ void bmp3_delay_us(uint32_t period, void *intf_ptr)
 	/***此处实现微秒延时***/
 	delay_us(period);
 }
-uint8_t bmp390_init_success=0;
 BMP3_INTF_RET_TYPE bmp3_i2c_read(uint8_t reg_addr, uint8_t *read_data, uint16_t len, void *intf_ptr)
 {
 	/***此处实现IIC读寄存器***/
@@ -126,13 +123,13 @@ uint8_t BMP390_Init(void) {
 	 *		   For SPI : BMP3_SPI_INTF
 	 */
 #if defined(USE_I2C_INTERFACE)
-	rslt = bmp3_interface_init(&dev, BMP3_I2C_INTF);
+	rslt = bmp3_interface_init(&my_bmp390.dev, BMP3_I2C_INTF);
 	#elif defined(USE_SPI_INTERFACE)
 	rslt = bmp3_interface_init(&dev, BMP3_SPI_INTF);
 #endif
 	bmp3_check_rslt("bmp3_interface_init", rslt);
 
-	rslt = bmp3_init(&dev);
+	rslt = bmp3_init(&my_bmp390.dev);
 	bmp3_check_rslt("bmp3_init", rslt);
 
 	settings.int_settings.drdy_en = BMP3_DISABLE;
@@ -157,21 +154,21 @@ uint8_t BMP390_Init(void) {
 			BMP3_SEL_DRDY_EN | // Data ready interrupt  ->通过外部中断获取数据
 			BMP3_SEL_ODR; //output data rate
 
-	rslt = bmp3_set_sensor_settings(settings_sel, &settings, &dev);
+	rslt = bmp3_set_sensor_settings(settings_sel, &settings, &my_bmp390.dev);
 	bmp3_check_rslt("bmp3_set_sensor_settings", rslt);
 
 	settings.op_mode = BMP3_MODE_NORMAL;
-	rslt = bmp3_set_op_mode(&settings, &dev);
+	rslt = bmp3_set_op_mode(&settings, &my_bmp390.dev);
 	bmp3_check_rslt("bmp3_set_op_mode", rslt);
 
 	if(rslt==BMP3_OK)
 	{
-		bmp390_init_success = 1;
+		my_bmp390.is_valid = 1;
 		return 0;
 	}
 	else
 	{
-		bmp390_init_success=0;
+		my_bmp390.is_valid=0;
 		return 1;
 	}
 }
@@ -208,7 +205,7 @@ struct bmp3_data bmp390_getdata_DMA(uint8_t *buf)
 
 		/* Compensate the pressure/temperature/both data read
 		 * from the sensor */
-		compensate_data(BMP3_PRESS_TEMP, &uncomp_data,&data, &dev.calib_data);
+		compensate_data(BMP3_PRESS_TEMP, &uncomp_data,&data, &my_bmp390.dev.calib_data);
 	
 		return data;
 }
@@ -220,7 +217,7 @@ struct bmp3_data bmp390_getdata() {
 	struct bmp3_data data = { -1, -1 };
 	struct bmp3_status status = { { 0 } };
 
-	rslt = bmp3_get_status(&status, &dev);
+	rslt = bmp3_get_status(&status, &my_bmp390.dev);
 	bmp3_check_rslt("bmp3_get_status", rslt);
 
 	/* Read temperature and pressure data iteratively based on data ready interrupt */
@@ -231,11 +228,11 @@ struct bmp3_data bmp390_getdata() {
 		 * BMP3_TEMP	   : To read only temperature data
 		 * BMP3_PRESS	   : To read only pressure data
 		 */
-		rslt = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, &dev);
+		rslt = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, &my_bmp390.dev);
 		bmp3_check_rslt("bmp3_get_sensor_data", rslt);
 
 		/* NOTE : Read status register again to clear data ready interrupt status */
-		rslt = bmp3_get_status(&status, &dev);
+		rslt = bmp3_get_status(&status, &my_bmp390.dev);
 		bmp3_check_rslt("bmp3_get_status", rslt);
 
 //		printf("Data  T: %.2f deg C, P: %.2f Pa\n", (data.temperature), (data.pressure));

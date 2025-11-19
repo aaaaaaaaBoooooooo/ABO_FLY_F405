@@ -39,41 +39,47 @@ extern "C" {
 /* USER CODE BEGIN ET */
 typedef struct 
 {
-	uint8_t Battery_Volt;//µç³ØµçÁ¿
-	uint8_t YG_LEFT_UD;//×óÒ¡¸ËÉÏÏÂ´ò¸ËÁ¿
-	uint8_t YG_LEFT_LR;//×óÒ¡¸Ë×óÓÒ´ò¸ËÁ¿
-	uint8_t YG_LEFT_KEY;//×óÒ¡¸Ë°´¼ü
-	uint8_t YG_RIGHT_UD;//ÓÒÒ¡¸ËÉÏÏÂ´ò¸ËÁ¿
-	uint8_t YG_RIGHT_LR;//ÓÒÒ¡¸Ë×óÓÒ´ò¸ËÁ¿
-	uint8_t YG_RIGHT_KEY;//ÓÒÒ¡¸Ë°´¼ü
+	uint16_t CH[16];
+}sbus_type;//sbusé¥æ§å™¨
+
+typedef struct 
+{
+	uint8_t Battery_Volt;//ï¿½ï¿½Øµï¿½ï¿½ï¿½
+	uint8_t YG_LEFT_UD;//ï¿½ï¿½Ò¡ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½ï¿½ï¿½ï¿½
+	uint8_t YG_LEFT_LR;//ï¿½ï¿½Ò¡ï¿½ï¿½ï¿½ï¿½ï¿½Ò´ï¿½ï¿½ï¿½ï¿½
+	uint8_t YG_LEFT_KEY;//ï¿½ï¿½Ò¡ï¿½Ë°ï¿½ï¿½ï¿½
+	uint8_t YG_RIGHT_UD;//ï¿½ï¿½Ò¡ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½ï¿½ï¿½ï¿½
+	uint8_t YG_RIGHT_LR;//ï¿½ï¿½Ò¡ï¿½ï¿½ï¿½ï¿½ï¿½Ò´ï¿½ï¿½ï¿½ï¿½
+	uint8_t YG_RIGHT_KEY;//ï¿½ï¿½Ò¡ï¿½Ë°ï¿½ï¿½ï¿½
 	uint8_t KEY_OK;
 	uint8_t KEY_BACK;
 	uint8_t KEY_UP;
 	uint8_t KEY_DOWN;
 	uint8_t KEY_LEFT;
 	uint8_t KEY_RIGHT;
-	uint8_t signal;//ĞÅºÅÇ¿¶È
-	uint8_t error_rate;//ÎóÂëÂÊ	
-}remote_type;//Ò£¿ØÆ÷Àà
+	uint8_t signal;//ï¿½Åºï¿½Ç¿ï¿½ï¿½
+	uint8_t error_rate;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	
+	sbus_type sbus;
+}remote_type;//Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 typedef struct 
 {
-	uint8_t Battery_Volt;//µç³ØµçÁ¿
-	uint8_t Throttle;//ÓÍÃÅ
-	uint8_t Motor_PWM_duty[4];//µç»úPWMÕ¼¿Õ±È
-	int8_t YAW;//Æ«º½½Ç
-	int8_t PITCH;//¸©Ñö½Ç
-	int8_t ROLL;//ºá¹ö½Ç
-	int16_t X_speed;//XË®Æ½ËÙ¶È£¬µ¥Î»dm/s
-	int16_t Y_speed;//YË®Æ½ËÙ¶È£¬µ¥Î»dm/s
-	uint16_t Height;//¸ß¶È
-	float Pressure;//ÆøÑ¹
-	float Altitude;//º£°Î
-	float Temperature;//ÎÂ¶È
+	uint8_t Battery_Volt;//ï¿½ï¿½Øµï¿½ï¿½ï¿½
+	uint8_t Throttle;//ï¿½ï¿½ï¿½ï¿½
+	uint8_t Motor_PWM_duty[4];//ï¿½ï¿½ï¿½PWMÕ¼ï¿½Õ±ï¿½
+	int8_t YAW;//Æ«ï¿½ï¿½ï¿½ï¿½
+	int8_t PITCH;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	int8_t ROLL;//ï¿½ï¿½ï¿½ï¿½ï¿½
+	int16_t X_speed;//XË®Æ½ï¿½Ù¶È£ï¿½ï¿½ï¿½Î»dm/s
+	int16_t Y_speed;//YË®Æ½ï¿½Ù¶È£ï¿½ï¿½ï¿½Î»dm/s
+	uint16_t Height;//ï¿½ß¶ï¿½
+	float Pressure;//ï¿½ï¿½Ñ¹
+	float Altitude;//ï¿½ï¿½ï¿½ï¿½
+	float Temperature;//ï¿½Â¶ï¿½
 	uint8_t status;//×´Ì¬
-	uint8_t signal;//ĞÅºÅÇ¿¶È
-	uint8_t error_rate;//ÎóÂëÂÊ	
-	uint32_t fly_start_time;//Æğ·ÉÊ±¼ä
-}aircraft_type;//·ÉĞĞÆ÷Àà
+	uint8_t signal;//ï¿½Åºï¿½Ç¿ï¿½ï¿½
+	uint8_t error_rate;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	
+	uint32_t fly_start_time;//ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+}aircraft_type;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 extern remote_type my_remote;
 extern aircraft_type my_aircraft;
@@ -101,6 +107,8 @@ void Error_Handler(void);
 #define LED_GPIO_Port GPIOC
 #define BADC_in_Pin GPIO_PIN_3
 #define BADC_in_GPIO_Port GPIOC
+#define WS2812_PWM_Pin GPIO_PIN_3
+#define WS2812_PWM_GPIO_Port GPIOA
 #define IMU_CS_Pin GPIO_PIN_4
 #define IMU_CS_GPIO_Port GPIOA
 #define FLASH_CS_Pin GPIO_PIN_12

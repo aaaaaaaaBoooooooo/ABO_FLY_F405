@@ -75,3 +75,4 @@ f405_fc_rtos\main.o: ../user/Angle/angle.h
 f405_fc_rtos\main.o: ../Drivers/BSP_HardWare/W25QXX.h
 f405_fc_rtos\main.o: ../Drivers/SYSTEM/sys/sys.h
 f405_fc_rtos\main.o: ../Drivers/CMSIS/Include/core_cm4.h
+f405_fc_rtos\main.o: ../FATFS/App/flight_data_manager.h

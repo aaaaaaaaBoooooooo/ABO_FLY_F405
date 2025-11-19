@@ -9,24 +9,26 @@
 #include "usart.h"
 #include "cJSON_usr.h"
 #include "fatfs.h"
-AttiudeController AttitudeControl;//×ËÌ¬¿ØÖÆ
-HeightController HeightControl;//¸ß¶È¿ØÖÆ
-PositionController PositionControl;//Î»ÖÃ¿ØÖÆ
-Motor_TypeDef aircraft_motor = {0,0,0,0,0,1,1,1,1};//µç»ú½á¹¹Ìå
+#include "bmp390_task.h"
+AttiudeController AttitudeControl;//å§¿æ€æ§åˆ¶
+HeightController HeightControl;//é«˜åº¦æ§åˆ¶
+PositionController PositionControl;//ä½ç½®æ§åˆ¶
+Motor_TypeDef aircraft_motor = {0,0,0,0,0,1,1,1,1};//ç”µæœºç»“æ„ä½“
 
 
-/*¿ÕĞÄ±­µç»ú¿ØÖÆbegin*/
-//µç»ú×ªËÙÉèÖÃ
+/*ç©ºå¿ƒæ¯ç”µæœºæ§åˆ¶begin*/
+//ç”µæœºè½¬é€Ÿè®¾ç½®
 void motor_speed_set()
 {
-	/***µç»úµçÑ¹²¹³¥´¦Àíbegin***/
+	float power = 1.0f;
+	/***ç”µæœºç”µå‹è¡¥å¿å¤„ç†begin***/
 	aircraft_motor.duty1 *=aircraft_motor.volt_k1;
 	aircraft_motor.duty2 *=aircraft_motor.volt_k2;
 	aircraft_motor.duty3 *=aircraft_motor.volt_k3;
 	aircraft_motor.duty4 *=aircraft_motor.volt_k4;
-	/***µç»úµçÑ¹²¹³¥´¦Àíend***/	
+	/***ç”µæœºç”µå‹è¡¥å¿å¤„ç†end***/	
 	
-	/***ÏŞ·ù´¦Àíbegin***/
+	/***é™å¹…å¤„ç†begin***/
 	if(aircraft_motor.duty1>MOTOR_MAX_DUTY)		aircraft_motor.duty1 = MOTOR_MAX_DUTY;
 	else if(aircraft_motor.duty1<MOTOR_MIN_DUTY)		aircraft_motor.duty1 = MOTOR_MIN_DUTY;
 	if(aircraft_motor.duty2>MOTOR_MAX_DUTY)		aircraft_motor.duty2 = MOTOR_MAX_DUTY;
@@ -35,18 +37,30 @@ void motor_speed_set()
 	else if(aircraft_motor.duty3<MOTOR_MIN_DUTY)		aircraft_motor.duty3 = MOTOR_MIN_DUTY;
 	if(aircraft_motor.duty4>MOTOR_MAX_DUTY)		aircraft_motor.duty4 = MOTOR_MAX_DUTY;
 	else if(aircraft_motor.duty4<MOTOR_MIN_DUTY)		aircraft_motor.duty4 = MOTOR_MIN_DUTY;	
-	/***ÏŞ·ù´¦Àíend***/	
+	/***é™å¹…å¤„ç†end***/	
 	
-
-	/***HAL¿âÕ¼¿Õ±ÈÉèÖÃ***/
-	if(my_aircraft.status&0x01)
+	/*RC SBUS ç”µæœºåŠŸç‡æ§åˆ¶*/
+	if(my_remote.sbus.CH[7]==RC_SBUS_CH_MIN)//å³æ‹¨æ†ä¸Šå‡
 	{
-		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,aircraft_motor.duty1);
-		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,aircraft_motor.duty2);
-		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_3,aircraft_motor.duty3);
-		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,aircraft_motor.duty4);
+		power = 1.0f;//æœ€å¤§åŠŸç‡
+	}
+	else if(my_remote.sbus.CH[7]==RC_SBUS_CH_MID)//å³æ‹¨æ†ä¸­é—´
+	{
+		power = 1.0f;//75%åŠŸç‡
+	}
+	else if(my_remote.sbus.CH[7]==RC_SBUS_CH_MAX)//å³æ‹¨æ†ä¸‹é™
+	{
+		power = 0.0f;//å…³é—­ç”µæœº
 	}
 
+	/***HALåº“å ç©ºæ¯”è®¾ç½®***/
+	if(my_aircraft.status&0x01 && !(my_aircraft.status&0x08))//è§£é”ä¸”æ— ä¿æŠ¤
+	{
+		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,aircraft_motor.duty1*power);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_1,aircraft_motor.duty2*power);
+		__HAL_TIM_SetCompare(&htim2,TIM_CHANNEL_3,aircraft_motor.duty3*power);
+		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,aircraft_motor.duty4*power);
+	}
 	else
 	{
 		__HAL_TIM_SetCompare(&htim4,TIM_CHANNEL_4,0);
@@ -55,16 +69,16 @@ void motor_speed_set()
 		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,0);		
 	}
 }
-//µç»ú¿ØÖÆ
+//ç”µæœºæ§åˆ¶
 void motor_control()
 {
-	/***Õ¼¿Õ±È¸´Î»***/
+	/***å ç©ºæ¯”å¤ä½***/
 	aircraft_motor.duty1=0;
 	aircraft_motor.duty2=0;
 	aircraft_motor.duty3=0;
 	aircraft_motor.duty4=0;	
 
-	/***×ËÌ¬¿ØÖÆbegin***/	
+	/***å§¿æ€æ§åˆ¶begin***/	
 	aircraft_motor.duty1 +=(int)AttitudeControl.internal_pid.x.output;
 	aircraft_motor.duty2 -=(int)AttitudeControl.internal_pid.x.output;
 	aircraft_motor.duty3 +=(int)AttitudeControl.internal_pid.x.output;
@@ -80,7 +94,7 @@ void motor_control()
 	aircraft_motor.duty3 +=(int)AttitudeControl.internal_pid.z.output;
 	aircraft_motor.duty4 -=(int)AttitudeControl.internal_pid.z.output;	
 	
-	/***×ËÌ¬»·Êä³öÏŞ·ù***/
+	/***å§¿æ€ç¯è¾“å‡ºé™å¹…***/
 	if(aircraft_motor.duty1<MOTOR_MIN_DUTY) aircraft_motor.duty1 =MOTOR_MIN_DUTY;
 	if(aircraft_motor.duty2<MOTOR_MIN_DUTY) aircraft_motor.duty2 =MOTOR_MIN_DUTY;
 	if(aircraft_motor.duty3<MOTOR_MIN_DUTY) aircraft_motor.duty3 =MOTOR_MIN_DUTY;
@@ -90,18 +104,18 @@ void motor_control()
 	if(aircraft_motor.duty2>MOTOR_MAX_DUTY) aircraft_motor.duty2 =MOTOR_MAX_DUTY;
   if(aircraft_motor.duty3>MOTOR_MAX_DUTY) aircraft_motor.duty3 =MOTOR_MAX_DUTY;
 	if(aircraft_motor.duty4>MOTOR_MAX_DUTY) aircraft_motor.duty4 =MOTOR_MAX_DUTY;	
-	/***×ËÌ¬¿ØÖÆend***/	
+	/***å§¿æ€æ§åˆ¶end***/	
 
-	/***ÓÍÃÅ¿ØÖÆbegin***/
+	/***æ²¹é—¨æ§åˆ¶begin***/
 	aircraft_motor.duty1 +=(int)aircraft_motor.throttle;
 	aircraft_motor.duty2 +=(int)aircraft_motor.throttle;
 	aircraft_motor.duty3 +=(int)aircraft_motor.throttle;
 	aircraft_motor.duty4 +=(int)aircraft_motor.throttle;		
-	/***ÓÍÃÅ¿ØÖÆend***/
+	/***æ²¹é—¨æ§åˆ¶end***/
 	
-	motor_speed_set();//µç»úÇı¶¯
+	motor_speed_set();//ç”µæœºé©±åŠ¨
 }
-//µç»ú³õÊ¼»¯
+//ç”µæœºåˆå§‹åŒ–
 void motor_init()
 {
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
@@ -109,7 +123,7 @@ void motor_init()
 	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
 	HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);	
 }
-//µç»ú½â³ı³õÊ¼»¯
+//ç”µæœºè§£é™¤åˆå§‹åŒ–
 void motor_deinit()
 {
 	HAL_TIM_PWM_Stop(&htim2,TIM_CHANNEL_1);
@@ -117,53 +131,58 @@ void motor_deinit()
 	HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_4);
 	HAL_TIM_PWM_Stop(&htim4,TIM_CHANNEL_4);	
 }
-/*¿ÕĞÄ±­µç»ú¿ØÖÆend*/
+/*ç©ºå¿ƒæ¯ç”µæœºæ§åˆ¶end*/
 
-/*µç»úÓÍÃÅ¿ØÖÆbegin*/
+/*ç”µæœºæ²¹é—¨æ§åˆ¶begin*/
 void motor_throttle_control()
 {
-	if(HeightControl.auto_height_control_isEnable)//×Ô¶¯¶¨¸ßÓÍÃÅ¿ØÖÆ
+	if(HeightControl.auto_height_control_isEnable)//è‡ªåŠ¨å®šé«˜æ²¹é—¨æ§åˆ¶
 	{
-		if(remote_data_flash[0]==1)//¶¨¸ß¸ß¶È¿ØÖÆ
+		if(remote_data_flash[0]==1)//å®šé«˜é«˜åº¦æ§åˆ¶
 		{
-			if(abs((int)my_remote.YG_LEFT_UD-128)>20)
-				 HeightControl.target_height += ((int)my_remote.YG_LEFT_UD - 128)*0.00015f;
+			if(abs((int)my_remote.YG_LEFT_UD-128)>40)
+				HeightControl.target_height += ((int)my_remote.YG_LEFT_UD - 128)*0.00015f;
 			else 
-				aircraft_motor.throttle+=0;
+				HeightControl.target_height+=0;
 
 			remote_data_flash[0] = 0;
 		}	
-		aircraft_motor.throttle = HeightControl.base_throttle + HeightControl.pid.output;//ÓÍÃÅÊä³ö
+		/*SBUS*/
+		if(abs((int)my_remote.sbus.CH[2]-RC_SBUS_CH_MID)>200)
+			 HeightControl.target_height += (float)((int)my_remote.sbus.CH[2]-RC_SBUS_CH_MID)*0.000003f;
+		
+		aircraft_motor.throttle = HeightControl.base_throttle + HeightControl.pid.output;//æ²¹é—¨è¾“å‡º
 	
 	}
-	else//Ä¬ÈÏÊÖ¶¯ÓÍÃÅ¿ØÖÆ
+	else//é»˜è®¤æ‰‹åŠ¨æ²¹é—¨æ§åˆ¶
 	{
 		if(remote_data_flash[0]==1)
 		{
 			if(abs((int)my_remote.YG_LEFT_UD-128)>40)
-				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.2f;
+				aircraft_motor.throttle += ((int)my_remote.YG_LEFT_UD - 128)*0.3f;
 			else 
 				aircraft_motor.throttle+=0;
-
 			remote_data_flash[0] = 0;
 		}
+		/*SBUS*/
+		aircraft_motor.throttle = (float)MOTOR_MAX_THROTTLE * (float)(my_remote.sbus.CH[2]-RC_SBUS_CH_MIN)/(float)(RC_SBUS_CH_RANGE);
 	}
-	/***ÓÍÃÅÏŞ·ù***/
+	/***æ²¹é—¨é™å¹…***/
 	if(aircraft_motor.throttle>MOTOR_MAX_THROTTLE)
 		aircraft_motor.throttle = MOTOR_MAX_THROTTLE;
 	else if(aircraft_motor.throttle<MOTOR_MIN_THROTTLE)
 		aircraft_motor.throttle = MOTOR_MIN_THROTTLE;
 }
-/*µç»úÓÍÃÅ¿ØÖÆend*/
+/*ç”µæœºæ²¹é—¨æ§åˆ¶end*/
 
-/*·ÉĞĞÆ÷·ÉĞĞ·½Ïò¿ØÖÆbegin*/
+/*é£è¡Œå™¨é£è¡Œæ–¹å‘æ§åˆ¶begin*/
 void aircraft_flight_direction_control()
 {
 	static uint32_t poscontrol_speed_cnt = 0;
 	static uint32_t poscontrol_postion_cnt = 0;
-	if(PositionControl.auto_pos_control_isEnable)//¿ªÆô×Ô¶¯¶¨µã
+	if(PositionControl.auto_pos_control_isEnable)//å¼€å¯è‡ªåŠ¨å®šç‚¹
 	{
-		if(poscontrol_speed_cnt>=4)//ÄÚ»·50Hz
+		if(poscontrol_speed_cnt>=4)//å†…ç¯50Hz
 		{
 			
 			AttitudeControl.pitch_target_angle = PositionControl.internal_pid_x.f_cal_pid(&PositionControl.internal_pid_x,*PositionControl.sensor.speed_x);
@@ -172,7 +191,7 @@ void aircraft_flight_direction_control()
 			
 			poscontrol_speed_cnt = 0;
 		}
-		if(poscontrol_postion_cnt>=4)//Íâ»·50Hz
+		if(poscontrol_postion_cnt>=4)//å¤–ç¯50Hz
 		{
 			PositionControl.internal_pid_x.target = PositionControl.external_pid_x.f_cal_pid(&PositionControl.external_pid_x,*PositionControl.sensor.pos_x);
 			
@@ -182,36 +201,36 @@ void aircraft_flight_direction_control()
 		poscontrol_speed_cnt++;
 		poscontrol_postion_cnt++;
 	}
-	else//ÊÖ¶¯·½Ïò¿ØÖÆ
+	else//æ‰‹åŠ¨æ–¹å‘æ§åˆ¶
 	{
 		poscontrol_speed_cnt = 0;
 		poscontrol_postion_cnt = 0;		
 		if(remote_data_flash[1]==1)
 		{
-			if(abs((int)my_remote.YG_RIGHT_LR-128)>25)
+			if(abs((int)my_remote.YG_RIGHT_LR-128)>20)
 			{
 				if(my_remote.YG_RIGHT_LR>128)
 				{
-					AttitudeControl.roll_target_angle = -(float)(my_remote.YG_RIGHT_LR-128-25)*((float)ROLL_TARGET_MAX_ANGLE/102.0f);
+					AttitudeControl.roll_target_angle = +(float)(my_remote.YG_RIGHT_LR-128-20)*((float)ROLL_TARGET_MAX_ANGLE/107.0f);
 				}
 				else
 				{
-					AttitudeControl.roll_target_angle = -(float)(my_remote.YG_RIGHT_LR-128+25)*((float)ROLL_TARGET_MAX_ANGLE/103.0f);
+					AttitudeControl.roll_target_angle = +(float)(my_remote.YG_RIGHT_LR-128+20)*((float)ROLL_TARGET_MAX_ANGLE/108.0f);
 				}
 				
 			}
 			else
 				AttitudeControl.roll_target_angle = 0;
 			
-			if(abs((int)my_remote.YG_RIGHT_UD-128)>25)	
+			if(abs((int)my_remote.YG_RIGHT_UD-128)>20)	
 			{
 				if(my_remote.YG_RIGHT_UD>128)
 				{
-					AttitudeControl.pitch_target_angle = +(float)(my_remote.YG_RIGHT_UD-128-25)*((float)PITCH_TARGET_MAX_ANGLE/102.0f);
+					AttitudeControl.pitch_target_angle = -(float)(my_remote.YG_RIGHT_UD-128-20)*((float)PITCH_TARGET_MAX_ANGLE/107.0f);
 				}
 				else
 				{
-					AttitudeControl.pitch_target_angle = +(float)(my_remote.YG_RIGHT_UD-128+25)*((float)PITCH_TARGET_MAX_ANGLE/103.0f);
+					AttitudeControl.pitch_target_angle = -(float)(my_remote.YG_RIGHT_UD-128+20)*((float)PITCH_TARGET_MAX_ANGLE/108.0f);
 				}
 				
 			}
@@ -225,8 +244,20 @@ void aircraft_flight_direction_control()
 				
 			remote_data_flash[1]=0;
 		}
+		/*SBUS*/
+		if(abs((int)my_remote.sbus.CH[0]-RC_SBUS_CH_MID)>100)
+			AttitudeControl.roll_target_angle = -                                                                                                              (float)((int)my_remote.sbus.CH[0]-RC_SBUS_CH_MID)*((float)ROLL_TARGET_MAX_ANGLE/(float)(RC_SBUS_CH_RANGE*0.5f));
+		else
+			AttitudeControl.roll_target_angle = 0;
+		if(abs((int)my_remote.sbus.CH[1]-RC_SBUS_CH_MID)>100)
+			AttitudeControl.pitch_target_angle = -(float)((int)my_remote.sbus.CH[1]-RC_SBUS_CH_MID)*((float)PITCH_TARGET_MAX_ANGLE/(float)(RC_SBUS_CH_RANGE*0.5f));
+		else
+			AttitudeControl.pitch_target_angle = 0;
+		if(abs((int)my_remote.sbus.CH[3]-RC_SBUS_CH_MID)>100)
+			AttitudeControl.yaw_target_angle -= (float)((int)my_remote.sbus.CH[3]-RC_SBUS_CH_MID)*0.001f;
+
 	}
-		/****×ËÌ¬Íâ»·ÊäÈëbegin****/
+		/****å§¿æ€å¤–ç¯è¾“å…¥begin****/
 		if(AttitudeControl.roll_target_angle>ROLL_TARGET_MAX_ANGLE)
 			AttitudeControl.roll_target_angle = ROLL_TARGET_MAX_ANGLE;
 		else if(AttitudeControl.roll_target_angle<ROLL_TARGET_MIN_ANGLE)
@@ -239,39 +270,39 @@ void aircraft_flight_direction_control()
 			AttitudeControl.pitch_target_angle = PITCH_TARGET_MIN_ANGLE;	
 		AttitudeControl.external_pid.y.target = AttitudeControl.pitch_target_angle+AttitudeControl.pitch_compensate;
 		
-		if(AttitudeControl.yaw_target_angle>YAW_TARGET_MAX_ANGLE)
-			AttitudeControl.yaw_target_angle = YAW_TARGET_MAX_ANGLE;
-		else if(AttitudeControl.yaw_target_angle<YAW_TARGET_MIN_ANGLE)
-			AttitudeControl.yaw_target_angle = YAW_TARGET_MIN_ANGLE;	
+//		if(AttitudeControl.yaw_target_angle>YAW_TARGET_MAX_ANGLE)
+//			AttitudeControl.yaw_target_angle = YAW_TARGET_MAX_ANGLE;
+//		else if(AttitudeControl.yaw_target_angle<YAW_TARGET_MIN_ANGLE)
+//			AttitudeControl.yaw_target_angle = YAW_TARGET_MIN_ANGLE;	
 		AttitudeControl.external_pid.z.target = AttitudeControl.yaw_target_angle;
-		/****×ËÌ¬Íâ»·ÊäÈëend****/
+		/****å§¿æ€å¤–ç¯è¾“å…¥end****/
 }
-/*·ÉĞĞÆ÷·ÉĞĞ·½Ïò¿ØÖÆend*/
+/*é£è¡Œå™¨é£è¡Œæ–¹å‘æ§åˆ¶end*/
 
-/*·ÉĞĞÆ÷·ÉĞĞ¸ß¶È¿ØÖÆbegin*/
+/*é£è¡Œå™¨é£è¡Œé«˜åº¦æ§åˆ¶begin*/
 
 void aircraft_flight_Height_control()
 {
-	if(HeightControl.auto_height_control_isEnable)//¿ªÆô×Ô¶¯¶¨¸ß
+	if(HeightControl.auto_height_control_isEnable)//å¼€å¯è‡ªåŠ¨å®šé«˜
 	{
-		if(TOF.distance_m <3.0f&&TOF.confidence >80)//TOF²â¾àĞ¡ÓÚ3m ²¢ÇÒ¿ÉĞÅ¶È¸ßÓÚ80
+		if(TOF.distance_m <3.0f&&TOF.confidence >80)//TOFæµ‹è·å°äº3m å¹¶ä¸”å¯ä¿¡åº¦é«˜äº80
 		{
-			HeightControl.mode = TOF_MODE;//TOF¶¨¸ß
+			HeightControl.mode = TOF_MODE;//TOFå®šé«˜
 			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.tof_params.Kp,HeightControl.tof_params.Ki,HeightControl.tof_params.Kd);
 		}
 		else
 		{
-			HeightControl.mode = BARO_MODE;//ÆøÑ¹¼Æ¶¨¸ß
-			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.baro_params.Kp,HeightControl.baro_params.Ki,HeightControl.baro_params.Kd);		
+//			HeightControl.mode = BARO_MODE;//æ°”å‹è®¡å®šé«˜
+//			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.baro_params.Kp,HeightControl.baro_params.Ki,HeightControl.baro_params.Kd);		
 		}
-		if(HeightControl.mode == BARO_MODE)//ÆøÑ¹¼Æ¶¨¸ß
+		if(HeightControl.mode == BARO_MODE)//æ°”å‹è®¡å®šé«˜
 		{
-			HeightControl.pid.target = HeightControl.target_altitude;
-			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
-			HeightControl.pid.IntegralLimit = HeightControl.pid.MaxOutput*0.5f;
-			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.barometer_height);			
+//			HeightControl.pid.target = HeightControl.target_altitude;
+//			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
+//			HeightControl.pid.IntegralLimit = HeightControl.pid.MaxOutput*0.5f;
+//			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.barometer_height);			
 		}
-		else if(HeightControl.mode == TOF_MODE)//TOF¶¨¸ß
+		else if(HeightControl.mode == TOF_MODE)//TOFå®šé«˜
 		{
 			HeightControl.pid.target =  HeightControl.target_height;
 			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
@@ -284,12 +315,12 @@ void aircraft_flight_Height_control()
 	else   
 		return;
 }
-/*·ÉĞĞÆ÷·ÉĞĞ¸ß¶È¿ØÖÆend*/
+/*é£è¡Œå™¨é£è¡Œé«˜åº¦æ§åˆ¶end*/
 
 
 void pid_control_init()
 {
-	/***×ËÌ¬¿ØÖÆ³õÊ¼»¯begin***/
+	/***å§¿æ€æ§åˆ¶åˆå§‹åŒ–begin***/
 	pid_init(&AttitudeControl.internal_pid.x);
 	AttitudeControl.sensor.gyro_x = &my_ahrs.IMU_Data.gyro.x;
 	pid_init(&AttitudeControl.internal_pid.y);
@@ -297,11 +328,11 @@ void pid_control_init()
 	pid_init(&AttitudeControl.internal_pid.z);
 	AttitudeControl.sensor.gyro_z = &my_ahrs.IMU_Data.gyro.z;
 	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
-	pid_enable(&AttitudeControl.internal_pid.x,0);//Î´¿ªÆô·É»ú¾Í²»Ê¹ÄÜpid
+	pid_enable(&AttitudeControl.internal_pid.x,0);//æœªå¼€å¯é£æœºå°±ä¸ä½¿èƒ½pid
 	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
-	pid_enable(&AttitudeControl.internal_pid.y,0);//Î´¿ªÆô·É»ú¾Í²»Ê¹ÄÜpid
-	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY*0.3,0,0,0,0,60.0f,0.0f,15.0f);
-	pid_enable(&AttitudeControl.internal_pid.z,0);//Î´¿ªÆô·É»ú¾Í²»Ê¹ÄÜpid
+	pid_enable(&AttitudeControl.internal_pid.y,0);//æœªå¼€å¯é£æœºå°±ä¸ä½¿èƒ½pid
+	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,60.0f,0.0f,15.0f);
+	pid_enable(&AttitudeControl.internal_pid.z,0);//æœªå¼€å¯é£æœºå°±ä¸ä½¿èƒ½pid
 	
 	pid_init(&AttitudeControl.external_pid.x);
 	AttitudeControl.sensor.roll = &my_ahrs.Angle_Data.roll;
@@ -309,33 +340,33 @@ void pid_control_init()
 	AttitudeControl.sensor.pitch = &my_ahrs.Angle_Data.pitch;
 	pid_init(&AttitudeControl.external_pid.z);
 	AttitudeControl.sensor.yaw = &my_ahrs.Angle_Data.yaw;
-	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,500,100,0,0,0,2.5f,0.025f,20.0f);
-	pid_enable(&AttitudeControl.external_pid.x,0);//Î´¿ªÆô·É»ú¾Í²»Ê¹ÄÜpid
-	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,500,100,0,0,0,2.5f,0.025f,20.0f);
-	pid_enable(&AttitudeControl.external_pid.y,0);//Î´¿ªÆô·É»ú¾Í²»Ê¹ÄÜpid
-	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,100,0,0,0,0,6.0f,0.0f,0.0f);	
-	pid_enable(&AttitudeControl.external_pid.z,0);//Î´¿ªÆô·É»ú¾Í²»Ê¹ÄÜpid
-	/***×ËÌ¬¿ØÖÆ³õÊ¼»¯end***/
+	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,10000,100,0,0,0,2.5f,0.025f,20.0f);
+	pid_enable(&AttitudeControl.external_pid.x,0);//æœªå¼€å¯é£æœºå°±ä¸ä½¿èƒ½pid
+	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,10000,100,0,0,0,2.5f,0.025f,20.0f);
+	pid_enable(&AttitudeControl.external_pid.y,0);//æœªå¼€å¯é£æœºå°±ä¸ä½¿èƒ½pid
+	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,200,0,0,0,0,6.0f,0.0f,0.0f);	
+	pid_enable(&AttitudeControl.external_pid.z,0);//æœªå¼€å¯é£æœºå°±ä¸ä½¿èƒ½pid
+	/***å§¿æ€æ§åˆ¶åˆå§‹åŒ–end***/
 	
-	/***¸ß¶È¿ØÖÆ³õÊ¼»¯begin***/
+	/***é«˜åº¦æ§åˆ¶åˆå§‹åŒ–begin***/
 	pid_init(&HeightControl.pid);
 	HeightControl.sensor.tof_height = &TOF.distance_m;
 	HeightControl.sensor.barometer_height = &my_aircraft.Altitude;
 	HeightControl.pid.f_param_init(&HeightControl.pid,PID_Position,0,0,0,0,0,300.0f,1.5f,2000.0f);
-	pid_enable(&HeightControl.pid,0);//Î´¿ªÆô¶¨¸ß¾Í²»Ê¹ÄÜpid
-	HeightControl.mode = ALT_HOLD_DISABLED;//³õÊ¼ÎªÊÖ¶¯¿ØÖÆ
+	pid_enable(&HeightControl.pid,0);//æœªå¼€å¯å®šé«˜å°±ä¸ä½¿èƒ½pid
+	HeightControl.mode = ALT_HOLD_DISABLED;//åˆå§‹ä¸ºæ‰‹åŠ¨æ§åˆ¶
 
-	/***¸ß¶È¿ØÖÆ³õÊ¼»¯end***/	
+	/***é«˜åº¦æ§åˆ¶åˆå§‹åŒ–end***/	
 	
-	/***Î»ÖÃ¿ØÖÆ³õÊ¼»¯begin***/
+	/***ä½ç½®æ§åˆ¶åˆå§‹åŒ–begin***/
 	pid_init(&PositionControl.internal_pid_x);
 	pid_init(&PositionControl.internal_pid_y);
 	PositionControl.sensor.speed_x = &OpticalFlow.flow_x_speed;
 	PositionControl.sensor.speed_y = &OpticalFlow.flow_y_speed;
 	PositionControl.internal_pid_x.f_param_init(&PositionControl.internal_pid_x,PID_Position,ROLL_TARGET_MAX_ANGLE,0,0,0,0,0.0f,0.0f,0.0f);
 	PositionControl.internal_pid_y.f_param_init(&PositionControl.internal_pid_y,PID_Position,PITCH_TARGET_MAX_ANGLE,0,0,0,0,0.0f,0.0f,0.0f);
-	pid_enable(&PositionControl.internal_pid_x,0);//Î´¿ªÆô¶¨µã¾Í²»Ê¹ÄÜpid
-	pid_enable(&PositionControl.internal_pid_y,0);//Î´¿ªÆô¶¨µã¾Í²»Ê¹ÄÜpid
+	pid_enable(&PositionControl.internal_pid_x,0);//æœªå¼€å¯å®šç‚¹å°±ä¸ä½¿èƒ½pid
+	pid_enable(&PositionControl.internal_pid_y,0);//æœªå¼€å¯å®šç‚¹å°±ä¸ä½¿èƒ½pid
 
 	pid_init(&PositionControl.external_pid_x);
 	pid_init(&PositionControl.external_pid_y);
@@ -343,62 +374,74 @@ void pid_control_init()
 	PositionControl.sensor.pos_y = &OpticalFlow.flow_y_pos;
 	PositionControl.external_pid_x.f_param_init(&PositionControl.external_pid_x,PID_Position,X_TARGET_MAX_SPEED,X_TARGET_MAX_SPEED,0,0,0,0.0f,0.0f,0.0f);
 	PositionControl.external_pid_y.f_param_init(&PositionControl.external_pid_y,PID_Position,Y_TARGET_MAX_SPEED,Y_TARGET_MAX_SPEED,0,0,0,0.0f,0.0f,0.0f);
-	pid_enable(&PositionControl.external_pid_x,0);//Î´¿ªÆô¶¨µã¾Í²»Ê¹ÄÜpid
-	pid_enable(&PositionControl.external_pid_y,0);//Î´¿ªÆô¶¨µã¾Í²»Ê¹ÄÜpid
-	/***Î»ÖÃ¿ØÖÆ³õÊ¼»¯end***/
+	pid_enable(&PositionControl.external_pid_x,0);//æœªå¼€å¯å®šç‚¹å°±ä¸ä½¿èƒ½pid
+	pid_enable(&PositionControl.external_pid_y,0);//æœªå¼€å¯å®šç‚¹å°±ä¸ä½¿èƒ½pid
+	/***ä½ç½®æ§åˆ¶åˆå§‹åŒ–end***/
 	
 	if(my_fatfs_init_success)
-			fatfs_PID_params_read();//pid²ÎÊı¶ÁÈ¡
-	motor_init();//µç»ú³õÊ¼»¯
+	{
+		if(fatfs_PID_params_read())//pidå‚æ•°è¯»å–
+		{
+			while(1)
+			{
+				LED_TOGGLE;
+				HAL_Delay(500);
+			}
+		}
+
+	}
+	motor_init();//ç”µæœºåˆå§‹åŒ–
 }
 
 void pid_internal_control()
 { 
 
-	/****pid¼ÆËãbegin****/
-	AttitudeControl.internal_pid.x.f_cal_pid(&AttitudeControl.internal_pid.x,*AttitudeControl.sensor.gyro_x);//XÖá
+	/****pidè®¡ç®—begin****/
+	AttitudeControl.internal_pid.x.f_cal_pid(&AttitudeControl.internal_pid.x,*AttitudeControl.sensor.gyro_x);//Xè½´
 
-	AttitudeControl.internal_pid.y.f_cal_pid(&AttitudeControl.internal_pid.y,*AttitudeControl.sensor.gyro_y);//YÖá
+	AttitudeControl.internal_pid.y.f_cal_pid(&AttitudeControl.internal_pid.y,*AttitudeControl.sensor.gyro_y);//Yè½´
 
-	AttitudeControl.internal_pid.z.f_cal_pid(&AttitudeControl.internal_pid.z,*AttitudeControl.sensor.gyro_z);//ZÖá
+	AttitudeControl.internal_pid.z.f_cal_pid(&AttitudeControl.internal_pid.z,*AttitudeControl.sensor.gyro_z);//Zè½´
 
-	/****pid¼ÆËãend****/
+	/****pidè®¡ç®—end****/
 	
 }
 void pid_external_control()
 {    
-	/****pid¼ÆËãbegin****/
+	/****pidè®¡ç®—begin****/
 	AttitudeControl.external_pid.x.f_cal_pid(&AttitudeControl.external_pid.x,*AttitudeControl.sensor.roll);//ROLL
 
 	AttitudeControl.external_pid.y.f_cal_pid(&AttitudeControl.external_pid.y,*AttitudeControl.sensor.pitch);//PITCH
 
 	AttitudeControl.external_pid.z.f_cal_pid(&AttitudeControl.external_pid.z,*AttitudeControl.sensor.yaw);//YAW
 
-	/****pid¼ÆËãend****/
+	/****pidè®¡ç®—end****/
 	
-	/****Íâ»·Êä³öbegin****/
+	/****å¤–ç¯è¾“å‡ºbegin****/
 	AttitudeControl.internal_pid.x.target = AttitudeControl.external_pid.x.output;
 	
 	AttitudeControl.internal_pid.y.target = AttitudeControl.external_pid.y.output;
 	
 	AttitudeControl.internal_pid.z.target = AttitudeControl.external_pid.z.output;
-	/****Íâ»·Êä³öend****/
+	/****å¤–ç¯è¾“å‡ºend****/
 }
 
-/*·ÉĞĞÆ÷±£»¤´ëÊ©begin*/
+/*é£è¡Œå™¨ä¿æŠ¤æªæ–½begin*/
 uint8_t aircraft_protection()
 {
 	static uint32_t Battery_Low_Power_cnt =0;
 	static uint32_t Aircraft_IMU_Error_cnt =0;
 	static uint32_t Motor_Duty_Error_cnt =0;
 	
-	if(my_aircraft.Battery_Volt <=32 )//µç³ØµÍµçÁ¿±£»¤
+	if(my_aircraft.Battery_Volt <=32 )//ç”µæ± ä½ç”µé‡ä¿æŠ¤
 	{
 		Battery_Low_Power_cnt ++;
 		if(Battery_Low_Power_cnt >= 50)//5s
 		{
 			motor_deinit();
+			my_aircraft.status |=0x08;//set status bit high
 			return 1;
+
 		}
 	}
 	else 
@@ -406,12 +449,13 @@ uint8_t aircraft_protection()
 		Battery_Low_Power_cnt =0;
 	}
 	
-	if(fabs(my_ahrs.Angle_Data.roll)>60||fabs(my_ahrs.Angle_Data.pitch)>60)//·ÉĞĞÆ÷×ËÌ¬´íÎó±£»¤
+	if(fabs(my_ahrs.Angle_Data.roll)>80||fabs(my_ahrs.Angle_Data.pitch)>80)//é£è¡Œå™¨å§¿æ€é”™è¯¯ä¿æŠ¤
 	{
 		Aircraft_IMU_Error_cnt++;
-		if(Aircraft_IMU_Error_cnt >= 2)//0.2s
+		if(Aircraft_IMU_Error_cnt >= 10)//1s
 		{
 			motor_deinit();
+			my_aircraft.status |=0x08;//set status bit high			
 			return 2;
 		}		
 	}
@@ -420,305 +464,85 @@ uint8_t aircraft_protection()
 		Aircraft_IMU_Error_cnt=0;
 	}
 	
-	if(aircraft_motor.duty1>=MOTOR_MAX_DUTY*0.95f||aircraft_motor.duty2>=MOTOR_MAX_DUTY*0.95f||aircraft_motor.duty3>=MOTOR_MAX_DUTY*0.95f||aircraft_motor.duty4>=MOTOR_MAX_DUTY*0.95f)//µç»ú¸ßÕ¼¿Õ±È±£»¤
+	if(aircraft_motor.duty1>=MOTOR_MAX_DUTY*0.99f||aircraft_motor.duty2>=MOTOR_MAX_DUTY*0.99f||aircraft_motor.duty3>=MOTOR_MAX_DUTY*0.99f||aircraft_motor.duty4>=MOTOR_MAX_DUTY*0.99f)//ç”µæœºé«˜å ç©ºæ¯”ä¿æŠ¤
 	{
 		Motor_Duty_Error_cnt++;
-		if(Motor_Duty_Error_cnt >= 15)//1.5s
+		if(Motor_Duty_Error_cnt >= 20)//2s
 		{
 			motor_deinit();
+			my_aircraft.status |=0x08;//set status bit high			
 			return 3;
 		}		
 	}
 	else
 	{
+		motor_init();
+		my_aircraft.status &= ~0x08;//set status bit low	
 		Motor_Duty_Error_cnt=0;
-	}	
+	}
 	return 0;
 	
 }
-/*·ÉĞĞÆ÷±£»¤´ëÊ©end*/
+/*é£è¡Œå™¨ä¿æŠ¤æªæ–½end*/
 
-/*¶ÁÈ¡FLASHÖĞ±£´æµÄ²ÎÊı*/
-#define PARAMS_NAME "Param_s.txt"
-#define PARAMS_MAX_READ_SIZE  4096
-uint8_t fatfs_PID_params_read()
+/*é£è¡Œå™¨çŠ¶æ€æ£€æµ‹*/
+void aircraft_status_check()
 {
-	cJSON *json,*json_get;
-	char read_buf[PARAMS_MAX_READ_SIZE];
-	if(fatfs_read_file(PARAMS_NAME,read_buf,PARAMS_MAX_READ_SIZE))
+	if((my_remote.sbus.CH[5]==RC_SBUS_CH_MAX)&&(my_aircraft.status&0x01)==0x00)//è§£é”
 	{
-		return 1;
-	}
-	
+		/*æ²¹é—¨æ‘‡æ†é™åˆ¶*/
+		if(my_remote.sbus.CH[2] > RC_SBUS_CH_MIN + (RC_SBUS_CH_RANGE/10)) //æ²¹é—¨æ†å¿…é¡»åœ¨æœ€ä½ç‚¹æ‰èƒ½è§£é”
+			return;
+		my_aircraft.status = 0x01;//è§£é”
+		my_aircraft.fly_start_time = HAL_GetTick();
+		pid_enable(&AttitudeControl.internal_pid.x,1);//open pid
+		pid_enable(&AttitudeControl.internal_pid.y,1);
+		pid_enable(&AttitudeControl.internal_pid.z,1);
+		pid_enable(&AttitudeControl.external_pid.x,1);
+		pid_enable(&AttitudeControl.external_pid.y,1);
+		pid_enable(&AttitudeControl.external_pid.z,1);
+		AttitudeControl.yaw_target_angle = *AttitudeControl.sensor.yaw;		
+	}                                                                                                    
+	else if((my_remote.sbus.CH[5] == RC_SBUS_CH_MIN)&&(my_aircraft.status&0x01)==0x01)//ä¸Šé”
+	{
+		my_aircraft.status = 0x00;//ä¸Šé”
+		pid_enable(&AttitudeControl.internal_pid.x,0);//close pid
+		pid_enable(&AttitudeControl.internal_pid.y,0);
+		pid_enable(&AttitudeControl.internal_pid.z,0);
+		pid_enable(&AttitudeControl.external_pid.x,0);
+		pid_enable(&AttitudeControl.external_pid.y,0);
+		pid_enable(&AttitudeControl.external_pid.z,0);			
+		pid_enable(&HeightControl.pid,0);//close height pid		
+		pid_enable(&PositionControl.internal_pid_x,0);//close position pid
+		pid_enable(&PositionControl.internal_pid_y,0);
+		pid_enable(&PositionControl.external_pid_x,0);
+		pid_enable(&PositionControl.external_pid_y,0);	
 
-	json = cJSON_Parse((const char *)read_buf); //½«µÃµ½µÄ×Ö·û´®½âÎö³ÉjsonĞÎÊ½
-    // ¼ì²é½âÎöÊÇ·ñ³É¹¦
-	if (json == NULL) 
-		{
-			const char *error_ptr = cJSON_GetErrorPtr();
-			if (error_ptr != NULL) {
-					printf("JSON Parse error£¬pos: %s\n", error_ptr);
-			}
-			return 1; // Ö±½Ó·µ»Ø£¬±ÜÃâ²Ù×÷¿ÕÖ¸Õë
-		}
-	/****************************/
-	/*	  ²âÊÔ½«JSON´òÓ¡³öÀ´	*/
-	/***************************/
-//	char *out_data = cJSON_Print(json);   //½«jsonĞÎÊ½´òÓ¡³ÉÕı³£×Ö·û´®ĞÎÊ½
-//	printf("%s",out_data);
-	
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.x.kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.x.kp = json_get->valuedouble;
 	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.x.ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
+
+	if(my_remote.sbus.CH[6] == RC_SBUS_CH_MAX && (my_aircraft.status & 0x02)==0x00 )//è‡ªåŠ¨é«˜åº¦æ§åˆ¶æ¨¡å¼
 	{
-		AttitudeControl.internal_pid.x.ki = json_get->valuedouble;
- 	
+		if(TOF.is_valid ==0 && my_bmp390.is_valid==0)//TOFå’Œæ°”å‹è®¡æ— æ•ˆä¸èƒ½å¼€å¯è‡ªåŠ¨å®šé«˜
+			return;		
+			
+		HeightControl.auto_height_control_isEnable = 1; //open auto height hold
+		my_aircraft.status |= 0x02;//è‡ªåŠ¨å®šé«˜æ ‡å¿—ä½
+		HeightControl.base_throttle = aircraft_motor.throttle;//å®šé«˜åŸºå‡†æ²¹é—¨
+		HeightControl.target_height = TOF.distance_m;//current TOF height as target height
+		HeightControl.target_altitude = my_aircraft.Altitude;//current Baro altitude as target altitude
+		pid_enable(&HeightControl.pid,1);//open height pid
 	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.x.kd" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
+	else if(my_remote.sbus.CH[6] == RC_SBUS_CH_MIN && (my_aircraft.status & 0x02)==0x02 )//æ‰‹åŠ¨é«˜åº¦æ§åˆ¶æ¨¡å¼
 	{
-		AttitudeControl.internal_pid.x.kd = json_get->valuedouble;
- 	
+		HeightControl.auto_height_control_isEnable = 0; //close auto height hold
+		my_aircraft.status &= ~0x02;//è‡ªåŠ¨å®šé«˜æ ‡å¿—ä½æ¸…é™¤
+		HeightControl.mode = ALT_HOLD_DISABLED;//height hold disabled
+		HeightControl.target_height = 0;
+		HeightControl.target_altitude =0;
+		HeightControl.base_throttle =0;
+		pid_enable(&HeightControl.pid,0);//close height pid		
 	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.y.kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.y.kp = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.y.ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.y.ki = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.y.kd" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.y.kd = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.z.kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.z.kp = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.z.ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.z.ki = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.internal_pid.z.kd" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.internal_pid.z.kd = json_get->valuedouble;
- 	
-	}	
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.x.kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.x.kp = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.x.ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.x.ki = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.x.kd" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.x.kd = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.y.kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.y.kp = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.y.ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.y.ki = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.y.kd" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.y.kd = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.z.kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.z.kp = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.z.ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.z.ki = json_get->valuedouble;
- 	
-	}
-	json_get = cJSON_GetObjectItem( json ,"AttitudeControl.external_pid.z.kd" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		AttitudeControl.external_pid.z.kd = json_get->valuedouble;
- 	
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.Kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		HeightControl.tof_params.Kp = json_get->valuedouble;
- 	
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.Ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		HeightControl.tof_params.Ki = json_get->valuedouble;
- 	
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.Kd");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		HeightControl.tof_params.Kd = json_get->valuedouble;
-	}		
-//	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_output");
-//	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-//	{
-//		HeightControl.tof_params.max_output = json_get->valuedouble;
-//	}	
-//	json_get = cJSON_GetObjectItem( json ,"HeightControl.tof_params.max_integral");
-//	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-//	{
-//		HeightControl.tof_params.max_integral = json_get->valuedouble;
-//	}		
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Kp" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		HeightControl.baro_params.Kp = json_get->valuedouble;
- 	
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Ki" );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		HeightControl.baro_params.Ki = json_get->valuedouble;
- 	
-	}	
-	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.Kd");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		HeightControl.baro_params.Kd = json_get->valuedouble;
-	}		
-//	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_output");
-//	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-//	{
-//		HeightControl.baro_params.max_output = json_get->valuedouble;
-//	}	
-//	json_get = cJSON_GetObjectItem( json ,"HeightControl.baro_params.max_integral");
-//	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-//	{
-//		HeightControl.baro_params.max_integral = json_get->valuedouble;
-//	}		
-//	json_get = cJSON_GetObjectItem( json ,"HeightControl.base_throttle");
-//	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-//	{
-//		HeightControl.base_throttle = (int)json_get->valuedouble;
-//	}	
-	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.internal_pid_x.kp");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.internal_pid_x.kp = json_get->valuedouble;
-	}		
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.internal_pid_x.ki");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.internal_pid_x.ki = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.internal_pid_x.kd");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.internal_pid_x.kd = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.internal_pid_y.kp");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.internal_pid_y.kp = json_get->valuedouble;
-	}		
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.internal_pid_y.ki");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.internal_pid_y.ki = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.internal_pid_y.kd");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.internal_pid_y.kd = json_get->valuedouble;
-	}
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.external_pid_x.kp");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.external_pid_x.kp = json_get->valuedouble;
-	}		
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.external_pid_x.ki");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.external_pid_x.ki = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.external_pid_x.kd");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.external_pid_x.kd = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.external_pid_y.kp");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.external_pid_y.kp = json_get->valuedouble;
-	}		
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.external_pid_y.ki");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.external_pid_y.ki = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"PositionControl.external_pid_y.kd");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		PositionControl.external_pid_y.kd = json_get->valuedouble;
-	}
-	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k1");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		aircraft_motor.volt_k1 = json_get->valuedouble;
-	}	
-	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k2");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		aircraft_motor.volt_k2 = json_get->valuedouble;
-	}
-	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k3");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		aircraft_motor.volt_k3 = json_get->valuedouble;
-	}
-	json_get = cJSON_GetObjectItem( json ,"aircraft_motor.volt_k4");
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈİ
-	{
-		aircraft_motor.volt_k4 = json_get->valuedouble;
-	}	
-	
-	printf("param_read_succese\n");
-	cJSON_Delete(json);  //ÊÍ·ÅÄÚ´æ 
-	cJSON_Delete(json_get);  //ÊÍ·ÅÄÚ´æ 		
-	return 0;
 }
+
 
 

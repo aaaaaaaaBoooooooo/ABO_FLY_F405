@@ -25,7 +25,7 @@
 #include "W25QXX.h"
  
  
-//ÓÃ»§×Ô¶¨ÒåÊý¾Ý£¬·ÀÖ¹Éú³É´úÂëÊ±±»¸²¸Ç
+//ï¿½Ã»ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½É´ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define USER_STORAGE_LUN_NBR                  1
 #define USER_STORAGE_BLK_NBR                  4096
 #define USER_STORAGE_BLK_SIZ                  4096
@@ -200,8 +200,8 @@ int8_t STORAGE_GetCapacity_FS(uint8_t lun, uint32_t *block_num, uint16_t *block_
 {
   /* USER CODE BEGIN 3 */
  
-  *block_num  = USER_STORAGE_BLK_NBR;         //¸ü»»ÎªÓÃ»§×Ô¶¨ÒåÊý¾Ý
-  *block_size = USER_STORAGE_BLK_SIZ;         //¸ü»»ÎªÓÃ»§×Ô¶¨ÒåÊý¾Ý
+  *block_num  = USER_STORAGE_BLK_NBR;         //ï¿½ï¿½ï¿½ï¿½Îªï¿½Ã»ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  *block_size = USER_STORAGE_BLK_SIZ;         //ï¿½ï¿½ï¿½ï¿½Îªï¿½Ã»ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -274,7 +274,7 @@ int8_t STORAGE_Write_FS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t b
 int8_t STORAGE_GetMaxLun_FS(void)
 {
   /* USER CODE BEGIN 8 */
-  return (USER_STORAGE_LUN_NBR - 1);        //¸ü»»ÎªÓÃ»§×Ô¶¨ÒåÊý¾Ý
+  return (USER_STORAGE_LUN_NBR - 1);        //ï¿½ï¿½ï¿½ï¿½Îªï¿½Ã»ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
   /* USER CODE END 8 */
 }
 

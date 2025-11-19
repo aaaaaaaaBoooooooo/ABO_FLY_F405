@@ -1,7 +1,7 @@
 #ifndef __HANA_MATH_H__
 #define __HANA_MATH_H__
 #include "main.h"
-#include "math.h"
+
 
 
 #define isignof(IntVar) ((IntVar)<0?-1:1)//ÇóÖµ·ûºÅ

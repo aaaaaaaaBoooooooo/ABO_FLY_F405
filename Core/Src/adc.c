@@ -21,30 +21,30 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-/*µç³ØµçÑ¹¼ì²â*/
+/*ï¿½ï¿½Øµï¿½Ñ¹ï¿½ï¿½ï¿½*/
 uint16_t ADC1_Value[2] = {0,0};
 float get_battery_volt()
 {
 	float Battery_Volt=0.0f;
-	/***ADC²ÉÑùbegin***/
-		for(int i=0;i<2;i++)//²É¼¯Á½¸öÍ¨µÀ£ºSTM32ÄÚ²¿1.2V²Î¿¼µçÑ¹Í¨µÀÒÔ¼°µç³ØµçÑ¹Í¨µÀ
+	/***ADCï¿½ï¿½ï¿½ï¿½begin***/
+		for(int i=0;i<2;i++)//ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½STM32ï¿½Ú²ï¿½1.2Vï¿½Î¿ï¿½ï¿½ï¿½Ñ¹Í¨ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½Øµï¿½Ñ¹Í¨ï¿½ï¿½
 		{
-				HAL_ADC_Start(&hadc1);			//Ê¹ÄÜADC£¬¿ªÊ¼×ª»»
-				if(HAL_ADC_PollForConversion(&hadc1,1000)==HAL_OK)	//µÈ´ýADC×ª»»Íê³É
+				HAL_ADC_Start(&hadc1);			//Ê¹ï¿½ï¿½ADCï¿½ï¿½ï¿½ï¿½Ê¼×ªï¿½ï¿½
+				if(HAL_ADC_PollForConversion(&hadc1,1000)==HAL_OK)	//ï¿½È´ï¿½ADC×ªï¿½ï¿½ï¿½ï¿½ï¿½
 				{
 					ADC1_Value[i] = HAL_ADC_GetValue(&hadc1);
 				}
 		}
-	/***ADC²ÉÑùend***/	
+	/***ADCï¿½ï¿½ï¿½ï¿½end***/	
 		
-	/***µç³ØµçÑ¹×ª»»begin***/
+	/***ï¿½ï¿½Øµï¿½Ñ¹×ªï¿½ï¿½begin***/
 	Battery_Volt = (float)(1.2f/(float)ADC1_Value[0])*(float)ADC1_Value[1]*1.35f;
-	//Battery_Volt = 1.213f*(Battery_Volt)-0.666f;//½ÃÕý
+	//Battery_Volt = 1.213f*(Battery_Volt)-0.666f;//ï¿½ï¿½ï¿½ï¿½
 
-	/***µç³ØµçÑ¹×ª»»end***/
+	/***ï¿½ï¿½Øµï¿½Ñ¹×ªï¿½ï¿½end***/
 		return Battery_Volt;
 }
-/*µç³ØµçÑ¹¼ì²â*/
+/*ï¿½ï¿½Øµï¿½Ñ¹ï¿½ï¿½ï¿½*/
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;

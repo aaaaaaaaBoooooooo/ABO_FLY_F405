@@ -36,6 +36,7 @@
 #include "angle.h"
 #include "control.h"
 #include "W25QXX.h"
+#include "flight_data_manager.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,8 +57,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-remote_type my_remote;//Ò£¿ØÆ÷½á¹¹Ìå
-aircraft_type my_aircraft;//·ÉÐÐÆ÷½á¹¹Ìå
+remote_type my_remote;//Ò£ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½
+aircraft_type my_aircraft;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,57 +69,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define DATA_FILE_NAME "fly_data.txt"
-char DATA_FILE_BUFFER[65];//Ò»´ÎÐ´ÈëµÄ¸ñÊ½  "time:data1,data2,data3,data4,data5,data6\r\n"
-/*ÎÞÈË»ú·ÉÐÐÊý¾Ý²É¼¯*/
-void aircraft_fly_data_store()
-{
-	uint32_t time,time_0;
-	static uint8_t aircraft_last_status=0;
-	FIL file;     // ÎÄ¼þ¾ä±ú
-	FRESULT res;
-  UINT bytes_written;  // Ð´ÈëµÄ×Ö½ÚÊý
 
-	while(1)
-	{
-		if(aircraft_last_status == 0x00 && my_aircraft.status == 0x01 )
-		{
-			aircraft_last_status = 0x01;
-			time_0 = HAL_GetTick();
-			/***´ò¿ªÎÄ¼þ***/
-			res = f_open(&file, DATA_FILE_NAME,FA_WRITE);	
-		}
-		else if(aircraft_last_status == 0x01 && my_aircraft.status ==0x00 )
-		{
-			aircraft_last_status = 0x00;
-			/***¹Ø±ÕÎÄ¼þ***/
-			f_close(&file);
-		}
-		if(my_fatfs_init_success&&my_aircraft.status & 0x01)//·É»úÕýÔÚ·ÉÐÐ
-		{
-			delay_us(550);
-			if (res == FR_OK)
-			{
-				time = HAL_GetTick() - time_0;
-				sprintf(DATA_FILE_BUFFER,"%-6d:%13f,%13f,%13f,%13f\r\n",time,my_ahrs.Angle_Data.pitch,AttitudeControl.pitch_target_angle,my_ahrs.Angle_Data.roll,AttitudeControl.roll_target_angle);
-				if(f_size(&file) < (12*1024*1024))
-				{
-					/****ÒÆ¶¯ÎÄ¼þ¶ÁÐ´Ö¸Õëµ½ÎÄ¼þ½áÊø´¦£¬ÒÔ±ãÌí¼ÓÊý¾Ý***/
-					f_lseek(&file,f_size(&file));
-					// Ð´ÈëÊý¾Ýµ½ÎÄ¼þ
-					f_write(&file, DATA_FILE_BUFFER, sizeof(DATA_FILE_BUFFER), &bytes_written);
-				}
-			}
-			else
-			{
-				while(1)
-				{
-						
-				}
-			}
-		}
-	}
-}
 /* USER CODE END 0 */
 
 /**
@@ -146,7 +97,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 	
-	delay_init(168); /* ³õÊ¼»¯ÑÓ³Ùº¯Êý */
+	delay_init(168); /* ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ó³Ùºï¿½ï¿½ï¿½ */
 	
   /* USER CODE END SysInit */
 
@@ -168,35 +119,39 @@ int main(void)
   MX_TIM5_Init();
   MX_FATFS_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
-	LED(1);//µãÁÁLED		
-
- 	while(icm42688_init())	//ÍÓÂÝÒÇ³õÊ¼»¯
+	LED(1);//ï¿½ï¿½ï¿½ï¿½LED		
+  int init_i =0;
+ 	while(icm42688_init())	//ï¿½ï¿½ï¿½ï¿½ï¿½Ç³ï¿½Ê¼ï¿½ï¿½
 	{
 		printf("ICM42688 Init Failed!");
 		LED_TOGGLE;
 		delay_ms(100);
 
 	}
-	while(BMP390_Init()) 		//ÆøÑ¹¼Æ³õÊ¼»¯
+	while(BMP390_Init()) 		//ï¿½ï¿½Ñ¹ï¿½Æ³ï¿½Ê¼ï¿½ï¿½
 	{
+    init_i++;
 		printf("BMP390 Init Failed!");
 		LED_TOGGLE;
-		delay_ms(100);		
+		delay_ms(100);	
+    if(init_i>10)
+      break;	
 	}
 	delay_ms(100);
 	
-	IMU_Calibration();//ÍÓÂÝÒÇÁãÆ¯Ð£×¼
+	IMU_Calibration();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¯Ð£×¼
 	
 	pid_control_init();
-	for(uint8_t i=0;i<9;i++)//ÉÁË¸LED´ú±í´«¸ÐÆ÷³õÊ¼»¯Íê³É
+	for(uint8_t i=0;i<9;i++)//ï¿½ï¿½Ë¸LEDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		LED_TOGGLE;
 		delay_ms(100);
 	}
 	HAL_UART_Receive_DMA(&huart3,uart3_rx_buff,2*REMOTE_DATA_NUM);
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart4,uart4_rx_buff,UART4_RXBUFFERSIZE);//¿ªÆôUART4¿ÕÏÐÖÐ¶Ï£¬DMA½ÓÊÕ²â¾àÊý¾Ý
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart6,uart6_rx_buff,UART6_RXBUFFERSIZE);//¿ªÆôUART6¿ÕÏÐÖÐ¶Ï£¬DMA½ÓÊÕ¹âÁ÷Êý¾Ý
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart4,uart4_rx_buff,UART4_RXBUFFERSIZE);//UART4
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart6,uart6_rx_buff,UART6_RXBUFFERSIZE);//UART6
 	HAL_TIM_Base_Start_IT(&htim1);
 	HAL_TIM_Base_Start_IT(&htim5);
 	delay_ms(100);
@@ -207,8 +162,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		aircraft_fly_data_store();
-		//delay_ms(5);
+		aircraft_fly_data_record(); 
 	
     /* USER CODE END WHILE */
 
@@ -280,16 +234,15 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-	printf("Error_Handler\n");//±¨¸æ´íÎó
-	error_handler_msg_log(__FILE__, __func__);//´òÓ¡³ö´íÎÄ¼þºÍº¯ÊýÐÅÏ¢
+	printf("Error_Handler\n");//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	error_handler_msg_log(__FILE__, __func__);//ï¿½ï¿½Ó¡ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Íºï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
   while (1)
   {
 
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

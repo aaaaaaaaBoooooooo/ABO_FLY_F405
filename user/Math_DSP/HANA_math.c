@@ -1,5 +1,5 @@
 #include "HANA_math.h"
-
+#include "math.h"
 float my_abs_float(float in)
 {
 	if(in < 0.0f)

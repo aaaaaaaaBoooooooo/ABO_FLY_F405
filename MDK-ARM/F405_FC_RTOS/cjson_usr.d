@@ -47,3 +47,15 @@ f405_fc_rtos\cjson_usr.o: ../Core/Inc/main.h
 f405_fc_rtos\cjson_usr.o: ../user/Control/pid.h
 f405_fc_rtos\cjson_usr.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 f405_fc_rtos\cjson_usr.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
+f405_fc_rtos\cjson_usr.o: ../FATFS/App/fatfs.h
+f405_fc_rtos\cjson_usr.o: ../Middlewares/Third_Party/FatFs/src/ff.h
+f405_fc_rtos\cjson_usr.o: ../Middlewares/Third_Party/FatFs/src/integer.h
+f405_fc_rtos\cjson_usr.o: ../FATFS/Target/ffconf.h
+f405_fc_rtos\cjson_usr.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
+f405_fc_rtos\cjson_usr.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
+f405_fc_rtos\cjson_usr.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
+f405_fc_rtos\cjson_usr.o: ../FATFS/Target/user_diskio.h
+f405_fc_rtos\cjson_usr.o: ../Core/Inc/usart.h
+f405_fc_rtos\cjson_usr.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
+f405_fc_rtos\cjson_usr.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
+f405_fc_rtos\cjson_usr.o: ../FATFS/App/flight_data_manager.h

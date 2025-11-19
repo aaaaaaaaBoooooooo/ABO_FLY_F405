@@ -21,10 +21,11 @@
 #include "icm42688.h"
 #include "filter.h"
 #include "HANA_math.h"
+#include "math.h"
 #include "stdio.h" 
 
-#define Gyro_NUM	500 // 角速度采样个数 （越多越好，取决于RAM和堆栈大小）
-#define Acc_NUM   100 // 加速度采样个数
+#define Gyro_NUM	500 // 角速度采样个数 视MCU内存大小修改(由于正态分布具有随机性，不建议少于50)
+#define Acc_NUM   100 // 加速度采样个数  视MCU内存大小修改(由于正态分布具有随机性，不建议少于50)
 
 AHRS_TypeDef my_ahrs;//姿态解算数据
 
@@ -77,7 +78,7 @@ void IMU_Calibration(void)
 		for(i=0; i<Gyro_NUM; i++)//采集陀螺仪数据计算均值
 		{
 
-			/***获取icm42688原始角速度数据***/
+			/***获取IMU原始角速度数据***/
 			icm42688_get_gyro();
 
 			/***单位转换为°/s***/
@@ -183,8 +184,8 @@ void IMU_Calibration(void)
 }
 
 /*******************************************************************************
-** 函数名称: icm42688_Update()
-** 功能描述: 零偏校正，取20组数据
+** 函数名称: IMU_DataUpdate(void)
+** 功能描述: IMU原始数据更新，角速度一阶卡尔曼滤波，IMU加速度数据更新
 ** 参数说明: : 
 ** 返回说明: None
 ** 创建人员: JLB
@@ -212,25 +213,25 @@ void IMU_DataUpdate(void)
 	/*****传感器方差更新*****/
 	ekf[0].r = my_ahrs.IMU_Data.gyro_var.x; //陀螺仪测量方差
 	ekf[1].r = my_ahrs.IMU_Data.gyro_var.y; //陀螺仪测量方差
-	ekf[2].r = my_ahrs.IMU_Data.gyro_var.z; //陀螺仪测量方差
+	//ekf[2].r = my_ahrs.IMU_Data.gyro_var.z; //陀螺仪测量方差
 	/*****卡尔曼预测系数更新*****/
 	ekf[0].A = last_out[0] - lastlast_out[0];//两点外推计算预测斜率
 	ekf[1].A = last_out[1] - lastlast_out[1];//两点外推计算预测斜率
-	ekf[2].A = last_out[2] - lastlast_out[2];//两点外推计算预测斜率
+	//ekf[2].A = last_out[2] - lastlast_out[2];//两点外推计算预测斜率
 	/*****卡尔曼滤波输出*****/
 	kalman1_filter(&ekf[0],my_ahrs.IMU_Data.gyro.x);  //对x轴角速度一维卡尔曼滤波
 	my_ahrs.IMU_Data.gyro.x=ekf[0].x;
 	kalman1_filter(&ekf[1],my_ahrs.IMU_Data.gyro.y);  //对Y轴角速度一维卡尔曼滤波
 	my_ahrs.IMU_Data.gyro.y=ekf[1].x;
-	kalman1_filter(&ekf[2],my_ahrs.IMU_Data.gyro.z);  //对Z轴角速度一维卡尔曼滤波	
-	my_ahrs.IMU_Data.gyro.z=ekf[2].x;
+	// kalman1_filter(&ekf[2],my_ahrs.IMU_Data.gyro.z);  //对Z轴角速度一维卡尔曼滤波	
+	// my_ahrs.IMU_Data.gyro.z=ekf[2].x;
 	/*****历史数据更新*****/
 	lastlast_out[0] = last_out[0];
 	last_out[0] = my_ahrs.IMU_Data.gyro.x;
 	lastlast_out[1] = last_out[1];
 	last_out[1] = my_ahrs.IMU_Data.gyro.y;
-	lastlast_out[2] = last_out[2];
-	last_out[2] = my_ahrs.IMU_Data.gyro.z;	
+	// lastlast_out[2] = last_out[2];
+	// last_out[2] = my_ahrs.IMU_Data.gyro.z;	
 	/***角速度一阶卡尔曼滤波end*****/
 
 	/***IMU加速度数据更新+去零偏   单位为 g(m/s^2) ***/
@@ -272,7 +273,6 @@ void IMU_GetAngle(float dt)
 					AccGravity;//重力加速度的实际值与理论值叉乘之后的模值，代表误差
 
 	static struct V GyroIntegError = {0};//误差积分补偿项
-	//static Quaternion my_ahrs.NumQ = {1, 0, 0, 0};//四元数
 	float q0_t,q1_t,q2_t,q3_t;//龙格库塔法暂存变量	
 	float NormQuat; //归一化系数
 	float HalfTime = dt * 0.5f;//半采样时间->减少乘法次数

@@ -1,3 +1,22 @@
 {
-    "cmake.sourceDirectory": "D:/D/JLB Often/STM32projects/Projects/F405_FC_RTOS/Drivers/CMSIS/NN"
+    "cmake.sourceDirectory": "D:/D/JLB Often/STM32projects/Projects/F405_FC_RTOS/Drivers/CMSIS/NN",
+    "MicroPython.executeButton": [
+        {
+            "text": "▶",
+            "tooltip": "运行",
+            "alignment": "left",
+            "command": "extension.executeFile",
+            "priority": 3.5
+        }
+    ],
+    "MicroPython.syncButton": [
+        {
+            "text": "$(sync)",
+            "tooltip": "同步",
+            "alignment": "left",
+            "command": "extension.execute",
+            "priority": 4
+        }
+    ],
+    "cmake.ignoreCMakeListsMissing": true
 }

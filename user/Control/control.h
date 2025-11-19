@@ -4,37 +4,37 @@
 #include "pid.h"
 #define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,(GPIO_PinState)!x)
 #define LED_TOGGLE   		HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-#define MOTOR_MAX_THROTTLE 2800				//µç»ú×î´óÓÍÃÅ Ô¼Îª×î´óÕ¼¿Õ±ÈµÄ0.8
-#define MOTOR_MIN_THROTTLE 0 					//µç»ú×îĞ¡ÓÍÃÅ
-#define MOTOR_MAX_DUTY  3499          //µç»ú×î´óÕ¼¿Õ±È
-#define MOTOR_MIN_DUTY  0							//µç»ú×îĞ¡Õ¼¿Õ±È
+#define MOTOR_MAX_THROTTLE 3000				//ç”µæœºæœ€å¤§æ²¹é—¨ 
+#define MOTOR_MIN_THROTTLE 500 					//ç”µæœºæœ€å°æ²¹é—¨
+#define MOTOR_MAX_DUTY  3499          //ç”µæœºæœ€å¤§å ç©ºæ¯”
+#define MOTOR_MIN_DUTY  0							//ç”µæœºæœ€å°å ç©ºæ¯”
 
-#define ROLL_TARGET_MAX_ANGLE  20.0f
-#define ROLL_TARGET_MIN_ANGLE  -20.0f
-#define PITCH_TARGET_MAX_ANGLE  20.0f
-#define PITCH_TARGET_MIN_ANGLE -20.0f
+#define ROLL_TARGET_MAX_ANGLE  45.0f
+#define ROLL_TARGET_MIN_ANGLE  -45.0f
+#define PITCH_TARGET_MAX_ANGLE  45.0f
+#define PITCH_TARGET_MIN_ANGLE -45.0f
 #define YAW_TARGET_MAX_ANGLE  360.0f
 #define YAW_TARGET_MIN_ANGLE  -360.0f
 
 #define X_TARGET_MAX_SPEED 2.0f
 #define Y_TARGET_MAX_SPEED 2.0f
-/*µç»ú*/
+/*ç”µæœº*/
 typedef struct {
 	int duty1;
 	int duty2;
 	int duty3;
 	int duty4;
-	int throttle;//ÓÍÃÅ
-	float volt_k1;//µçÑ¹ÏµÊı
-	float volt_k2;//µçÑ¹ÏµÊı
-	float volt_k3;//µçÑ¹ÏµÊı
-	float volt_k4;//µçÑ¹ÏµÊı
-}Motor_TypeDef;//µç»ú½á¹¹Ìå
-/* ´«¸ĞÆ÷*/
+	int throttle;//æ²¹é—¨
+	float volt_k1;//ç”µå‹ç³»æ•°
+	float volt_k2;//ç”µå‹ç³»æ•°
+	float volt_k3;//ç”µå‹ç³»æ•°
+	float volt_k4;//ç”µå‹ç³»æ•°
+}Motor_TypeDef;//ç”µæœºç»“æ„ä½“
+/* ä¼ æ„Ÿå™¨*/
 typedef struct {
-    float *barometer_height;//ÆøÑ¹¼Æº£°Î¸ß¶È
-    float *tof_height;//TOF²â¾à¸ß¶È
-} HeightSensors_TypeDef;//¸ß¶È´«¸ĞÆ÷
+    float *barometer_height;//æ°”å‹è®¡æµ·æ‹”é«˜åº¦
+    float *tof_height;//TOFæµ‹è·é«˜åº¦
+} HeightSensors_TypeDef;//é«˜åº¦ä¼ æ„Ÿå™¨
 typedef struct {
     float *gyro_x;
     float *gyro_y;
@@ -45,77 +45,77 @@ typedef struct {
     float *roll;
     float *pitch;
 		float *yaw;
-} AttitudeSensors_TypeDef;//×ËÌ¬´«¸ĞÆ÷
+} AttitudeSensors_TypeDef;//å§¿æ€ä¼ æ„Ÿå™¨
 typedef struct {
     float *speed_x;
     float *speed_y;
     float *pos_x;
     float *pos_y;		
-} PosSensors_TypeDef;//Î»ÖÃ´«¸ĞÆ÷
-/*¿ØÖÆÆ÷*/
+} PosSensors_TypeDef;//ä½ç½®ä¼ æ„Ÿå™¨
+/*æ§åˆ¶å™¨*/
 typedef struct {
     float Kp;
     float Ki;
     float Kd;
     float max_integral;
     float max_output;
-} PIDParams_TypeDef;// PID²ÎÊı½á¹¹Ìå
+} PIDParams_TypeDef;// PIDå‚æ•°ç»“æ„ä½“
 
 typedef struct
 {
 	PID_TypeDef x;
 	PID_TypeDef y;
 	PID_TypeDef z;
-}PID_XYZ_TypeDef;//ÈıÖáPID
+}PID_XYZ_TypeDef;//ä¸‰è½´PID
 
-// ¿ØÖÆÆ÷×´Ì¬
+// æ§åˆ¶å™¨çŠ¶æ€
 typedef enum {
-    ALT_HOLD_DISABLED, //ÊÖ¶¯¿ØÖÆ
-    BARO_MODE,				//ÆøÑ¹¼Æ¶¨¸ß¿ØÖÆ
-    TOF_MODE					//TOF¶¨¸ß¿ØÖÆ
+    ALT_HOLD_DISABLED, //æ‰‹åŠ¨æ§åˆ¶
+    BARO_MODE,				//æ°”å‹è®¡å®šé«˜æ§åˆ¶
+    TOF_MODE					//TOFå®šé«˜æ§åˆ¶
 } HeightMode_TypeDef;
 
-// ¿ØÖÆÆ÷Ö÷½á¹¹Ìå
+// æ§åˆ¶å™¨ä¸»ç»“æ„ä½“
 typedef struct
 {
-	PID_XYZ_TypeDef internal_pid;//ÄÚ»·pid
-	PID_XYZ_TypeDef external_pid;//Íâ»·pid
+	PID_XYZ_TypeDef internal_pid;//å†…ç¯pid
+	PID_XYZ_TypeDef external_pid;//å¤–ç¯pid
 	PIDParams_TypeDef internal_params;
   PIDParams_TypeDef external_params;
 	AttitudeSensors_TypeDef sensor;
-	float roll_target_angle;//roll½ÇÄ¿±ê
-	float pitch_target_angle;//pitch½ÇÄ¿±ê
-	float yaw_target_angle;//yaw½ÇÄ¿±ê
-	float roll_compensate;//roll½Ç²¹³¥
-	float pitch_compensate;//pitch½Ç²¹³¥
-}AttiudeController;	//×ËÌ¬¿ØÖÆÆ÷
+	float roll_target_angle;//rollè§’ç›®æ ‡
+	float pitch_target_angle;//pitchè§’ç›®æ ‡
+	float yaw_target_angle;//yawè§’ç›®æ ‡
+	float roll_compensate;//rollè§’è¡¥å¿
+	float pitch_compensate;//pitchè§’è¡¥å¿
+}AttiudeController;	//å§¿æ€æ§åˆ¶å™¨
 typedef struct {
 		PID_TypeDef pid;
     PIDParams_TypeDef baro_params;
     PIDParams_TypeDef tof_params;
 		HeightSensors_TypeDef sensor;
     HeightMode_TypeDef mode;
-		uint8_t auto_height_control_isEnable;  //¶¨¸ß±êÖ¾
+		uint8_t auto_height_control_isEnable;  //å®šé«˜æ ‡å¿—
 		float target_height;
 		float target_altitude;
-    int base_throttle;  // »ù´¡ĞüÍ£ÓÍÃÅ
-} HeightController;//¸ß¶È¿ØÖÆÆ÷
+    int base_throttle;  // åŸºç¡€æ‚¬åœæ²¹é—¨
+} HeightController;//é«˜åº¦æ§åˆ¶å™¨
 
 typedef struct
 {
-		PID_TypeDef internal_pid_x;//ÄÚ»·
+		PID_TypeDef internal_pid_x;//å†…ç¯
 		PID_TypeDef internal_pid_y;
-		PID_TypeDef external_pid_x;//Íâ»·
+		PID_TypeDef external_pid_x;//å¤–ç¯
 		PID_TypeDef external_pid_y;
 		PosSensors_TypeDef sensor;
-		uint8_t auto_pos_control_isEnable;  //¶¨µã±êÖ¾
+		uint8_t auto_pos_control_isEnable;  //å®šç‚¹æ ‡å¿—
 	
-}PositionController;//Î»ÖÃ¿ØÖÆÆ÷
+}PositionController;//ä½ç½®æ§åˆ¶å™¨
 
 extern AttiudeController AttitudeControl;
 extern HeightController HeightControl;
-extern PositionController PositionControl;//Î»ÖÃ¿ØÖÆ
-extern Motor_TypeDef aircraft_motor;//µç»ú½á¹¹Ìå
+extern PositionController PositionControl;//ä½ç½®æ§åˆ¶
+extern Motor_TypeDef aircraft_motor;//ç”µæœºç»“æ„ä½“
 void pid_control_init(void);
 void pid_internal_control(void);
 void pid_external_control(void);
@@ -124,9 +124,9 @@ void motor_deinit(void);
 void motor_speed_set(void);
 void motor_throttle_control(void);
 void motor_control(void);
+void aircraft_status_check(void);
 void aircraft_flight_direction_control(void);
 void aircraft_flight_Height_control(void);
-uint8_t fatfs_PID_params_read(void);
 uint8_t aircraft_protection(void);
 
 #endif

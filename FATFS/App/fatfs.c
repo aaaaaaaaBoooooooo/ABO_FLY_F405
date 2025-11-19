@@ -34,7 +34,7 @@ void MX_FATFS_Init(void)
 
   /* USER CODE BEGIN Init */
   /* additional user code for init */ 
- 	while(f_mount(&USERFatFS,"0:",1)!=FR_OK)	//³¢ÊÔ¹ÒÔØÎÄ¼þÏµÍ³
+ 	while(f_mount(&USERFatFS,"0:",1)!=FR_OK)	//ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ÏµÍ³
 	{
 		printf("Mount_Failed!");
 		my_fatfs_init_success=0;
@@ -58,10 +58,10 @@ DWORD get_fattime(void)
 /* USER CODE BEGIN Application */
 uint8_t fatfs_read_file(TCHAR *path,char * read_buf,uint32_t data_size)
 {
-	FIL file;     // ÎÄ¼þ¾ä±ú
+	FIL file;     // ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½
 	FRESULT res;
-	UINT bytes_read;     // ¶ÁÈ¡µÄ×Ö½ÚÊý
-//	if(data_size>READ_FILE_MAX_SIZE)//¶ÁµÄÊý¾ÝÌ«¶à
+	UINT bytes_read;     // ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
+//	if(data_size>READ_FILE_MAX_SIZE)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì«ï¿½ï¿½
 //	{
 //		printf("SIZE OVERFLOW\n");
 //		return ;
@@ -71,14 +71,14 @@ uint8_t fatfs_read_file(TCHAR *path,char * read_buf,uint32_t data_size)
 	{
 			printf("File opened for reading successfully.\n");
 
-			// ¶ÁÈ¡ÎÄ¼þÄÚÈÝ
+			// ï¿½ï¿½È¡ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 			if(data_size>file.obj.objsize)
 				res = f_read(&file, read_buf,file.obj.objsize, &bytes_read);
 			else
 				res = f_read(&file, read_buf,data_size, &bytes_read);
 			if (res == FR_OK)
 			{
-					// ¹Ø±ÕÎÄ¼þ
+					// ï¿½Ø±ï¿½ï¿½Ä¼ï¿½
 					f_close(&file);
 					printf("Data read successfully. Bytes read: %u\n", bytes_read);
 					//printf("File content: %s\n", read_buf);
@@ -86,7 +86,7 @@ uint8_t fatfs_read_file(TCHAR *path,char * read_buf,uint32_t data_size)
 			}
 			else
 			{
-					// ¹Ø±ÕÎÄ¼þ
+					// ï¿½Ø±ï¿½ï¿½Ä¼ï¿½
 					f_close(&file);
 					printf("Read error: %d\n", res);
 					return 1;
@@ -104,30 +104,29 @@ uint8_t fatfs_read_file(TCHAR *path,char * read_buf,uint32_t data_size)
 
 uint8_t fatfs_write_file(TCHAR *path,char * write_buf,uint32_t data_size)
 {
-	FIL file;     // ÎÄ¼þ¾ä±ú
+	FIL file;     //æ–‡ä»¶å¯¹è±¡
 	FRESULT res;
-  UINT bytes_written;  // Ð´ÈëµÄ×Ö½ÚÊý
-	// 		´ò¿ªÎÄ¼þ£¨Èç¹ûÎÄ¼þ²»´æÔÚ£¬Ôò´´½¨£©
+ 	 UINT bytes_written;  // å®žé™…å†™å…¥çš„å­—èŠ‚æ•°
 	res = f_open(&file, path,FA_WRITE);
 	if (res == FR_OK)
 	{
 			
 			//printf("File opened/created successfully.\n");
 
-			/****ÒÆ¶¯ÎÄ¼þ¶ÁÐ´Ö¸Õëµ½ÎÄ¼þ½áÊø´¦£¬ÒÔ±ãÌí¼ÓÊý¾Ý***/
+			/****ï¿½Æ¶ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ð´Ö¸ï¿½ëµ½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½***/
 			f_lseek(&file,f_size(&file));
-			// Ð´ÈëÊý¾Ýµ½ÎÄ¼þ
+			// Ð´ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ä¼ï¿½
 			res = f_write(&file, write_buf, data_size, &bytes_written);
 			if (res == FR_OK)
 			{
-					// ¹Ø±ÕÎÄ¼þ
+					// ï¿½Ø±ï¿½ï¿½Ä¼ï¿½
 					f_close(&file);
 					//printf("Data written successfully. Bytes written: %u\n", bytes_written);
 					return 0;
 			}
 			else
 			{
-					// ¹Ø±ÕÎÄ¼þ
+					// ï¿½Ø±ï¿½ï¿½Ä¼ï¿½
 					f_close(&file);
 					//printf("Write error: %d\n", res);
 					return 1;

@@ -349,7 +349,7 @@ void USART3_IRQHandler(void)
   /* USER CODE END USART3_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);
   /* USER CODE BEGIN USART3_IRQn 1 */
-	HAL_UART_Receive_DMA(&huart3,uart3_rx_buff,UART3_RXBUFFERSIZE); //¿ªÆôDMA½ÓÊÕ
+	HAL_UART_Receive_DMA(&huart3,uart3_rx_buff,UART3_RXBUFFERSIZE); //ï¿½ï¿½ï¿½ï¿½DMAï¿½ï¿½ï¿½ï¿½
   /* USER CODE END USART3_IRQn 1 */
 }
 
@@ -377,7 +377,7 @@ void UART4_IRQHandler(void)
   /* USER CODE END UART4_IRQn 0 */
   HAL_UART_IRQHandler(&huart4);
   /* USER CODE BEGIN UART4_IRQn 1 */
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart4,uart4_rx_buff,UART4_RXBUFFERSIZE);//¿ªÆôUART6¿ÕÏÐÖÐ¶Ï£¬DMA½ÓÊÕ²â¾àÊý¾Ý
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart4,uart4_rx_buff,UART4_RXBUFFERSIZE);//ï¿½ï¿½ï¿½ï¿½UART6ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï£ï¿½DMAï¿½ï¿½ï¿½Õ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
   /* USER CODE END UART4_IRQn 1 */
 }
 
@@ -433,7 +433,7 @@ void USART6_IRQHandler(void)
   /* USER CODE END USART6_IRQn 0 */
   HAL_UART_IRQHandler(&huart6);
   /* USER CODE BEGIN USART6_IRQn 1 */
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart6,uart6_rx_buff,UART6_RXBUFFERSIZE);//¿ªÆôUART6¿ÕÏÐÖÐ¶Ï£¬DMA½ÓÊÕ¹âÁ÷Êý¾Ý
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart6,uart6_rx_buff,UART6_RXBUFFERSIZE);//ï¿½ï¿½ï¿½ï¿½UART6ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï£ï¿½DMAï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
   /* USER CODE END USART6_IRQn 1 */
 }
 

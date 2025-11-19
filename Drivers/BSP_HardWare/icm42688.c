@@ -313,7 +313,7 @@ uint8_t icm42688_init (void)
 		/*电源管理*/
 		icm42688_write_register(icm42688_PWR_MGMT0,0x0F);//ACC GYRO LowNoise Mode
 		
-		delay_ms(5000);//陀螺仪预热
+		delay_ms(2000);//陀螺仪预热
 		
     return return_state;
 }

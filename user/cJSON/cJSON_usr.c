@@ -1,90 +1,244 @@
-/*cJSON_usr.c by aBo*******cJSONµÄÓ¦ÓÃº¯Êý*/
+/*cJSON_usr.c by aBo*******cJSONçš„åº”ç”¨å‡½æ•°*/
 #include "cJSON_usr.h"
 #include "stdio.h"
 #include "string.h"
-/*ÒÔjson¸ñÊ½´ò°üÊý×Ö*/
+#include "fatfs.h"
+#include "control.h"
+#include "flight_data_manager.h"
+
+/*ä»¥jsonæ ¼å¼æ‰“åŒ…æ•°å­—*/
 void json_pack_number(const char *item,double number)
 {
   cJSON * usr;
 //	char *str_data;
-  usr=cJSON_CreateObject();   //´´½¨¸ùÊý¾Ý¶ÔÏó
+  usr=cJSON_CreateObject();   //åˆ›å»ºæ ¹æ•°æ®å¯¹è±¡
 	
-	cJSON_AddItemToObject(usr,item, cJSON_CreateNumber(number));  //¸ù½ÚµãÏÂÌí¼ÓÊý×Ö
+	cJSON_AddItemToObject(usr,item, cJSON_CreateNumber(number));  //æ ¹èŠ‚ç‚¹ä¸‹æ·»åŠ æ•°å­—
 	
-//	str_data = cJSON_Print(usr);   //½«jsonÐÎÊ½´òÓ¡³ÉÕý³£×Ö·û´®ÐÎÊ½(´øÓÐ\r\n)
-//	 str_data = cJSON_PrintUnformatted(usr);   //½«jsonÐÎÊ½´òÓ¡³ÉÕý³£×Ö·û´®ÐÎÊ½(Ã»ÓÐ\r\n)
-//	printf("%s",str_data);			//Í¨¹ý´®¿Ú´òÓ¡³öÀ´
+//	str_data = cJSON_Print(usr);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼(å¸¦æœ‰\r\n)
+//	 str_data = cJSON_PrintUnformatted(usr);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼(æ²¡æœ‰\r\n)
+//	printf("%s",str_data);			//é€šè¿‡ä¸²å£æ‰“å°å‡ºæ¥
 	cJSON_Delete(usr);
 	
 }
-/*ÒÔjson¸ñÊ½´ò°ü×Ö·û´®*/
+/*ä»¥jsonæ ¼å¼æ‰“åŒ…å­—ç¬¦ä¸²*/
 void json_pack_string(const char *item,char * string)
 {
   cJSON * usr;
 //	char *str_data;
-  usr=cJSON_CreateObject();   //´´½¨¸ùÊý¾Ý¶ÔÏó
+  usr=cJSON_CreateObject();   //åˆ›å»ºæ ¹æ•°æ®å¯¹è±¡
 	
-	cJSON_AddItemToObject(usr,item, cJSON_CreateString(string));  //¸ù½ÚµãÏÂÌí¼ÓÊý×Ö
+	cJSON_AddItemToObject(usr,item, cJSON_CreateString(string));  //æ ¹èŠ‚ç‚¹ä¸‹æ·»åŠ æ•°å­—
 	
-//	str_data = cJSON_Print(usr);   //½«jsonÐÎÊ½´òÓ¡³ÉÕý³£×Ö·û´®ÐÎÊ½(´øÓÐ\r\n)
-//	 data = cJSON_PrintUnformatted(usr);   //½«jsonÐÎÊ½´òÓ¡³ÉÕý³£×Ö·û´®ÐÎÊ½(Ã»ÓÐ\r\n)
-//	printf("%s",data);			//Í¨¹ý´®¿Ú´òÓ¡³öÀ´
+//	str_data = cJSON_Print(usr);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼(å¸¦æœ‰\r\n)
+//	 data = cJSON_PrintUnformatted(usr);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼(æ²¡æœ‰\r\n)
+//	printf("%s",data);			//é€šè¿‡ä¸²å£æ‰“å°å‡ºæ¥
 	cJSON_Delete(usr);
 	
 }
-/*ÒÔjson¸ñÊ½½âÎö¸¡µãÊý*/
+/*ä»¥jsonæ ¼å¼è§£æžæµ®ç‚¹æ•°*/
 double json_analysis_double(char *data,const char *item)
 {
 
 	cJSON *json,*json_get;
 	double get_number=0;
-	json = cJSON_Parse((const char *)data); //½«µÃµ½µÄ×Ö·û´®½âÎö³ÉjsonÐÎÊ½
+	json = cJSON_Parse((const char *)data); //å°†å¾—åˆ°çš„å­—ç¬¦ä¸²è§£æžæˆjsonå½¢å¼
 	/****************************/
-	/*	  ²âÊÔ½«JSON´òÓ¡³öÀ´	*/
+	/*	  æµ‹è¯•å°†JSONæ‰“å°å‡ºæ¥	*/
 	/***************************/
- char *out_data = cJSON_Print(json);   //½«jsonÐÎÊ½´òÓ¡³ÉÕý³£×Ö·û´®ÐÎÊ½
+ char *out_data = cJSON_Print(json);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼
  printf("%s",out_data);
 	json_get = cJSON_GetObjectItem( json ,item );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈÝ
+	if(json_get->type == cJSON_Number)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
 	{
 			get_number = json_get->valuedouble;
-			cJSON_Delete(json);  //ÊÍ·ÅÄÚ´æ 
-			cJSON_Delete(json_get);  //ÊÍ·ÅÄÚ´æ 	
+			cJSON_Delete(json);  //é‡Šæ”¾å†…å­˜ 
+			cJSON_Delete(json_get);  //é‡Šæ”¾å†…å­˜ 	
 		return get_number;
 	}
 	else 
 	{
-			cJSON_Delete(json);  //ÊÍ·ÅÄÚ´æ 
-			cJSON_Delete(json_get);  //ÊÍ·ÅÄÚ´æ 			
+			cJSON_Delete(json);  //é‡Šæ”¾å†…å­˜ 
+			cJSON_Delete(json_get);  //é‡Šæ”¾å†…å­˜ 			
 		return 0;
 	}
 
 }
-/*ÒÔjson¸ñÊ½½âÎöÕûÐÎÊý*/
+/*ä»¥jsonæ ¼å¼è§£æžæ•´å½¢æ•°*/
 int json_analysis_int(const char *data,const char *item)
 {
 
 	cJSON *json,*json_get;
 	int get_number=0;
-	json = cJSON_Parse(data); //½«µÃµ½µÄ×Ö·û´®½âÎö³ÉjsonÐÎÊ½
+	json = cJSON_Parse(data); //å°†å¾—åˆ°çš„å­—ç¬¦ä¸²è§£æžæˆjsonå½¢å¼
 	/****************************/
-	/*	  ²âÊÔ½«JSON´òÓ¡³öÀ´	*/
+	/*	  æµ‹è¯•å°†JSONæ‰“å°å‡ºæ¥	*/
 	/***************************/
- //char *out_data = cJSON_Print(json);   //½«jsonÐÎÊ½´òÓ¡³ÉÕý³£×Ö·û´®ÐÎÊ½
+ //char *out_data = cJSON_Print(json);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼
  //printf("%s",out_data);
 	json_get = cJSON_GetObjectItem( json ,item );
-	if(json_get->type == cJSON_Number)  //´Ójson»ñÈ¡¼üÖµÄÚÈÝ
+	if(json_get->type == cJSON_Number)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
 	{
 			get_number = json_get->valuedouble;
-			cJSON_Delete(json);  //ÊÍ·ÅÄÚ´æ 
-			cJSON_Delete(json_get);  //ÊÍ·ÅÄÚ´æ 	
+			cJSON_Delete(json);  //é‡Šæ”¾å†…å­˜ 
+			cJSON_Delete(json_get);  //é‡Šæ”¾å†…å­˜ 	
 		return get_number;
 	}
 	else 
 	{
-			cJSON_Delete(json);  //ÊÍ·ÅÄÚ´æ 
-			cJSON_Delete(json_get);  //ÊÍ·ÅÄÚ´æ 			
+			cJSON_Delete(json);  //é‡Šæ”¾å†…å­˜ 
+			cJSON_Delete(json_get);  //é‡Šæ”¾å†…å­˜ 			
 		return 0;
 	}
+}
+
+/*è¯»å–FLASHä¸­ä¿å­˜çš„å‚æ•°*/
+#define PARAM_FILE_PATH "/param.txt"
+#define PARAMS_MAX_READ_SIZE  4096
+const char *PARAMS_DEFAULT_JSON =
+		"{\n"
+		"\"AttitudeControl.int_PID\":{\"X\":[25,0.1,30],\"Y\":[25,0.1,30],\"Z\":[15.0,0.0,15.0]},\n"
+		"\"AttitudeControl.ext_PID\":{\"X\":[3.0,0.0,0.0],\"Y\":[3.0,0.0,0.0],\"Z\":[4.0,0.0,0.0]},\n"
+		"\"HeightControl.PID\":[0.0,0.0,0.0],\n"
+		"\"motor_volt_k\":[1.0,1.0,1.0,1.0],\n"
+		"\"log_record_circle_ms\":20\n"
+		"}\n";
+uint8_t fatfs_PID_params_read()
+{
+	cJSON *json,*json_get_root,*json_get_child1;
+	char read_buf[PARAMS_MAX_READ_SIZE];
+	memset(read_buf,0,PARAMS_MAX_READ_SIZE);
+	if(fatfs_read_file(PARAM_FILE_PATH,read_buf,PARAMS_MAX_READ_SIZE))//è¯»å–æ–‡ä»¶å¤±è´¥
+	{
+		FIL file;     //æ–‡ä»¶å¯¹è±¡
+		FRESULT res;
+		UINT bytes_written;  // å®žé™…å†™å…¥çš„å­—èŠ‚æ•°
+		strcpy(read_buf,PARAMS_DEFAULT_JSON);//å°†é»˜è®¤å‚æ•°å†™å…¥ç¼“å†²åŒº
+		res = f_open(&file, PARAM_FILE_PATH,FA_OPEN_ALWAYS|FA_WRITE);
+		if (res == FR_OK)
+		{
+			printf("paramFile created successfully.\n");
+			/****å°†é»˜è®¤å‚æ•°å†™å…¥æ–‡ä»¶***/
+			res = f_write(&file, read_buf, strlen(read_buf), &bytes_written);
+			if (res == FR_OK)
+			{
+					f_close(&file);
+					printf("Param written successfully. Bytes written: %u\n", bytes_written);
+			}
+			else
+			{
+					f_close(&file);
+					printf("paramWrite error: %d\n", res);
+					return 1;
+			}
+		}
+		else
+		{
+				printf("Failed to open/create file. Error: %d\n", res);
+				return 1;
+		}
+		return 1;
+	}
+	
+
+	json = cJSON_Parse((const char *)read_buf); //å°†å¾—åˆ°çš„å­—ç¬¦ä¸²è§£æžæˆjsonå½¢å¼
+    // æ£€æŸ¥è§£æžæ˜¯å¦æˆåŠŸ
+	if (json == NULL) 
+		{
+			const char *error_ptr = cJSON_GetErrorPtr();
+			if (error_ptr != NULL) {
+					printf("JSON Parse errorï¼Œpos: %s\n", error_ptr);
+			}
+			return 1; // ç›´æŽ¥è¿”å›žï¼Œé¿å…æ“ä½œç©ºæŒ‡é’ˆ
+		}
+	/****************************/
+	/*	  æµ‹è¯•å°†JSONæ‰“å°å‡ºæ¥	*/
+	/***************************/
+//	char *out_data = cJSON_Print(json);   //å°†jsonå½¢å¼æ‰“å°æˆæ­£å¸¸å­—ç¬¦ä¸²å½¢å¼
+//	printf("%s",out_data);
+	
+	json_get_root = cJSON_GetObjectItem( json ,"AttitudeControl.int_PID" );
+	json_get_child1 = cJSON_GetObjectItem(json_get_root,"X");
+	if(json_get_child1->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		AttitudeControl.internal_pid.x.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+		AttitudeControl.internal_pid.x.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+		AttitudeControl.internal_pid.x.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+	}
+	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Y");
+	if(json_get_child1->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		AttitudeControl.internal_pid.y.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+		AttitudeControl.internal_pid.y.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+		AttitudeControl.internal_pid.y.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+	}
+	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Z");
+	if(json_get_child1->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		AttitudeControl.internal_pid.z.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+		AttitudeControl.internal_pid.z.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+		AttitudeControl.internal_pid.z.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+	}
+	json_get_root = cJSON_GetObjectItem( json ,"AttitudeControl.ext_PID" );
+	json_get_child1 = cJSON_GetObjectItem(json_get_root,"X");
+	if(json_get_child1->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		AttitudeControl.external_pid.x.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+		AttitudeControl.external_pid.x.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+		AttitudeControl.external_pid.x.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+	}
+	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Y");
+	if(json_get_child1->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		AttitudeControl.external_pid.y.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+		AttitudeControl.external_pid.y.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+		AttitudeControl.external_pid.y.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+	}
+	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Z");
+	if(json_get_child1->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		AttitudeControl.external_pid.z.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+		AttitudeControl.external_pid.z.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+		AttitudeControl.external_pid.z.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+	}
+	json_get_root = cJSON_GetObjectItem( json ,"HeightControl.PID");	
+	if(json_get_root->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		HeightControl.pid.kp = cJSON_GetArrayItem(json_get_root,0)->valuedouble;
+		HeightControl.pid.ki = cJSON_GetArrayItem(json_get_root,1)->valuedouble;
+		HeightControl.pid.kd = cJSON_GetArrayItem(json_get_root,2)->valuedouble;
+	}
+	json_get_root = cJSON_GetObjectItem( json ,"motor_volt_k");
+	if(json_get_root->type == cJSON_Array)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{
+		aircraft_motor.volt_k1 = cJSON_GetArrayItem(json_get_root,0)->valuedouble;
+		aircraft_motor.volt_k2 = cJSON_GetArrayItem(json_get_root,1)->valuedouble;
+		aircraft_motor.volt_k3 = cJSON_GetArrayItem(json_get_root,2)->valuedouble;
+		aircraft_motor.volt_k4 = cJSON_GetArrayItem(json_get_root,3)->valuedouble;
+
+	}	
+	json_get_root = cJSON_GetObjectItem( json ,"log_record_circle_ms");
+	if(json_get_root->type == cJSON_Number)  //ä»ŽjsonèŽ·å–é”®å€¼å†…å®¹
+	{	
+		log_record_circle = json_get_root->valueint;
+	}	
+	
+	printf("param_read_success:\n"
+		   "%.2f,%.2f,%.2f\n"
+		   "%.2f,%.2f,%.2f\n"
+		   "%.2f,%.2f,%.2f\n"
+		   "%.2f,%.2f,%.2f\n"
+		   "%.2f,%.2f,%.2f\n"
+		   "%.2f,%.2f,%.2f\n",
+		AttitudeControl.internal_pid.x.kp, AttitudeControl.internal_pid.x.ki, AttitudeControl.internal_pid.x.kd,
+		AttitudeControl.internal_pid.y.kp, AttitudeControl.internal_pid.y.ki, AttitudeControl.internal_pid.y.kd,
+		AttitudeControl.internal_pid.z.kp, AttitudeControl.internal_pid.z.ki, AttitudeControl.internal_pid.z.kd,
+		AttitudeControl.external_pid.x.kp, AttitudeControl.external_pid.x.ki, AttitudeControl.external_pid.x.kd,
+		AttitudeControl.external_pid.y.kp, AttitudeControl.external_pid.y.ki, AttitudeControl.external_pid.y.kd,
+		AttitudeControl.external_pid.z.kp, AttitudeControl.external_pid.z.ki, AttitudeControl.external_pid.z.kd
+	);
+	cJSON_Delete(json);  //é‡Šæ”¾å†…å­˜ 
+	cJSON_Delete(json_get_root);  //é‡Šæ”¾å†…å­˜ 		
+	return 0;
 }
 

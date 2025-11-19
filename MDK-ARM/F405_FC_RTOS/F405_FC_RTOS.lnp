@@ -6,6 +6,7 @@
 "f405_fc_rtos\control.o"
 "f405_fc_rtos\pid.o"
 "f405_fc_rtos\cjson_usr.o"
+"f405_fc_rtos\flight_data_manager.o"
 "f405_fc_rtos\main.o"
 "f405_fc_rtos\gpio.o"
 "f405_fc_rtos\adc.o"

@@ -61,3 +61,5 @@ f405_fc_rtos\control.o: ../FATFS/Target/ffconf.h
 f405_fc_rtos\control.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 f405_fc_rtos\control.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
 f405_fc_rtos\control.o: ../FATFS/Target/user_diskio.h
+f405_fc_rtos\control.o: ../Drivers/BSP_HardWare/bmp390_task.h
+f405_fc_rtos\control.o: ../Drivers/BSP_HardWare/BMP3/bmp3_defs.h
