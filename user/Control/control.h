@@ -4,9 +4,9 @@
 #include "pid.h"
 #define LED(x)    			HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,(GPIO_PinState)!x)
 #define LED_TOGGLE   		HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-#define MOTOR_MAX_THROTTLE 3000				//电机最大油门 
-#define MOTOR_MIN_THROTTLE 500 					//电机最小油门
-#define MOTOR_MAX_DUTY  3499          //电机最大占空比
+#define MOTOR_MAX_THROTTLE 3000				//电机最大油门占空比 
+#define MOTOR_MIN_THROTTLE 0 					//电机最小油门占空比
+#define MOTOR_MAX_DUTY  3500          //电机最大占空比
 #define MOTOR_MIN_DUTY  0							//电机最小占空比
 
 #define ROLL_TARGET_MAX_ANGLE  45.0f
@@ -25,6 +25,7 @@ typedef struct {
 	int duty3;
 	int duty4;
 	int throttle;//油门
+	int launch_throttle;//启动油门 百分比
 	float volt_k1;//电压系数
 	float volt_k2;//电压系数
 	float volt_k3;//电压系数
@@ -70,9 +71,9 @@ typedef struct
 
 // 控制器状态
 typedef enum {
-    ALT_HOLD_DISABLED, //手动控制
-    BARO_MODE,				//气压计定高控制
-    TOF_MODE					//TOF定高控制
+	OFF_MODE = 0,
+    BARO_MODE = 1,				//气压计定高控制
+    TOF_MODE = 2					//TOF定高控制
 } HeightMode_TypeDef;
 
 // 控制器主结构体
@@ -86,6 +87,7 @@ typedef struct
 	float roll_target_angle;//roll角目标
 	float pitch_target_angle;//pitch角目标
 	float yaw_target_angle;//yaw角目标
+	float yaw_turn_rate;//yaw角偏航率
 	float roll_compensate;//roll角补偿
 	float pitch_compensate;//pitch角补偿
 }AttiudeController;	//姿态控制器
@@ -98,7 +100,8 @@ typedef struct {
 		uint8_t auto_height_control_isEnable;  //定高标志
 		float target_height;
 		float target_altitude;
-    int base_throttle;  // 基础悬停油门
+    int hover_throttle;  // 悬停油门 百分比
+	float auto_height_climb_rate; //自动定高上升速率
 } HeightController;//高度控制器
 
 typedef struct

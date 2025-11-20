@@ -63,38 +63,42 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		aircraft_data_send();
 		if(tim5_cnt_20ms >= 2)
 		{
-			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());//��ȡ��ǰ�ɻ���ص�ѹ
-			
+			my_aircraft.Battery_Volt = (uint8_t)(10*get_battery_volt());//
 			if(my_bmp390.data.pressure!=-1)
-			{   
-				my_aircraft.Altitude = convert_Pa_to_meter(my_bmp390.data.pressure);//���β�������λm
+			{ 
+				my_aircraft.Altitude = convert_Pa_to_meter(my_bmp390.data.pressure);//
 			}
 			if(my_bmp390.data.temperature!=-1)
 			{
-				my_aircraft.Temperature = my_bmp390.data.temperature;//�¶Ȳ�������λ���϶�
+				my_aircraft.Temperature = my_bmp390.data.temperature;//
 			}
 			
 			tim5_cnt_20ms = 0; 
 		}	
 		if(tim5_cnt_100ms >= 10)
 		{
-			switch(aircraft_protection())//����������
+			switch(aircraft_protection())//
 			{
 				case 1:
 					uart_printf(&huart1,"BATTERY_LOW_POWER!\n");
-					LED_TOGGLE;//��˸LED����		
+					LED_TOGGLE;//
 
 				break;
 				case 2:
 					uart_printf(&huart1,"AIRCRAFT_IMU_ERROR!\n");
-					LED_TOGGLE;//��˸LED����
+					LED_TOGGLE;//
 
 				break;
 				case 3:
 					uart_printf(&huart1,"MOTOR_DUTY_ERROR!\n");
-					LED_TOGGLE;//��˸LED����
+					LED_TOGGLE;//
 
-				break;				
+				break;			
+				case 4:
+					uart_printf(&huart1,"REMOTE_SIGNAL_ERROR!\n");
+					LED_TOGGLE;//
+
+				break;	
 			}
 			
 			tim5_cnt_100ms = 0;

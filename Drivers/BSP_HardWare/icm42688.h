@@ -3,14 +3,14 @@
 
 #include "main.h"
 
-//====================================================Ó²¼þ SPI Çý¶¯(STM32 HAL¿âÓ²¼þSPI)====================================================                                          
+//====================================================ç¡¬ä»¶ SPI é©±åŠ¨(STM32 HALåº“ç¡¬ä»¶SPI)====================================================                                          
 #define icm42688_CS(x)              ((x) ? (HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET)) : (HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_RESET)))
-#define icm42688_TIMEOUT_COUNT      (0x00FF)                                    // icm42688 ³¬Ê±¼ÆÊý
-//================================================¶¨Òå icm42688 ÄÚ²¿µØÖ·================================================
-//#define icm42688_DEV_ADDR           (0x69)                                      // SA0½ÓµØ£º0x68 SA0ÉÏÀ­£º0x69 Ä£¿éÄ¬ÈÏÉÏÀ­
+#define icm42688_TIMEOUT_COUNT      (0x00FF)                                    // icm42688 è¶…æ—¶è®¡æ•°
+//================================================å®šä¹‰ icm42688 å†…éƒ¨åœ°å€================================================
+//#define icm42688_DEV_ADDR           (0x69)                                      // SA0æŽ¥åœ°ï¼š0x68 SA0ä¸Šæ‹‰ï¼š0x69 æ¨¡å—é»˜è®¤ä¸Šæ‹‰
 #define icm42688_SPI_W              (0x00)
 #define icm42688_SPI_R              (0x80)
-#define icm42688_ID	             	(0x47)//WHO AM IµÄÖµ
+#define icm42688_ID	             	(0x47)//WHO AM Içš„å€¼
 
 
 typedef struct 
@@ -26,7 +26,7 @@ typedef struct
 
 
 
-/************ICM42688¼Ä´æÆ÷µØÖ·****************/
+/************ICM42688å¯„å­˜å™¨åœ°å€****************/
 // Bank 0
 #define icm42688_DEVICE_CONFIG             0x11
 #define icm42688_DRIVE_CONFIG              0x13
@@ -146,7 +146,7 @@ typedef struct
 #define icm42688_OFFSET_USER7              0x7E
 #define icm42688_OFFSET_USER8              0x7F
 
-/** ¼Ä´æÆ÷¸³Öµºê¶¨Òå **/
+/** å¯„å­˜å™¨èµ‹å€¼å®å®šä¹‰ **/
 #define icm42688_SOFT_RESET_CONFIG	(0x01)
 
 #define icm42688_Bank_0				(0x00)
@@ -157,70 +157,70 @@ typedef struct
 
 #define FIFO_THS_INT1_EN			(0x04)//FIFO threshold interrupt
 
-#define icm42688_ACCEL_FS_SEL         (0x00)                     // ¼ÓËÙ¶È¼ÆÁ¿³Ì
-// ÉèÖÃÎª:0x00 ¼ÓËÙ¶È¼ÆÁ¿³ÌÎª:¡À16g         »ñÈ¡µ½µÄ¼ÓËÙ¶È¼ÆÊý¾Ý ³ýÒÔ2048       ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»£ºg(m/s^2)
-// ÉèÖÃÎª:0x20 ¼ÓËÙ¶È¼ÆÁ¿³ÌÎª:¡À8g          »ñÈ¡µ½µÄ¼ÓËÙ¶È¼ÆÊý¾Ý ³ýÒÔ4096       ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»£ºg(m/s^2)
-// ÉèÖÃÎª:0x40 ¼ÓËÙ¶È¼ÆÁ¿³ÌÎª:¡À4g          »ñÈ¡µ½µÄ¼ÓËÙ¶È¼ÆÊý¾Ý ³ýÒÔ8192       ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»£ºg(m/s^2)
-// ÉèÖÃÎª:0x60 ¼ÓËÙ¶È¼ÆÁ¿³ÌÎª:¡À2g          »ñÈ¡µ½µÄ¼ÓËÙ¶È¼ÆÊý¾Ý ³ýÒÔ16384      ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»£ºg(m/s^2)
+#define icm42688_ACCEL_FS_SEL         (0x00)                     // åŠ é€Ÿåº¦è®¡é‡ç¨‹
+// è®¾ç½®ä¸º:0x00 åŠ é€Ÿåº¦è®¡é‡ç¨‹ä¸º:Â±16g         èŽ·å–åˆ°çš„åŠ é€Ÿåº¦è®¡æ•°æ® é™¤ä»¥2048       å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ï¼šg(m/s^2)
+// è®¾ç½®ä¸º:0x20 åŠ é€Ÿåº¦è®¡é‡ç¨‹ä¸º:Â±8g          èŽ·å–åˆ°çš„åŠ é€Ÿåº¦è®¡æ•°æ® é™¤ä»¥4096       å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ï¼šg(m/s^2)
+// è®¾ç½®ä¸º:0x40 åŠ é€Ÿåº¦è®¡é‡ç¨‹ä¸º:Â±4g          èŽ·å–åˆ°çš„åŠ é€Ÿåº¦è®¡æ•°æ® é™¤ä»¥8192       å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ï¼šg(m/s^2)
+// è®¾ç½®ä¸º:0x60 åŠ é€Ÿåº¦è®¡é‡ç¨‹ä¸º:Â±2g          èŽ·å–åˆ°çš„åŠ é€Ÿåº¦è®¡æ•°æ® é™¤ä»¥16384      å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ï¼šg(m/s^2)
 
 
-#define icm42688_ACCEL_ODR         	  (0x06)                     // ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊ
-// ÉèÖÃÎª:0x03 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:8kHz (LN mode)
-// ÉèÖÃÎª:0x04 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:4kHz (LN mode)
-// ÉèÖÃÎª:0x05 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:2kHz (LN mode)
-// ÉèÖÃÎª:0x06 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:1kHz (LN mode) (default)
-// ÉèÖÃÎª:0x07 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:200Hz (LP or LN mode)
-// ÉèÖÃÎª:0x08 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:100Hz (LP or LN mode)
-// ÉèÖÃÎª:0x09 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:50Hz (LP or LN mode)
-// ÉèÖÃÎª:0x0A ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:25Hz (LP or LN mode)
-// ÉèÖÃÎª:0x0B ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:12.5Hz (LP or LN mode)
-// ÉèÖÃÎª:0x0C ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:6.25Hz (LP mode)
-// ÉèÖÃÎª:0x0D ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:3.125Hz (LP mode)
-// ÉèÖÃÎª:0x0E ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:1.5625Hz (LP mode)
-// ÉèÖÃÎª:0x0F ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:500Hz (LP or LN mode)
+#define icm42688_ACCEL_ODR         	  (0x06)                     // åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡
+// è®¾ç½®ä¸º:0x03 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:8kHz (LN mode)
+// è®¾ç½®ä¸º:0x04 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:4kHz (LN mode)
+// è®¾ç½®ä¸º:0x05 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:2kHz (LN mode)
+// è®¾ç½®ä¸º:0x06 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:1kHz (LN mode) (default)
+// è®¾ç½®ä¸º:0x07 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:200Hz (LP or LN mode)
+// è®¾ç½®ä¸º:0x08 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:100Hz (LP or LN mode)
+// è®¾ç½®ä¸º:0x09 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:50Hz (LP or LN mode)
+// è®¾ç½®ä¸º:0x0A åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:25Hz (LP or LN mode)
+// è®¾ç½®ä¸º:0x0B åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:12.5Hz (LP or LN mode)
+// è®¾ç½®ä¸º:0x0C åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:6.25Hz (LP mode)
+// è®¾ç½®ä¸º:0x0D åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:3.125Hz (LP mode)
+// è®¾ç½®ä¸º:0x0E åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:1.5625Hz (LP mode)
+// è®¾ç½®ä¸º:0x0F åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:500Hz (LP or LN mode)
 
-#define icm42688_ACCEL_MODE          (0x03)                      //¼ÓËÙ¶È¼ÆÄ£Ê½
-// ÉèÖÃÎª:0x00 ¼ÓËÙ¶È¼ÆÄ£Ê½Îª:Turns accelerometer off (default)
-// ÉèÖÃÎª:0x01 ¼ÓËÙ¶È¼ÆÄ£Ê½Îª:Turns accelerometer off
-// ÉèÖÃÎª:0x02 ¼ÓËÙ¶È¼ÆÄ£Ê½Îª:Places accelerometer in Low Power (LP) Mode
-// ÉèÖÃÎª:0x03 ¼ÓËÙ¶È¼ÆÄ£Ê½Îª:Places accelerometer in Low Noise (LN) Mode
+#define icm42688_ACCEL_MODE          (0x03)                      //åŠ é€Ÿåº¦è®¡æ¨¡å¼
+// è®¾ç½®ä¸º:0x00 åŠ é€Ÿåº¦è®¡æ¨¡å¼ä¸º:Turns accelerometer off (default)
+// è®¾ç½®ä¸º:0x01 åŠ é€Ÿåº¦è®¡æ¨¡å¼ä¸º:Turns accelerometer off
+// è®¾ç½®ä¸º:0x02 åŠ é€Ÿåº¦è®¡æ¨¡å¼ä¸º:Places accelerometer in Low Power (LP) Mode
+// è®¾ç½®ä¸º:0x03 åŠ é€Ÿåº¦è®¡æ¨¡å¼ä¸º:Places accelerometer in Low Noise (LN) Mode
 
-#define icm42688_GYRO_FS_SEL         (0x00)                      // ÍÓÂÝÒÇÁ¿³Ì
-// ÉèÖÃÎª:0x00 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À2000  dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ16.4          ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0x20 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À1000  dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ32.8          ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0x40 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À500   dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ65.5          ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0x60 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À250   dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ131           ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0x80 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À125   dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ262           ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0xA0 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À62.5  dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ524.3         ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0xC0 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À31.25 dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ1048.6        ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
-// ÉèÖÃÎª:0xE0 ÍÓÂÝÒÇÁ¿³ÌÎª:¡À15.625dps     »ñÈ¡µ½µÄÍÓÂÝÒÇÊý¾Ý³ýÒÔ2097.2        ¿ÉÒÔ×ª»¯Îª´øÎïÀíµ¥Î»µÄÊý¾Ý£¬µ¥Î»Îª£º¡ã/s
+#define icm42688_GYRO_FS_SEL         (0x00)                      // é™€èžºä»ªé‡ç¨‹
+// è®¾ç½®ä¸º:0x00 é™€èžºä»ªé‡ç¨‹ä¸º:Â±2000  dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥16.4          å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0x20 é™€èžºä»ªé‡ç¨‹ä¸º:Â±1000  dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥32.8          å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0x40 é™€èžºä»ªé‡ç¨‹ä¸º:Â±500   dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥65.5          å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0x60 é™€èžºä»ªé‡ç¨‹ä¸º:Â±250   dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥131           å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0x80 é™€èžºä»ªé‡ç¨‹ä¸º:Â±125   dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥262           å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0xA0 é™€èžºä»ªé‡ç¨‹ä¸º:Â±62.5  dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥524.3         å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0xC0 é™€èžºä»ªé‡ç¨‹ä¸º:Â±31.25 dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥1048.6        å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
+// è®¾ç½®ä¸º:0xE0 é™€èžºä»ªé‡ç¨‹ä¸º:Â±15.625dps     èŽ·å–åˆ°çš„é™€èžºä»ªæ•°æ®é™¤ä»¥2097.2        å¯ä»¥è½¬åŒ–ä¸ºå¸¦ç‰©ç†å•ä½çš„æ•°æ®ï¼Œå•ä½ä¸ºï¼šÂ°/s
 
-#define icm42688_GYRO_ODR         	  (0x06)                     // ÍÓÂÝÒÇÊä³öÊý¾ÝËÙÂÊ
-// ÉèÖÃÎª:0x03 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:8kHz
-// ÉèÖÃÎª:0x04 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:4kHz
-// ÉèÖÃÎª:0x05 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:2kHz
-// ÉèÖÃÎª:0x06 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:1kHz (default)
-// ÉèÖÃÎª:0x07 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:200Hz
-// ÉèÖÃÎª:0x08 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:100Hz
-// ÉèÖÃÎª:0x09 ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:50Hz
-// ÉèÖÃÎª:0x0A ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:25Hz
-// ÉèÖÃÎª:0x0B ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:12.5Hz
-// ÉèÖÃÎª:0x0F ¼ÓËÙ¶È¼ÆÊä³öÊý¾ÝËÙÂÊÎª:500Hz
+#define icm42688_GYRO_ODR         	  (0x06)                     // é™€èžºä»ªè¾“å‡ºæ•°æ®é€ŸçŽ‡
+// è®¾ç½®ä¸º:0x03 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:8kHz
+// è®¾ç½®ä¸º:0x04 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:4kHz
+// è®¾ç½®ä¸º:0x05 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:2kHz
+// è®¾ç½®ä¸º:0x06 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:1kHz (default)
+// è®¾ç½®ä¸º:0x07 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:200Hz
+// è®¾ç½®ä¸º:0x08 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:100Hz
+// è®¾ç½®ä¸º:0x09 åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:50Hz
+// è®¾ç½®ä¸º:0x0A åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:25Hz
+// è®¾ç½®ä¸º:0x0B åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:12.5Hz
+// è®¾ç½®ä¸º:0x0F åŠ é€Ÿåº¦è®¡è¾“å‡ºæ•°æ®é€ŸçŽ‡ä¸º:500Hz
 
-#define icm42688_GYRO_MODE          (0x0F)                      //ÍÓÂÝÒÇÄ£Ê½
-// ÉèÖÃÎª:0x00 ÍÓÂÝÒÇÄ£Ê½Îª:Turns gyroscope off (default)
-// ÉèÖÃÎª:0x04 ÍÓÂÝÒÇÄ£Ê½Îª:Places gyroscope in Standby Mode
-// ÉèÖÃÎª:0x0F ÍÓÂÝÒÇÄ£Ê½Îª:Places gyroscope in Low Noise (LN) Mode
-//================================================¶¨Òå icm42688 ÄÚ²¿µØÖ·================================================
+#define icm42688_GYRO_MODE          (0x0F)                      //é™€èžºä»ªæ¨¡å¼
+// è®¾ç½®ä¸º:0x00 é™€èžºä»ªæ¨¡å¼ä¸º:Turns gyroscope off (default)
+// è®¾ç½®ä¸º:0x04 é™€èžºä»ªæ¨¡å¼ä¸º:Places gyroscope in Standby Mode
+// è®¾ç½®ä¸º:0x0F é™€èžºä»ªæ¨¡å¼ä¸º:Places gyroscope in Low Noise (LN) Mode
+//================================================å®šä¹‰ icm42688 å†…éƒ¨åœ°å€================================================
 
 extern icm42688_st icm42688_data;
 void    icm42688_get_temp           (void);
 void    icm42688_get_acc            (void);
 void    icm42688_get_gyro           (void);
 void icm42688_get_gyro_acc(void);
-float   icm42688_temp_transition    (int16_t acc_value);                          // ½« icm42688 ¼ÓËÙ¶È¼ÆÊý¾Ý×ª»»ÎªÊµ¼ÊÎïÀíÊý¾Ý
-float   icm42688_acc_transition     (int16_t acc_value);                          // ½« icm42688 ¼ÓËÙ¶È¼ÆÊý¾Ý×ª»»ÎªÊµ¼ÊÎïÀíÊý¾Ý
-float   icm42688_gyro_transition    (int16_t gyro_value);                         // ½« icm42688 ÍÓÂÝÒÇÊý¾Ý×ª»»ÎªÊµ¼ÊÎïÀíÊý¾Ý
+float   icm42688_temp_transition    (int16_t acc_value);                          // å°† icm42688 åŠ é€Ÿåº¦è®¡æ•°æ®è½¬æ¢ä¸ºå®žé™…ç‰©ç†æ•°æ®
+float   icm42688_acc_transition     (int16_t acc_value);                          // å°† icm42688 åŠ é€Ÿåº¦è®¡æ•°æ®è½¬æ¢ä¸ºå®žé™…ç‰©ç†æ•°æ®
+float   icm42688_gyro_transition    (int16_t gyro_value);                         // å°† icm42688 é™€èžºä»ªæ•°æ®è½¬æ¢ä¸ºå®žé™…ç‰©ç†æ•°æ®
 uint8_t   icm42688_init               (void);
 
 #endif

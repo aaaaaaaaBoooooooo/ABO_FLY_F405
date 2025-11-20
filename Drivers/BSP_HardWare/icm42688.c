@@ -210,7 +210,7 @@ float icm42688_gyro_transition (int16_t gyro_value)
 	}
   return gyro_data;
 }
-
+static void icm42688_set_ui_filter(uint8_t bandwidth, uint8_t order) ;//内部调用 设置滤波器
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     初始化 icm42688
 // 参数说明     void
@@ -300,13 +300,14 @@ uint8_t icm42688_init (void)
 		icm42688_write_register(icm42688_ACCEL_CONFIG_STATIC4,0x80);//ACCEL_AAF_BITSHIFT 8 (default 6)
 
 		/*****自定义滤波器1号@111Hz*****/
-		/*指定Bank0*/
-		icm42688_write_register(icm42688_REG_BANK_SEL, icm42688_Bank_0); //设置bank 0区域寄存器
-		/*滤波器顺序*/
-		icm42688_write_register(icm42688_GYRO_CONFIG1,0x12);//GYRO滤波器1st
-		icm42688_write_register(icm42688_ACCEL_CONFIG1,0x05);//ACCEL滤波器1st
-		/*滤波器设置*/
-		icm42688_write_register(icm42688_GYRO_ACCEL_CONFIG0,0x33);//111Hz 03
+		icm42688_set_ui_filter(4, 1);//设置UI滤波器 带宽：3代表111Hz 4代表92Hz 5代表 59.6Hz 阶数：1阶
+		// /*指定Bank0*/
+		// icm42688_write_register(icm42688_REG_BANK_SEL, icm42688_Bank_0); //设置bank 0区域寄存器
+		// /*滤波器顺序*/
+		// icm42688_write_register(icm42688_GYRO_CONFIG1,0x12);//GYRO滤波器1st
+		// icm42688_write_register(icm42688_ACCEL_CONFIG1,0x05);//ACCEL滤波器1st
+		// /*滤波器设置*/
+		// icm42688_write_register(icm42688_GYRO_ACCEL_CONFIG0,0x33);//111Hz 03
 
 		/*指定Bank0*/
 		icm42688_write_register(icm42688_REG_BANK_SEL, icm42688_Bank_0); //设置bank 0区域寄存器
@@ -316,4 +317,44 @@ uint8_t icm42688_init (void)
 		delay_ms(2000);//陀螺仪预热
 		
     return return_state;
+}
+
+/**
+ * @brief 设置IMU UI滤波的带宽和阶数
+ * @param bandwidth: 低通滤波带宽值（0-7），数字越大，滤波效果越好
+ * @param order: 滤波阶数（1-3），阶数越高，滤波效果越好
+ * @return 无
+ */
+static void icm42688_set_ui_filter(uint8_t bandwidth, uint8_t order) {
+    uint8_t reg_val ;
+	
+		// 确保带宽值在有效范围内（0-7）
+    if (bandwidth > 7) {
+        bandwidth = 7; // 如果超出范围，设置为最大值
+    }
+ 
+    // 确保阶数在有效范围内（1-3）
+    if (order < 1 || order > 3) {
+        order = 3; // 如果超出范围，设置为默认值 3 阶
+    }
+ 
+	/*指定Bank0*/
+	icm42688_write_register(icm42688_REG_BANK_SEL, icm42688_Bank_0); //设置bank 0区域寄存器
+ 
+    // UI滤波带宽
+    reg_val =0x00;
+    reg_val |= (bandwidth & 0x0F); // 设置陀螺仪低通滤波带宽
+	  reg_val |= ((bandwidth<<4) & 0xF0); // 设置加速度计低通滤波带宽
+    icm42688_write_register(icm42688_GYRO_ACCEL_CONFIG0, reg_val);
+ 
+    // UI滤波阶数
+    reg_val = icm42688_read_register(icm42688_GYRO_CONFIG1);
+    reg_val &= ~(0x0C); // 清除阶数配置位（bit 3:2）
+    reg_val |= ((order - 1) << 2); // 设置阶数（1阶=00, 2阶=01, 3阶=10）
+    icm42688_write_register(icm42688_GYRO_CONFIG1, reg_val);
+    reg_val = icm42688_read_register(icm42688_ACCEL_CONFIG1);
+    reg_val &= ~(0x18); // 清除阶数配置位（bit 4:3）
+    reg_val |= ((order - 1) << 3); // 设置阶数（1阶=00, 2阶=01, 3阶=10）
+    icm42688_write_register(icm42688_ACCEL_CONFIG1, reg_val);	
+
 }

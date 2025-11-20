@@ -208,7 +208,7 @@ void IMU_DataUpdate(void)
 	my_ahrs.IMU_Data.gyro.z= (icm42688_data.gyro_z)*Gyro_Gain-my_ahrs.IMU_Data.gyro_offset.z;	
 
 	/***角速度一阶卡尔曼滤波begin***/
-	static  kalman1_state ekf[3] = {{0.0f,0.0f,1.0f,1.0f,0.001f,0.0f},{0.0f,0.0f,1.0f,1.0f,0.001f,0.0f},{0.0f,0.0f,1.0f,1.0f,0.001f,0.0f}};//第五个参数用于调整预测值方差，越大越信任传感器
+	static  kalman1_state ekf[3] = {{0.0f,0.0f,1.0f,1.0f,0.001f,0.0f},{0.0f,0.0f,1.0f,1.0f,0.0005f,0.0f},{0.0f,0.0f,1.0f,1.0f,0.0005f,0.0f}};//第五个参数用于调整预测值方差，越大越信任传感器
 	static float last_out[3],lastlast_out[3];
 	/*****传感器方差更新*****/
 	ekf[0].r = my_ahrs.IMU_Data.gyro_var.x; //陀螺仪测量方差

@@ -223,7 +223,7 @@ void aircraft_fly_data_record()
     }
     while(1)
     {
-        if(aircraft_last_status == 0x00 && (my_aircraft.status & 0x01))// 飞机开始飞行
+        if(aircraft_last_status == 0x00 && (my_aircraft.status & 0x01) && !(my_aircraft.status & 0x08))// 飞机开始飞行同时未处于保护状态
         {
             // 飞机开始飞行
             aircraft_last_status = 0x01;

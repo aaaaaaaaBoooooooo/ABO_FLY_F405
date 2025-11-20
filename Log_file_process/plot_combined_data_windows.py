@@ -20,8 +20,8 @@ def parse_flight_log(file_path):
     9 - my_aircraft.Temperature
     10 - my_aircraft.Battery_Volt*0.1f
     11 - my_aircraft.Throttle
-    12 - AttitudeControl.pitch_target_angle
-    13 - AttitudeControl.roll_target_angle
+    12 - AttitudeControl.roll_target_angle
+    13 - AttitudeControl.pitch_target_angle
     14 - AttitudeControl.yaw_target_angle
     15 - HeightControl.target_height
     """
@@ -33,7 +33,7 @@ def parse_flight_log(file_path):
         'gyro_x', 'gyro_y', 'gyro_z',
         'altitude', 'tof_distance', 'temperature',
         'battery_volt', 'throttle',
-        'target_pitch', 'target_roll', 'target_yaw',
+        'target_roll', 'target_pitch', 'target_yaw',
         'target_height'
     ]
     
@@ -108,7 +108,7 @@ def parse_flight_log(file_path):
         # Return empty arrays if no valid data was parsed
         return {name: np.array([]) for name in column_names}
 
-def create_combined_plots(data, filename="LOG.TXT"):
+def create_combined_plots(data, filename="LOG_1.TXT"):
     """
     Create combined plots in windows as requested by the user
     """
@@ -284,7 +284,7 @@ def create_combined_plots(data, filename="LOG.TXT"):
 def main():
     # Get the current working directory and look for the log file there
     import os
-    log_file_path = Path(os.getcwd()) / "LOG_TEST.TXT"  # Change to your log file name here
+    log_file_path = Path(os.getcwd()) / "LOG_56.TXT"  # Change to your log file name here
 
     if not log_file_path.exists():
         print(f"Log file {log_file_path} not found!")

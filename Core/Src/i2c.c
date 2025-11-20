@@ -24,12 +24,20 @@
 #include "bmp390_task.h"
 #include "bmp3.h"
 #include "control.h"
+
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
+  static struct bmp3_data old_data;
+  static struct bmp3_data new_data;
 	if(hi2c==&hi2c1)
 	{
-		if(my_bmp390.is_valid)
-			my_bmp390.data = bmp390_getdata_DMA(bmp390_data_dma_buf);
+		if(my_bmp390.is_valid){
+      new_data = bmp390_getdata_DMA(bmp390_data_dma_buf);
+      my_bmp390.data.temperature = new_data.temperature*0.01f + old_data.temperature*0.99f;
+      my_bmp390.data.pressure = new_data.pressure*0.1f + old_data.pressure*0.9f;
+      old_data = new_data;
+    }
+			
 		
 	}		
 	

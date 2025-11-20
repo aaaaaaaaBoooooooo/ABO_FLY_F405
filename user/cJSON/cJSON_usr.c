@@ -97,12 +97,15 @@ int json_analysis_int(const char *data,const char *item)
 #define PARAMS_MAX_READ_SIZE  4096
 const char *PARAMS_DEFAULT_JSON =
 		"{\n"
-		"\"AttitudeControl.int_PID\":{\"X\":[25,0.1,30],\"Y\":[25,0.1,30],\"Z\":[15.0,0.0,15.0]},\n"
-		"\"AttitudeControl.ext_PID\":{\"X\":[3.0,0.0,0.0],\"Y\":[3.0,0.0,0.0],\"Z\":[4.0,0.0,0.0]},\n"
+		"\"AttitudeControl.int_PID\":{\"X\":[15,0.0,40],\"Y\":[15,0.0,40],\"Z\":[20.0,0.0,50.0]},\n"
+		"\"AttitudeControl.ext_PID\":{\"X\":[5.0,0.0,0.0],\"Y\":[5.0,0.0,0.0],\"Z\":[6.0,0.0,0.0]},\n"
+		"\"AttitudeControl\":{\"compensate\":[0.0,0.0],\"turn rate\":0.001},\n"
 		"\"HeightControl.PID\":[0.0,0.0,0.0],\n"
+		"\"HeightControl\":{\"hover throttle\":50,\"climb rate\":0.000003},\n"
+		"\"motor_launch_throttle\":10,\n"
 		"\"motor_volt_k\":[1.0,1.0,1.0,1.0],\n"
-		"\"log_record_circle_ms\":20\n"
-		"}\n";
+		"\"log_record_circle_ms\":50\n"
+		"}\n";//默认参数
 uint8_t fatfs_PID_params_read()
 {
 	cJSON *json,*json_get_root,*json_get_child1;
@@ -158,48 +161,70 @@ uint8_t fatfs_PID_params_read()
 //	printf("%s",out_data);
 	
 	json_get_root = cJSON_GetObjectItem( json ,"AttitudeControl.int_PID" );
-	json_get_child1 = cJSON_GetObjectItem(json_get_root,"X");
-	if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+	if(json_get_root->type == cJSON_Object)  //从json获取键值内容
 	{
-		AttitudeControl.internal_pid.x.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
-		AttitudeControl.internal_pid.x.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
-		AttitudeControl.internal_pid.x.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
-	}
-	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Y");
-	if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
-	{
-		AttitudeControl.internal_pid.y.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
-		AttitudeControl.internal_pid.y.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
-		AttitudeControl.internal_pid.y.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
-	}
-	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Z");
-	if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
-	{
-		AttitudeControl.internal_pid.z.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
-		AttitudeControl.internal_pid.z.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
-		AttitudeControl.internal_pid.z.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		json_get_child1 = cJSON_GetObjectItem(json_get_root,"X");
+		if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+		{
+			AttitudeControl.internal_pid.x.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+			AttitudeControl.internal_pid.x.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+			AttitudeControl.internal_pid.x.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		}
+		json_get_child1 = cJSON_GetObjectItem(json_get_root,"Y");
+		if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+		{
+			AttitudeControl.internal_pid.y.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+			AttitudeControl.internal_pid.y.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+			AttitudeControl.internal_pid.y.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		}
+		json_get_child1 = cJSON_GetObjectItem(json_get_root,"Z");
+		if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+		{
+			AttitudeControl.internal_pid.z.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+			AttitudeControl.internal_pid.z.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+			AttitudeControl.internal_pid.z.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		}
 	}
 	json_get_root = cJSON_GetObjectItem( json ,"AttitudeControl.ext_PID" );
-	json_get_child1 = cJSON_GetObjectItem(json_get_root,"X");
-	if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+	if(json_get_root->type == cJSON_Object)  //从json获取键值内容
 	{
-		AttitudeControl.external_pid.x.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
-		AttitudeControl.external_pid.x.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
-		AttitudeControl.external_pid.x.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		json_get_child1 = cJSON_GetObjectItem(json_get_root,"X");
+		if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+		{
+			AttitudeControl.external_pid.x.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+			AttitudeControl.external_pid.x.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+			AttitudeControl.external_pid.x.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		}
+		json_get_child1 = cJSON_GetObjectItem(json_get_root,"Y");
+		if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+		{
+			AttitudeControl.external_pid.y.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+			AttitudeControl.external_pid.y.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+			AttitudeControl.external_pid.y.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		}
+		json_get_child1 = cJSON_GetObjectItem(json_get_root,"Z");
+		if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+		{
+			AttitudeControl.external_pid.z.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
+			AttitudeControl.external_pid.z.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
+			AttitudeControl.external_pid.z.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		}		
 	}
-	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Y");
-	if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
+
+	json_get_root = cJSON_GetObjectItem( json ,"AttitudeControl");
+	if(json_get_root->type == cJSON_Object)  //从json获取键值内容
 	{
-		AttitudeControl.external_pid.y.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
-		AttitudeControl.external_pid.y.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
-		AttitudeControl.external_pid.y.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
-	}
-	json_get_child1 = cJSON_GetObjectItem(json_get_root,"Z");
-	if(json_get_child1->type == cJSON_Array)  //从json获取键值内容
-	{
-		AttitudeControl.external_pid.z.kp = cJSON_GetArrayItem(json_get_child1,0)->valuedouble;
-		AttitudeControl.external_pid.z.ki = cJSON_GetArrayItem(json_get_child1,1)->valuedouble;
-		AttitudeControl.external_pid.z.kd = cJSON_GetArrayItem(json_get_child1,2)->valuedouble;
+		cJSON *json_compensate_rpy = cJSON_GetObjectItem(json_get_root,"compensate");
+		if(json_compensate_rpy->type == cJSON_Array)
+		{
+			AttitudeControl.roll_compensate = cJSON_GetArrayItem(json_compensate_rpy,0)->valuedouble;
+			AttitudeControl.pitch_compensate = cJSON_GetArrayItem(json_compensate_rpy,1)->valuedouble;
+		}
+		cJSON *json_turn_rate = cJSON_GetObjectItem(json_get_root,"turn rate");
+		if(json_turn_rate->type == cJSON_Number)
+		{
+			AttitudeControl.yaw_turn_rate = json_turn_rate->valuedouble;
+		}
 	}
 	json_get_root = cJSON_GetObjectItem( json ,"HeightControl.PID");	
 	if(json_get_root->type == cJSON_Array)  //从json获取键值内容
@@ -207,6 +232,25 @@ uint8_t fatfs_PID_params_read()
 		HeightControl.pid.kp = cJSON_GetArrayItem(json_get_root,0)->valuedouble;
 		HeightControl.pid.ki = cJSON_GetArrayItem(json_get_root,1)->valuedouble;
 		HeightControl.pid.kd = cJSON_GetArrayItem(json_get_root,2)->valuedouble;
+	}
+	json_get_root = cJSON_GetObjectItem( json ,"HeightControl");
+	if(json_get_root->type == cJSON_Object)  //从json获取键值内容
+	{
+		cJSON *json_hover_throttle = cJSON_GetObjectItem(json_get_root,"hover throttle");
+		if(json_hover_throttle->type == cJSON_Number)
+		{
+			HeightControl.hover_throttle = json_hover_throttle->valueint;
+		}
+		cJSON *json_climb_rate = cJSON_GetObjectItem(json_get_root,"climb rate");
+		if(json_climb_rate->type == cJSON_Number)
+		{
+			HeightControl.auto_height_climb_rate = json_climb_rate->valuedouble;
+		}
+	}
+	json_get_root = cJSON_GetObjectItem( json ,"motor_launch_throttle");
+	if(json_get_root->type == cJSON_Number)  //从json获取键值内容
+	{	
+		aircraft_motor.launch_throttle = json_get_root->valueint;
 	}
 	json_get_root = cJSON_GetObjectItem( json ,"motor_volt_k");
 	if(json_get_root->type == cJSON_Array)  //从json获取键值内容

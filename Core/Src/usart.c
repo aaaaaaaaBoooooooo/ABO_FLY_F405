@@ -517,6 +517,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		 {
 			 if(uart3_rx_buff[i]==0x5A&&uart3_rx_buff[i+6]==0xA5)//֡ͷ֡β��ȷ
 			 {
+          
 					switch(uart3_rx_buff[i+1])
 					{
 						case 0x01:
@@ -550,10 +551,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 								pid_enable(&AttitudeControl.external_pid.z,0);//�رշɻ���ʹ��pid			
 
 								HeightControl.auto_height_control_isEnable = 0; //�ر��Զ�����
-								HeightControl.mode = ALT_HOLD_DISABLED;//�߶ȿ���ģʽΪ�ֶ�
+								HeightControl.mode = OFF_MODE;//�߶ȿ���ģʽΪ�ֶ�
 								HeightControl.target_height = 0;
 								HeightControl.target_altitude =0;
-								HeightControl.base_throttle =0;
 								pid_enable(&HeightControl.pid,0);//�رն���ʹ��pid		
 
 								PositionControl.auto_pos_control_isEnable = 0;//�ر��Զ�����
@@ -603,7 +603,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 									{										
 										HeightControl.auto_height_control_isEnable = 1; //�����Զ�����
 										my_aircraft.status |= 0x02;//�Զ�����ģʽ
-										HeightControl.base_throttle = aircraft_motor.throttle;
 										HeightControl.target_height = TOF.distance_m;//�趨���߸߶�Ϊ��ǰ�߶�
 										HeightControl.target_altitude = my_aircraft.Altitude;//�趨���ߺ���Ϊ��ǰ����
 										pid_enable(&HeightControl.pid,1);//��������ʹ��pid
@@ -613,10 +612,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 									{
 										HeightControl.auto_height_control_isEnable = 0; //�ر��Զ�����
 										my_aircraft.status &= 0xFD;//�ر��Զ�����ģʽ
-										HeightControl.mode = ALT_HOLD_DISABLED;//�߶ȿ���ģʽΪ�ֶ�
+										HeightControl.mode = OFF_MODE;//�߶ȿ���ģʽΪ�ֶ�
 										HeightControl.target_height = 0;
 										HeightControl.target_altitude =0;
-										HeightControl.base_throttle =0;
 										pid_enable(&HeightControl.pid,0);//�رն���ʹ��pid
 										break;
 									}
@@ -800,36 +798,37 @@ void OpticalFlow_get_data(uint8_t *uart_data,uint16_t size)
 	
 	return;
 }
-uint16_t rc_sbus_ch[16];
 void RC_SBUS_Get_Data(uint8_t *uart_data,uint16_t size)
 {
+  
 	if(size < RC_SBUS_DATA_NUM)
 		return;
 	if(uart_data[0] == 0x0F && uart_data[RC_SBUS_DATA_NUM-1] == 0x00)
   {
-    rc_sbus_ch[0] = ((uint16_t)uart_data[ 1] >> 0 | ((int16_t)uart_data[ 2] << 8 )) & 0x07FF;
-    rc_sbus_ch[1] = ((uint16_t)uart_data[ 2] >> 3 | ((int16_t)uart_data[ 3] << 5 )) & 0x07FF;
-    rc_sbus_ch[2] = ((uint16_t)uart_data[ 3] >> 6 | ((int16_t)uart_data[ 4] << 2 )  | (int16_t)uart_data[ 5] << 10 ) & 0x07FF;
-    rc_sbus_ch[3] = ((uint16_t)uart_data[ 5] >> 1 | ((int16_t)uart_data[ 6] << 7 )) & 0x07FF;
-    rc_sbus_ch[4] = ((uint16_t)uart_data[ 6] >> 4 | ((int16_t)uart_data[ 7] << 4 )) & 0x07FF;
-    rc_sbus_ch[5] = ((uint16_t)uart_data[ 7] >> 7 | ((int16_t)uart_data[ 8] << 1 )  | (int16_t)uart_data[9] <<  9 ) & 0x07FF;
-    rc_sbus_ch[6] = ((uint16_t)uart_data[ 9] >> 2 | ((int16_t)uart_data[10] << 6 )) & 0x07FF;
-    rc_sbus_ch[7] = ((uint16_t)uart_data[10] >> 5 | ((int16_t)uart_data[11] << 3 )) & 0x07FF;
+    my_remote.sbus.CH[0] = ((uint16_t)uart_data[ 1] >> 0 | ((int16_t)uart_data[ 2] << 8 )) & 0x07FF;
+    my_remote.sbus.CH[1] = ((uint16_t)uart_data[ 2] >> 3 | ((int16_t)uart_data[ 3] << 5 )) & 0x07FF;
+    my_remote.sbus.CH[2] = ((uint16_t)uart_data[ 3] >> 6 | ((int16_t)uart_data[ 4] << 2 )  | (int16_t)uart_data[ 5] << 10 ) & 0x07FF;
+    my_remote.sbus.CH[3] = ((uint16_t)uart_data[ 5] >> 1 | ((int16_t)uart_data[ 6] << 7 )) & 0x07FF;
+    my_remote.sbus.CH[4] = ((uint16_t)uart_data[ 6] >> 4 | ((int16_t)uart_data[ 7] << 4 )) & 0x07FF;
+    my_remote.sbus.CH[5] = ((uint16_t)uart_data[ 7] >> 7 | ((int16_t)uart_data[ 8] << 1 )  | (int16_t)uart_data[9] <<  9 ) & 0x07FF;
+    my_remote.sbus.CH[6] = ((uint16_t)uart_data[ 9] >> 2 | ((int16_t)uart_data[10] << 6 )) & 0x07FF;
+    my_remote.sbus.CH[7] = ((uint16_t)uart_data[10] >> 5 | ((int16_t)uart_data[11] << 3 )) & 0x07FF;
     
-    rc_sbus_ch[8] = ((uint16_t)uart_data[12] << 0 | ((int16_t)uart_data[13] << 8 )) & 0x07FF;
-    rc_sbus_ch[9] = ((uint16_t)uart_data[13] >> 3 | ((int16_t)uart_data[14] << 5 )) & 0x07FF;
-    rc_sbus_ch[10] = ((uint16_t)uart_data[14] >> 6 | ((int16_t)uart_data[15] << 2 )  | (int16_t)uart_data[16] << 10 ) & 0x07FF;
-    rc_sbus_ch[11] = ((uint16_t)uart_data[16] >> 1 | ((int16_t)uart_data[17] << 7 )) & 0x07FF;
-    rc_sbus_ch[12] = ((uint16_t)uart_data[17] >> 4 | ((int16_t)uart_data[18] << 4 )) & 0x07FF;
-    rc_sbus_ch[13] = ((uint16_t)uart_data[18] >> 7 | ((int16_t)uart_data[19] << 1 )  | (int16_t)uart_data[20] <<  9 ) & 0x07FF;
-    rc_sbus_ch[14] = ((uint16_t)uart_data[20] >> 2 | ((int16_t)uart_data[21] << 6 )) & 0x07FF;
-    rc_sbus_ch[15] = ((uint16_t)uart_data[21] >> 5 | ((int16_t)uart_data[22] << 3 )) & 0x07FF;
+    my_remote.sbus.CH[8] = ((uint16_t)uart_data[12] << 0 | ((int16_t)uart_data[13] << 8 )) & 0x07FF;
+    my_remote.sbus.CH[9] = ((uint16_t)uart_data[13] >> 3 | ((int16_t)uart_data[14] << 5 )) & 0x07FF;
+    my_remote.sbus.CH[10] = ((uint16_t)uart_data[14] >> 6 | ((int16_t)uart_data[15] << 2 )  | (int16_t)uart_data[16] << 10 ) & 0x07FF;
+    my_remote.sbus.CH[11] = ((uint16_t)uart_data[16] >> 1 | ((int16_t)uart_data[17] << 7 )) & 0x07FF;
+    my_remote.sbus.CH[12] = ((uint16_t)uart_data[17] >> 4 | ((int16_t)uart_data[18] << 4 )) & 0x07FF;
+    my_remote.sbus.CH[13] = ((uint16_t)uart_data[18] >> 7 | ((int16_t)uart_data[19] << 1 )  | (int16_t)uart_data[20] <<  9 ) & 0x07FF;
+    my_remote.sbus.CH[14] = ((uint16_t)uart_data[20] >> 2 | ((int16_t)uart_data[21] << 6 )) & 0x07FF;
+    my_remote.sbus.CH[15] = ((uint16_t)uart_data[21] >> 5 | ((int16_t)uart_data[22] << 3 )) & 0x07FF;
+    my_remote.sbus.signal = 1;
   }
 	else
   {
+   
     return;
   }
-	memcpy(&my_remote.sbus.CH[0],rc_sbus_ch,16*2);
 }
  
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)

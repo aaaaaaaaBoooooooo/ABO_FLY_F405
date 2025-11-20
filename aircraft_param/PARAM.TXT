@@ -1,0 +1,10 @@
+{
+"AttitudeControl.int_PID":{"X":[18,0.0,40],"Y":[18,0.0,40],"Z":[20.0,0.0,50.0]},
+"AttitudeControl.ext_PID":{"X":[6.5,0.01,5.0],"Y":[6.0,0.01,5.0],"Z":[8.0,0.0,0.0]},
+"AttitudeControl":{"compensate":[0.0,0.0],"turn rate":0.003},
+"HeightControl.PID":[1650.0,0.0,33000.0],
+"HeightControl":{"hover throttle":50,"climb rate":0.000002},
+"motor_launch_throttle":2,
+"motor_volt_k":[1.0,1.0,1.0,1.0],
+"log_record_circle_ms":50
+}

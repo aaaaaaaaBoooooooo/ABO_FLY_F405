@@ -40,6 +40,7 @@ extern "C" {
 typedef struct 
 {
 	uint16_t CH[16];
+	uint8_t signal;
 }sbus_type;//sbus遥控器
 
 typedef struct 

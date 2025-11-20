@@ -13,7 +13,7 @@
 AttiudeController AttitudeControl;//姿态控制
 HeightController HeightControl;//高度控制
 PositionController PositionControl;//位置控制
-Motor_TypeDef aircraft_motor = {0,0,0,0,0,1,1,1,1};//电机结构体
+Motor_TypeDef aircraft_motor;//电机结构体
 
 
 /*空心杯电机控制begin*/
@@ -27,7 +27,7 @@ void motor_speed_set()
 	aircraft_motor.duty3 *=aircraft_motor.volt_k3;
 	aircraft_motor.duty4 *=aircraft_motor.volt_k4;
 	/***电机电压补偿处理end***/	
-	
+
 	/***限幅处理begin***/
 	if(aircraft_motor.duty1>MOTOR_MAX_DUTY)		aircraft_motor.duty1 = MOTOR_MAX_DUTY;
 	else if(aircraft_motor.duty1<MOTOR_MIN_DUTY)		aircraft_motor.duty1 = MOTOR_MIN_DUTY;
@@ -42,17 +42,16 @@ void motor_speed_set()
 	/*RC SBUS 电机功率控制*/
 	if(my_remote.sbus.CH[7]==RC_SBUS_CH_MIN)//右拨杆上升
 	{
-		power = 1.0f;//最大功率
+	power = 1.0f;//最大功率
 	}
 	else if(my_remote.sbus.CH[7]==RC_SBUS_CH_MID)//右拨杆中间
 	{
-		power = 1.0f;//75%功率
+	power = 1.0f;//75%功率
 	}
 	else if(my_remote.sbus.CH[7]==RC_SBUS_CH_MAX)//右拨杆下降
 	{
-		power = 0.0f;//关闭电机
+	power = 0.0f;//关闭电机
 	}
-
 	/***HAL库占空比设置***/
 	if(my_aircraft.status&0x01 && !(my_aircraft.status&0x08))//解锁且无保护
 	{
@@ -138,7 +137,7 @@ void motor_throttle_control()
 {
 	if(HeightControl.auto_height_control_isEnable)//自动定高油门控制
 	{
-		if(remote_data_flash[0]==1)//定高高度控制
+		if(remote_data_flash[0]==1)//定高高度控制 
 		{
 			if(abs((int)my_remote.YG_LEFT_UD-128)>40)
 				HeightControl.target_height += ((int)my_remote.YG_LEFT_UD - 128)*0.00015f;
@@ -149,9 +148,9 @@ void motor_throttle_control()
 		}	
 		/*SBUS*/
 		if(abs((int)my_remote.sbus.CH[2]-RC_SBUS_CH_MID)>200)
-			 HeightControl.target_height += (float)((int)my_remote.sbus.CH[2]-RC_SBUS_CH_MID)*0.000003f;
+			 HeightControl.target_height += (float)((int)my_remote.sbus.CH[2]-RC_SBUS_CH_MID)*HeightControl.auto_height_climb_rate;
 		
-		aircraft_motor.throttle = HeightControl.base_throttle + HeightControl.pid.output;//油门输出
+		aircraft_motor.throttle = (int)(HeightControl.hover_throttle*(MOTOR_MAX_THROTTLE/100.0f)) + HeightControl.pid.output;//油门输出
 	
 	}
 	else//默认手动油门控制
@@ -167,6 +166,7 @@ void motor_throttle_control()
 		/*SBUS*/
 		aircraft_motor.throttle = (float)MOTOR_MAX_THROTTLE * (float)(my_remote.sbus.CH[2]-RC_SBUS_CH_MIN)/(float)(RC_SBUS_CH_RANGE);
 	}
+	aircraft_motor.throttle += (int)(aircraft_motor.launch_throttle*(MOTOR_MAX_THROTTLE/100.0f)); //启动油门加成
 	/***油门限幅***/
 	if(aircraft_motor.throttle>MOTOR_MAX_THROTTLE)
 		aircraft_motor.throttle = MOTOR_MAX_THROTTLE;
@@ -254,7 +254,7 @@ void aircraft_flight_direction_control()
 		else
 			AttitudeControl.pitch_target_angle = 0;
 		if(abs((int)my_remote.sbus.CH[3]-RC_SBUS_CH_MID)>100)
-			AttitudeControl.yaw_target_angle -= (float)((int)my_remote.sbus.CH[3]-RC_SBUS_CH_MID)*0.001f;
+			AttitudeControl.yaw_target_angle -= (float)((int)my_remote.sbus.CH[3]-RC_SBUS_CH_MID)*AttitudeControl.yaw_turn_rate;
 
 	}
 		/****姿态外环输入begin****/
@@ -288,29 +288,24 @@ void aircraft_flight_Height_control()
 		if(TOF.distance_m <3.0f&&TOF.confidence >80)//TOF测距小于3m 并且可信度高于80
 		{
 			HeightControl.mode = TOF_MODE;//TOF定高
-			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.tof_params.Kp,HeightControl.tof_params.Ki,HeightControl.tof_params.Kd);
 		}
 		else
 		{
-//			HeightControl.mode = BARO_MODE;//气压计定高
-//			HeightControl.pid.f_pid_reset(&HeightControl.pid,HeightControl.baro_params.Kp,HeightControl.baro_params.Ki,HeightControl.baro_params.Kd);		
+			HeightControl.mode = BARO_MODE;//气压计定高
+	
 		}
 		if(HeightControl.mode == BARO_MODE)//气压计定高
 		{
-//			HeightControl.pid.target = HeightControl.target_altitude;
-//			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
-//			HeightControl.pid.IntegralLimit = HeightControl.pid.MaxOutput*0.5f;
-//			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.barometer_height);			
+			HeightControl.pid.target = HeightControl.target_altitude + HeightControl.target_height;
+			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - (int)(HeightControl.hover_throttle*(MOTOR_MAX_THROTTLE/100.0f));
 		}
 		else if(HeightControl.mode == TOF_MODE)//TOF定高
 		{
 			HeightControl.pid.target =  HeightControl.target_height;
-			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - HeightControl.base_throttle;
-			HeightControl.pid.IntegralLimit = HeightControl.pid.MaxOutput*0.5f;		
-			HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.tof_height);
+			HeightControl.pid.MaxOutput = MOTOR_MAX_THROTTLE - (int)(HeightControl.hover_throttle*(MOTOR_MAX_THROTTLE/100.0f));
+
 		}
-		else
-			return;
+		HeightControl.pid.f_cal_pid(&HeightControl.pid,*HeightControl.sensor.tof_height);
 	}
 	else   
 		return;
@@ -327,11 +322,11 @@ void pid_control_init()
 	AttitudeControl.sensor.gyro_y = &my_ahrs.IMU_Data.gyro.y;
 	pid_init(&AttitudeControl.internal_pid.z);
 	AttitudeControl.sensor.gyro_z = &my_ahrs.IMU_Data.gyro.z;
-	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
+	AttitudeControl.internal_pid.x.f_param_init(&AttitudeControl.internal_pid.x,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,20.0f,0.0f,40.0f);
 	pid_enable(&AttitudeControl.internal_pid.x,0);//未开启飞机就不使能pid
-	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,25.0f,0.0f,22.0f);
+	AttitudeControl.internal_pid.y.f_param_init(&AttitudeControl.internal_pid.y,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,20.0f,0.0f,40.0f);
 	pid_enable(&AttitudeControl.internal_pid.y,0);//未开启飞机就不使能pid
-	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,60.0f,0.0f,15.0f);
+	AttitudeControl.internal_pid.z.f_param_init(&AttitudeControl.internal_pid.z,PID_Position,MOTOR_MAX_DUTY,0,0,0,0,20.0f,0.0f,50.0f);
 	pid_enable(&AttitudeControl.internal_pid.z,0);//未开启飞机就不使能pid
 	
 	pid_init(&AttitudeControl.external_pid.x);
@@ -340,11 +335,11 @@ void pid_control_init()
 	AttitudeControl.sensor.pitch = &my_ahrs.Angle_Data.pitch;
 	pid_init(&AttitudeControl.external_pid.z);
 	AttitudeControl.sensor.yaw = &my_ahrs.Angle_Data.yaw;
-	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,10000,100,0,0,0,2.5f,0.025f,20.0f);
+	AttitudeControl.external_pid.x.f_param_init(&AttitudeControl.external_pid.x,PID_Position,10000,1000,0,0,0,4.0f,0.0f,0.0f);
 	pid_enable(&AttitudeControl.external_pid.x,0);//未开启飞机就不使能pid
-	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,10000,100,0,0,0,2.5f,0.025f,20.0f);
+	AttitudeControl.external_pid.y.f_param_init(&AttitudeControl.external_pid.y,PID_Position,10000,1000,0,0,0,4.0f,0.0f,0.0f);
 	pid_enable(&AttitudeControl.external_pid.y,0);//未开启飞机就不使能pid
-	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,200,0,0,0,0,6.0f,0.0f,0.0f);	
+	AttitudeControl.external_pid.z.f_param_init(&AttitudeControl.external_pid.z,PID_Position,1000,100,0,0,0,6.0f,0.0f,0.0f);	
 	pid_enable(&AttitudeControl.external_pid.z,0);//未开启飞机就不使能pid
 	/***姿态控制初始化end***/
 	
@@ -352,9 +347,10 @@ void pid_control_init()
 	pid_init(&HeightControl.pid);
 	HeightControl.sensor.tof_height = &TOF.distance_m;
 	HeightControl.sensor.barometer_height = &my_aircraft.Altitude;
-	HeightControl.pid.f_param_init(&HeightControl.pid,PID_Position,0,0,0,0,0,300.0f,1.5f,2000.0f);
+	HeightControl.pid.f_param_init(&HeightControl.pid,PID_Position,MOTOR_MAX_THROTTLE,MOTOR_MAX_THROTTLE,0,0,0,1500.0f,0.0f,30000.0f);
 	pid_enable(&HeightControl.pid,0);//未开启定高就不使能pid
-	HeightControl.mode = ALT_HOLD_DISABLED;//初始为手动控制
+	HeightControl.auto_height_control_isEnable = 0;
+	HeightControl.mode = OFF_MODE;//初始为关闭
 
 	/***高度控制初始化end***/	
 	
@@ -432,11 +428,14 @@ uint8_t aircraft_protection()
 	static uint32_t Battery_Low_Power_cnt =0;
 	static uint32_t Aircraft_IMU_Error_cnt =0;
 	static uint32_t Motor_Duty_Error_cnt =0;
-	
-	if(my_aircraft.Battery_Volt <=32 )//电池低电量保护
+	static uint32_t lose_signal_cnt =0;
+
+
+	if(my_aircraft.Battery_Volt <37 )//电池低电量保护
 	{
+		LED(0);
 		Battery_Low_Power_cnt ++;
-		if(Battery_Low_Power_cnt >= 50)//5s
+		if(Battery_Low_Power_cnt >= 300)//30s
 		{
 			motor_deinit();
 			my_aircraft.status |=0x08;//set status bit high
@@ -461,6 +460,7 @@ uint8_t aircraft_protection()
 	}
 	else
 	{
+		
 		Aircraft_IMU_Error_cnt=0;
 	}
 	
@@ -476,10 +476,24 @@ uint8_t aircraft_protection()
 	}
 	else
 	{
-		motor_init();
-		my_aircraft.status &= ~0x08;//set status bit low	
+	
 		Motor_Duty_Error_cnt=0;
 	}
+	if(my_remote.sbus.signal){			
+		my_remote.sbus.signal = 0;
+		lose_signal_cnt =0;
+	}
+	else{
+		lose_signal_cnt ++;
+		if(lose_signal_cnt > 20){//超过2秒无遥控信号
+			motor_deinit();
+			my_aircraft.status |=0x08;//set status bit high			
+			return 4;
+		}
+	}
+	//all protection clear
+	motor_init();
+	my_aircraft.status &= ~0x08;//set status bit low
 	return 0;
 	
 }
@@ -527,7 +541,6 @@ void aircraft_status_check()
 			
 		HeightControl.auto_height_control_isEnable = 1; //open auto height hold
 		my_aircraft.status |= 0x02;//自动定高标志位
-		HeightControl.base_throttle = aircraft_motor.throttle;//定高基准油门
 		HeightControl.target_height = TOF.distance_m;//current TOF height as target height
 		HeightControl.target_altitude = my_aircraft.Altitude;//current Baro altitude as target altitude
 		pid_enable(&HeightControl.pid,1);//open height pid
@@ -536,12 +549,13 @@ void aircraft_status_check()
 	{
 		HeightControl.auto_height_control_isEnable = 0; //close auto height hold
 		my_aircraft.status &= ~0x02;//自动定高标志位清除
-		HeightControl.mode = ALT_HOLD_DISABLED;//height hold disabled
+		HeightControl.mode = OFF_MODE;//height hold disabled
 		HeightControl.target_height = 0;
 		HeightControl.target_altitude =0;
-		HeightControl.base_throttle =0;
 		pid_enable(&HeightControl.pid,0);//close height pid		
 	}
+
+	
 }
 
 
